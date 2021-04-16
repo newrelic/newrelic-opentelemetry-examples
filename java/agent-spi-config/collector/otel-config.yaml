@@ -1,0 +1,20 @@
+extensions:
+  health_check: {}
+receivers:
+  otlp:
+    protocols:
+      grpc:
+processors:
+  batch:
+exporters:
+  logging:
+    logLevel: $LOG_EXPORTER_LOG_LEVEL
+service:
+  extensions: [health_check]
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      exporters: [logging]
+    traces:
+      receivers: [otlp]
+      exporters: [logging]
