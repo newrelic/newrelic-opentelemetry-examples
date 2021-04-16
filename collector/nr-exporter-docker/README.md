@@ -1,3 +1,5 @@
+# New Relic Exporter Docker
+
 This example demonstrates how to run the OpenTelemetry Collector configured with the New Relic exporter via docker.
 
 The `docker-compose.yaml` file configures the collector via `otel-config.yaml`.

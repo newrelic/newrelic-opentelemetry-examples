@@ -1,3 +1,5 @@
+# Agent New Relic Config
+
 This project demonstrates a simple Java application running with the OpenTelemetry Java Agent configured to write data to New Relic. New Relic expects metric data in delta aggregation temporality, whereas the default for OpenTelemetry is cumulative. When running the OpenTelemetry Java Agent, delta aggregation metrics must be configured via the SPI (service provider interface), which enables configuration of some options that are not available via system property or environment variable based configuration. If your app is not using the agent, delta aggregation metrics can be configured directly using the OpenTelemetry SDK.
 
 The project consists of two modules:
@@ -18,7 +20,7 @@ The `bootRun` command will:
 - Download the OpenTelemetry Java agent.
 - Build the `otel-initializer` shadow jar.
 - Build the application executable jar.
-- Run the application executable jar with jvmArgs and environment variables that configure OpenTelemetry. See the `bootRun` task config in `./application/build.gradle` to see the jvmArg environment variable configuration.
+- Run the application executable jar with jvmArgs and environment variables that configure OpenTelemetry. See the `bootRun` task config in [./application/build.gradle](./application/build.gradle) to see the jvmArg environment variable configuration.
 
 The application exposes a simple endpoint at `http://localhost:8080/ping`.
 
