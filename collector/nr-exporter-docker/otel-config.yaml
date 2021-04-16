@@ -20,3 +20,7 @@ service:
     traces:
       receivers: [otlp]
       exporters: [logging, newrelic]
+    # TODO: add log exporter once available
+    # logs:
+    #   receivers: [otlp]
+    #   exporters: [logging, newrelic]
