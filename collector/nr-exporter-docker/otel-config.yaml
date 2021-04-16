@@ -9,12 +9,14 @@ processors:
 exporters:
   logging:
     logLevel: $LOG_EXPORTER_LOG_LEVEL
+  newrelic:
+    apikey: $NEW_RELIC_API_KEY
 service:
   extensions: [health_check]
   pipelines:
     metrics:
       receivers: [otlp]
-      exporters: [logging]
+      exporters: [logging, newrelic]
     traces:
       receivers: [otlp]
-      exporters: [logging]
+      exporters: [logging, newrelic]
