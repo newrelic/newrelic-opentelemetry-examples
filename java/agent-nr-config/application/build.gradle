@@ -1,4 +1,5 @@
 plugins {
+    id 'java-library'
     id 'org.springframework.boot' version '2.4.0'
     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
     id 'de.undercouch.download' version '4.1.1'
@@ -8,11 +9,11 @@ def agentPath = project.buildDir.toString() + "/otel/opentelemetry-javaagent-all
 
 bootRun {
     // Before running, build the otel-intializer shadow jar
-    dependsOn(":otel-initializer:shadowJar")
+    dependsOn(":agent-nr-config:otel-initializer:shadowJar")
     // Before running, download the opentelemetry-java-instrumentation agent
     dependsOn("downloadAgent")
 
-    def initializerPath = project(":otel-initializer").buildDir.toString() + "/libs/otel-initializer.jar"
+    def initializerPath = project(":agent-nr-config:otel-initializer").buildDir.toString() + "/libs/otel-initializer.jar"
 
     jvmArgs = [
         // Set the opentelemetry-java-instrumentation agent as the javaagent

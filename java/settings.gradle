@@ -1,0 +1,3 @@
+include 'agent-nr-config:application'
+include 'agent-nr-config:otel-initializer'
+

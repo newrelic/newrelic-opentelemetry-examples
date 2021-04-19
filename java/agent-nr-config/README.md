@@ -11,9 +11,9 @@ The application is configured to export data via OTLP to a collector running at 
 
 You can adjust where data is exported to, or you can run a collector instance locally via docker by following the [nr-exporter-docker](../../collector/nr-exporter-docker/README.md) example.
 
-After running the collector, run the application via:
+After running the collector, run the application from a shell in the [java root](../) via:
 ```
-./gradlew bootRun
+./gradlew agent-nr-config:application:bootRun
 ```
 
 The `bootRun` command will:
