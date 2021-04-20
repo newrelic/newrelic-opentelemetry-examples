@@ -14,5 +14,6 @@ jobs:
         with:
           java-version: 11
       - name: Build with Gradle
-        run: cd java && ./gradlew build
+        working-directory: java
+        run: ./gradlew build
 

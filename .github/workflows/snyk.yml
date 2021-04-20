@@ -1,0 +1,22 @@
+name: Snyk check
+on: push
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    env:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+    steps:
+      - uses: actions/checkout@master
+      - name: Install Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+      - name: Install Snyk CLI
+        run: npm i -g snyk
+      - name: Setup Java
+        uses: actions/setup-java@v1.4.3
+        with:
+          java-version: 11
+      - name: Test Snyk Java
+        working-directory: java
+        run: snyk test --all-sub-projects
