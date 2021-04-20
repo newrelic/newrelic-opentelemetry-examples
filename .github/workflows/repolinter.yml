@@ -27,5 +27,6 @@ jobs:
         if: ${{ steps.default-branch.outputs.result == 'true' }}
         uses: newrelic/repolinter-action@v1
         with:
-          config_url: https://raw.githubusercontent.com/newrelic/.github/main/repolinter-rulesets/community-project.yml
+
+          config_url: https://raw.githubusercontent.com/newrelic/.github/main/repolinter-rulesets/example-code.yml
           output_type: issue
