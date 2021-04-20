@@ -1,0 +1,22 @@
+plugins {
+    id 'java-library'
+    id 'org.springframework.boot' version '2.4.3'
+    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+}
+
+bootRun {
+    mainClass.set 'com.newrelic.app.Application'
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'io.opentelemetry:opentelemetry-api'
+    implementation 'io.opentelemetry:opentelemetry-api-metrics'
+    implementation 'io.opentelemetry:opentelemetry-sdk'
+    implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
+    implementation 'io.opentelemetry:opentelemetry-exporter-otlp-metrics'
+    implementation 'io.opentelemetry:opentelemetry-semconv'
+
+    implementation platform("io.grpc:grpc-bom:${project['grpc.version']}")
+    implementation 'io.grpc:grpc-netty-shaded'
+}

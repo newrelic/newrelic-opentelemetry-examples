@@ -1,3 +1,4 @@
 include 'agent-nr-config:application'
 include 'agent-nr-config:otel-initializer'
+include 'sdk-nr-config'
 

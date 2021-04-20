@@ -8,6 +8,8 @@ plugins {
 def agentPath = project.buildDir.toString() + "/otel/opentelemetry-javaagent-all.jar"
 
 bootRun {
+    mainClass.set 'com.newrelic.app.Application'
+
     // Before running, build the otel-intializer shadow jar
     dependsOn(":agent-nr-config:otel-initializer:shadowJar")
     // Before running, download the opentelemetry-java-instrumentation agent

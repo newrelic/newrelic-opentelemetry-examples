@@ -15,6 +15,7 @@ This project contains examples illustrating usage of OpenTelemetry with New Reli
   * [nr-exporter-docker](./collector/nr-exporter-docker): Run the OpenTelemetry Collector with the New Relic exporter. 
 * Java
   * [agent-nr-config](./java/agent-nr-config): Run a simple Java application with the OpenTelemetry Agent configured for New Relic.
+  * [sdk-nr-config](./java/sdk-nr-config): Run a simple Java application with custom OpenTelemetry instrument configured for New Relic via the SDK.
 
 ## Support
 
