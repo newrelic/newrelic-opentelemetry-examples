@@ -1,4 +1,4 @@
-# OpenTelemetry w/ New Relic Distributed Tracing
+# OpenTelemetry with New Relic Distributed Tracing
 
 ## Introduction
 

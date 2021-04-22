@@ -1,4 +1,4 @@
-# SDK New Relic Config
+# OpenTelemetry SDK New Relic Config
 
 ## Introduction
 

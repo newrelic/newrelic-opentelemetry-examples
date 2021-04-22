@@ -1,4 +1,4 @@
-# Agent New Relic Config
+# OpenTelemetry Agent New Relic Config
 
 ## Introduction
 
