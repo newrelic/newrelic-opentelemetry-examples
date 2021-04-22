@@ -1,6 +1,10 @@
-# SDK New Relic Config
+# OpenTelemetry SDK New Relic Config
+
+## Introduction
 
 This project demonstrates a simple Java application with custom OpenTelemetry instrumentation configured to write data to New Relic. New Relic expects metric data to delta aggregation temporality, whereas the default for OpenTelemetry is cumulative.
+
+## Run
 
 The application is configured to export data via OTLP to a collector running at `http://localhost:4317`.
 

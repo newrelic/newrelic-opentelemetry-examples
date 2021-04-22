@@ -9,7 +9,7 @@ public class Application {
 
   public static void main(String[] args) {
     // Configure OpenTelemetry as early as possible
-    OpenTelemetryConfig.configureGlobal("sdk-nr-config");
+    OpenTelemetryConfig.configureGlobal("otel-app");
     SpringApplication.run(Application.class, args);
   }
 }
