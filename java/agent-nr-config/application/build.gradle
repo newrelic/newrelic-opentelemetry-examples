@@ -18,10 +18,10 @@ bootRun {
     def initializerPath = project(":agent-nr-config:otel-initializer").buildDir.toString() + "/libs/otel-initializer.jar"
 
     jvmArgs = [
-        // Set the opentelemetry-java-instrumentation agent as the javaagent
-        "-javaagent:${agentPath}",
-        // Use the otel-initializer shadowJar to configure the agent via SPI
-        "-Dotel.javaagent.experimental.initializer.jar=${initializerPath}"
+            // Set the opentelemetry-java-instrumentation agent as the javaagent
+            "-javaagent:${agentPath}",
+            // Use the otel-initializer shadowJar to configure the agent via SPI
+            "-Dotel.javaagent.experimental.initializer.jar=${initializerPath}"
     ]
 
     // Additional configuration using standard autoconfiguration environment variables defined at:

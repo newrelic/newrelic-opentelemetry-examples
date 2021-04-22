@@ -1,0 +1,46 @@
+plugins {
+    id 'java-library'
+    id 'org.springframework.boot' version '2.4.3'
+    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+    id 'de.undercouch.download' version '4.1.1'
+}
+
+def agentZipPath = project.buildDir.toString() + "/newrelic/newrelic-java.zip"
+def agentJarPath = project.buildDir.toString() + "/newrelic/newrelic.jar"
+
+bootRun {
+    mainClass.set 'com.newrelic.app.Application'
+
+    // Before running, download and unzip the New Relic agent
+    dependsOn("unzipAgent")
+
+    jvmArgs = [
+            // Set the New Relic agent as the java agent
+            "-javaagent:${agentJarPath}",
+            // Run on port 8081 to avoid port conflict with OpenTelemetry app
+            "-Dserver.port=8081"
+    ]
+
+    environment([
+            // Configure the New Relic java agent
+            "NEW_RELIC_APP_NAME": "nr-app",
+            "NEW_RELIC_DISTRIBUTED_TRACING_ENABLED": "true"
+    ])
+}
+
+task downloadAgent(type: Download) {
+    src "https://download.newrelic.com/newrelic/java-agent/newrelic-agent/${project['newrelic-agent.version']}/newrelic-java.zip"
+    dest agentZipPath
+    overwrite false
+}
+
+task unzipAgent(type: Copy) {
+    from zipTree(agentZipPath)
+    into project.buildDir.toString()
+    dependsOn("downloadAgent")
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation "com.newrelic.agent.java:newrelic-api:${project['newrelic-agent.version']}"
+}
