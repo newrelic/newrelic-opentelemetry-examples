@@ -6,7 +6,10 @@ This project demonstrates a simple Java application with custom OpenTelemetry in
 
 ## Run
 
-The application is configured to export data via OTLP to a collector running at `http://localhost:4317`.
+The application is configured to export data via OTLP to a collector running at `http://localhost:4317`. This can be changed by specifying an alternative via `OTLP_HOST` environment variable:
+```shell
+export OTLP_HOST=http://my-collector-host:4317
+```
 
 You can adjust where data is exported to, or you can run a collector instance locally via docker by following the [nr-exporter-docker](../../collector/nr-exporter-docker/README.md) example.
 

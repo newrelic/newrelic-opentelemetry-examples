@@ -27,9 +27,15 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class OpenTelemetryConfig {
+
+  private static final Supplier<String> OTLP_HOST_SUPPLIER =
+      getEnvOrDefault("OTLP_HOST", Function.identity(), "http://localhost:4317");
 
   public static void configureGlobal(String serviceName) {
     // Configure traces
@@ -51,10 +57,6 @@ public class OpenTelemetryConfig {
                     .build()));
   }
 
-  public static String otlpEndpoint() {
-    return "http://localhost:4317";
-  }
-
   public static OpenTelemetrySdk openTelemetrySdk(String serviceName) {
     return OpenTelemetrySdk.builder()
         .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
@@ -68,7 +70,7 @@ public class OpenTelemetryConfig {
         .addSpanProcessor(
             BatchSpanProcessor.builder(
                     OtlpGrpcSpanExporter.builder()
-                        .setEndpoint(otlpEndpoint())
+                        .setEndpoint(OTLP_HOST_SUPPLIER.get())
                         .addHeader("header-name", "header-value")
                         .build())
                 .build())
@@ -101,12 +103,21 @@ public class OpenTelemetryConfig {
     return IntervalMetricReader.builder()
         .setMetricExporter(
             OtlpGrpcMetricExporter.builder()
-                .setEndpoint(otlpEndpoint())
+                .setEndpoint(OTLP_HOST_SUPPLIER.get())
                 .addHeader("header-name", "header-value")
                 .build())
         .setExportIntervalMillis(5000)
         .setMetricProducers(List.of(meterProvider))
         .build();
+  }
+
+  private static <T> Supplier<T> getEnvOrDefault(
+      String key, Function<String, T> transformer, T defaultValue) {
+    return () ->
+        Optional.ofNullable(System.getenv(key))
+            .filter(s -> !s.isBlank() && !s.isEmpty())
+            .map(transformer)
+            .orElse(defaultValue);
   }
 
   private OpenTelemetryConfig() {}
