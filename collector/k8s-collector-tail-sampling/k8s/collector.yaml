@@ -1,0 +1,120 @@
+---
+# Store the collector YAML config as a ConfigMap, to be mounted into a volume on the collector containers.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-conf
+  namespace: otel-samples
+  labels:
+    app: opentelemetry
+    component: otel-collector-conf
+data:
+  otel-collector-config: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+    # Setup a tail sampler that only include traces with http.status_code >= 400
+    processors:
+      tail_sampling:
+        decision_wait: 10s
+        num_traces: 100
+        expected_new_traces_per_sec: 10
+        policies:
+          [
+            {
+              name: include_http_erors,
+              type: numeric_attribute,
+              numeric_attribute: {key: http.status_code, min_value: 400, max_value: 1000}
+            }
+          ]
+    exporters:
+      logging:
+        logLevel: DEBUG
+      newrelic:
+        apikey: $NEW_RELIC_API_KEY
+    extensions:
+      health_check: {}
+    service:
+      extensions: [health_check]
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [tail_sampling]
+          exporters: [logging, newrelic]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: otel-samples
+  labels:
+    app: opentelemetry
+    component: otel-collector
+spec:
+  ports:
+    - name: otlp # Default endpoint for OpenTelemetry receiver.
+      port: 4317
+  clusterIP: None
+  selector:
+    component: otel-collector
+---
+# Run the collector as a StatefulSet so that each has a stable host that agents can route spans to consistently based on trace id.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: otel-collector
+  namespace: otel-samples
+  labels:
+    app: opentelemetry
+    component: otel-collector
+spec:
+  serviceName: otel-collector
+  selector:
+    matchLabels:
+      app: opentelemetry
+      component: otel-collector
+  replicas: 2 # Setup two collector replicas. If this number changes the loadbalancing hostnames config in the agent config must be updated as well.
+  template:
+    metadata:
+      labels:
+        app: opentelemetry
+        component: otel-collector
+    spec:
+      containers:
+        - command:
+            - "/otelcontribcol"
+            - "--config=/conf/otel-collector-config.yaml"
+          image: otel/opentelemetry-collector-contrib:latest
+          name: otel-collector
+          env:
+          # Add a New Relic API Key here. The API Key should be placed in a secret management tool in a production environment.
+          - name: NEW_RELIC_API_KEY
+            value: "INSERT-API-KEY-HERE"
+          resources:
+            limits:
+              cpu: 1
+              memory: 2Gi
+            requests:
+              cpu: 200m
+              memory: 400Mi
+          ports:
+            - containerPort: 4317
+          volumeMounts:
+            - name: otel-collector-config-vol
+              mountPath: /conf
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 13133 # Health Check extension default port.
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 13133 # Health Check extension default port.
+      volumes:
+        - configMap:
+            name: otel-collector-conf
+            items:
+              - key: otel-collector-config
+                path: otel-collector-config.yaml
+          name: otel-collector-config-vol

@@ -4,4 +4,5 @@ include 'otel-nr-dt:nr-app'
 include 'otel-nr-dt:otel-app'
 include 'sdk-nr-config'
 include 'shared-utils'
+include 'otlp-load-generator'
 
