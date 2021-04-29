@@ -1,72 +1,53 @@
 package com.newrelic.app;
 
+import static com.newrelic.app.Utils.randomFromList;
+
+import com.newrelic.shared.EnvUtils;
 import com.newrelic.shared.OpenTelemetryConfig;
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
-import io.opentelemetry.api.metrics.common.Labels;
-import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.function.Supplier;
 
 public class Generator {
 
-  private static final Random RANDOM = new Random();
-  private static final List<String> TARGETS = List.of("/foo", "/bar", "/baz");
-  private static final List<String> METHODS = List.of("GET", "POST", "PUT", "DELETE");
-  private static final List<Long> STATUS_CODES = List.of(200L, 201L, 202L, 400L, 404L, 500L);
+  private static final Supplier<Integer> NUM_THREADS_SUPPLIER =
+      EnvUtils.getEnvOrDefault("NUM_THREADS", Integer::valueOf, 1);
 
   public static void main(String[] args) {
     OpenTelemetryConfig.configureGlobal("otlp-load-generator");
-
-    generateHttpServer();
+    new Generator().run();
   }
 
-  private static void generateHttpServer() {
-    var tracer = GlobalOpenTelemetry.getTracer(Generator.class.getName());
-    var meter = GlobalMeterProvider.getMeter(Generator.class.getName());
-    var durationRecorder = meter.longValueRecorderBuilder("http.server.duration").build();
+  private final List<Runnable> generators;
 
-    var spanCount = 0L;
-    while (true) {
-      var target = randomFromList(TARGETS);
-      var method = randomFromList(METHODS);
-      var statusCode = randomFromList(STATUS_CODES);
-      var duration = RANDOM.nextInt(1000);
+  private Generator() {
+    this.generators = List.of(new HttpGenerator(), new GrpcGenerator());
+  }
 
-      var span =
-          tracer
-              .spanBuilder(target)
-              .setAttribute(SemanticAttributes.HTTP_METHOD, method)
-              .setAttribute(SemanticAttributes.HTTP_STATUS_CODE, statusCode)
-              .setSpanKind(SpanKind.SERVER)
-              .setNoParent()
-              .startSpan();
+  private void run() {
+    // Create some configurable number of threads.
+    // Each thread runs an infinite loop where in each iteration,
+    // a random generator is selected and run.
+    var threads = NUM_THREADS_SUPPLIER.get();
+    var executor = Executors.newFixedThreadPool(threads);
+    Runtime.getRuntime().addShutdownHook(new Thread(executor::shutdown));
 
-      durationRecorder.record(
-          duration,
-          Labels.builder()
-              .put("http.target", target)
-              .put("http.method", method)
-              .put("http.status_code", String.valueOf(statusCode))
-              .build());
-
-      try {
-        Thread.sleep(duration);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        throw new IllegalStateException("Generator interrupted.", e);
-      }
-
-      span.end();
-      spanCount++;
-      if (spanCount % 10 == 0) {
-        System.out.printf("%s spans have been produced.%n", spanCount);
-      }
+    for (int i = 0; i < threads; i++) {
+      executor.submit(new Task());
     }
   }
 
-  private static <T> T randomFromList(List<T> list) {
-    return list.get(RANDOM.nextInt(list.size()));
+  private class Task implements Runnable {
+
+    @Override
+    public void run() {
+      while (true) {
+        try {
+          randomFromList(generators).run();
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    }
   }
 }
