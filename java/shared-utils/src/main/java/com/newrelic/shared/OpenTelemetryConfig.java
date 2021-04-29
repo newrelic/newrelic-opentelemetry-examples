@@ -65,16 +65,21 @@ public class OpenTelemetryConfig {
   }
 
   public static SdkTracerProvider tracerProvider(String serviceName) {
-    return SdkTracerProvider.builder()
-        .setResource(resource(serviceName))
-        .addSpanProcessor(
-            BatchSpanProcessor.builder(
-                    OtlpGrpcSpanExporter.builder()
-                        .setEndpoint(OTLP_HOST_SUPPLIER.get())
-                        .addHeader("header-name", "header-value")
-                        .build())
-                .build())
-        .build();
+    var sdkTracerProvider =
+        SdkTracerProvider.builder()
+            .setResource(resource(serviceName))
+            .addSpanProcessor(
+                BatchSpanProcessor.builder(
+                        OtlpGrpcSpanExporter.builder()
+                            .setEndpoint(OTLP_HOST_SUPPLIER.get())
+                            .addHeader("header-name", "header-value")
+                            .build())
+                    .build())
+            .build();
+
+    Runtime.getRuntime().addShutdownHook(new Thread(sdkTracerProvider::close));
+
+    return sdkTracerProvider;
   }
 
   public static SdkMeterProvider meterProvider(String serviceName) {
@@ -100,15 +105,20 @@ public class OpenTelemetryConfig {
   }
 
   public static IntervalMetricReader intervalMetricReader(SdkMeterProvider meterProvider) {
-    return IntervalMetricReader.builder()
-        .setMetricExporter(
-            OtlpGrpcMetricExporter.builder()
-                .setEndpoint(OTLP_HOST_SUPPLIER.get())
-                .addHeader("header-name", "header-value")
-                .build())
-        .setExportIntervalMillis(5000)
-        .setMetricProducers(List.of(meterProvider))
-        .build();
+    var reader =
+        IntervalMetricReader.builder()
+            .setMetricExporter(
+                OtlpGrpcMetricExporter.builder()
+                    .setEndpoint(OTLP_HOST_SUPPLIER.get())
+                    .addHeader("header-name", "header-value")
+                    .build())
+            .setExportIntervalMillis(5000)
+            .setMetricProducers(List.of(meterProvider))
+            .build();
+
+    Runtime.getRuntime().addShutdownHook(new Thread(reader::shutdown));
+
+    return reader;
   }
 
   private static <T> Supplier<T> getEnvOrDefault(
