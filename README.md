@@ -12,8 +12,11 @@ This project contains examples illustrating usage of OpenTelemetry with New Reli
 ## Examples Index
 
 * Collector
+  * [OpenTelemetry Collector with New Relic Exporter](./collector/nr-exporter-docker): Run the OpenTelemetry Collector with the New Relic exporter.
   * [Kubernetes Collector Tail Based Sampling](./collector/k8s-collector-tail-sampling): Configure a Kubernetes environment to do tail based sampling with the Collector before exporting to New Relic.
   * [OpenTelemetry Collector with New Relic Exporter](./collector/nr-exporter-docker): Run the OpenTelemetry Collector with the New Relic exporter. 
+* Go
+  * [Sending metrics with the OpenTelemetry Go SDK](./go/go-metrics): Demonstrates how to configure the Go metrics SDK to send metrics to New Relic.
 * Java
   * [OpenTelemetry Agent New Relic Config](./java/agent-nr-config): A Java application with the OpenTelemetry Agent configured for New Relic.
   * [OpenTelemetry with New Relic Distributed Tracing](./java/otel-nr-dt): Demonstrate distributed tracing for applications instrumented with OpenTelemetry and the New Relic java agent.
