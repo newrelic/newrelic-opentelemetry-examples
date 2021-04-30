@@ -37,7 +37,7 @@ public class OpenTelemetryConfig {
   private static final Supplier<String> OTLP_HOST_SUPPLIER =
       getEnvOrDefault("OTLP_HOST", Function.identity(), "http://localhost:4317");
   private static final Supplier<String> NEW_RELIC_API_KEY_SUPPLIER =
-          getEnvOrDefault("NEW_RELIC_API_KEY", Function.identity(), "");
+      getEnvOrDefault("NEW_RELIC_API_KEY", Function.identity(), "");
 
   public static void configureGlobal(String serviceName) {
     // Configure traces

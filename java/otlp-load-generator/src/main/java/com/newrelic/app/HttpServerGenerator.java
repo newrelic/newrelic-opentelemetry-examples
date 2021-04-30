@@ -8,13 +8,14 @@ import io.opentelemetry.api.metrics.LongValueRecorder;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class HttpGenerator implements Runnable {
+public class HttpServerGenerator implements Runnable {
 
   private static final Random RANDOM = new Random();
   private static final List<String> SPAN_NAMES = List.of("/user", "/role", "/permission");
@@ -26,9 +27,9 @@ public class HttpGenerator implements Runnable {
   private final LongValueRecorder durationRecorder;
   private final AtomicLong runCount = new AtomicLong();
 
-  public HttpGenerator() {
-    this.tracer = GlobalOpenTelemetry.getTracer(HttpGenerator.class.getName());
-    this.meter = GlobalMeterProvider.getMeter(HttpGenerator.class.getName());
+  public HttpServerGenerator() {
+    this.tracer = GlobalOpenTelemetry.getTracer(HttpServerGenerator.class.getName());
+    this.meter = GlobalMeterProvider.getMeter(HttpServerGenerator.class.getName());
     this.durationRecorder = meter.longValueRecorderBuilder("http.server.duration").build();
   }
 
@@ -61,17 +62,13 @@ public class HttpGenerator implements Runnable {
             .put("http.status_code", String.valueOf(statusCode))
             .build());
 
-    try {
-      Thread.sleep(duration);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new IllegalStateException(HttpGenerator.class.getSimpleName() + " interrupted.", e);
-    }
+    Utils.safeSleep(duration);
 
+    span.setStatus(statusCode < 400 ? StatusCode.OK : StatusCode.ERROR);
     span.end();
     long count = runCount.incrementAndGet();
     if (count % 10 == 0) {
-      System.out.printf("%s http spans have been produced.%n", count);
+      System.out.printf("%s http server spans have been produced.%n", count);
     }
   }
 }

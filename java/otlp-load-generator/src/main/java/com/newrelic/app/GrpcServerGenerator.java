@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class GrpcGenerator implements Runnable {
+public class GrpcServerGenerator implements Runnable {
 
   private static final String PACKAGE = "com.foo.package";
   private static final Random RANDOM = new Random();
@@ -28,8 +28,8 @@ public class GrpcGenerator implements Runnable {
   private final Tracer tracer;
   private final AtomicLong runCount = new AtomicLong();
 
-  public GrpcGenerator() {
-    this.tracer = GlobalOpenTelemetry.getTracer(GrpcGenerator.class.getName());
+  public GrpcServerGenerator() {
+    this.tracer = GlobalOpenTelemetry.getTracer(GrpcServerGenerator.class.getName());
   }
 
   @Override
@@ -40,7 +40,8 @@ public class GrpcGenerator implements Runnable {
             "%s.%s/%s", rpcMethod.packageName, rpcMethod.serviceName, rpcMethod.methodName);
     var rpcService = String.format("%s.%s", rpcMethod.packageName, rpcMethod.serviceName);
     var duration = RANDOM.nextInt(1000);
-    var statusCode = RANDOM.nextInt(16);
+    var statusCode =
+        randomFromList(List.of(SemanticAttributes.RpcGrpcStatusCodeValues.values())).getValue();
 
     var span =
         tracer
@@ -48,23 +49,18 @@ public class GrpcGenerator implements Runnable {
             .setAttribute(SemanticAttributes.RPC_SYSTEM, RPC_SYSTEM)
             .setAttribute(SemanticAttributes.RPC_SERVICE, rpcService)
             .setAttribute(SemanticAttributes.RPC_METHOD, rpcMethod.methodName)
-            .setAttribute(SemanticAttributes.RPC_GRPC_STATUS_CODE, (long) statusCode)
+            .setAttribute(SemanticAttributes.RPC_GRPC_STATUS_CODE, statusCode)
             .setSpanKind(SpanKind.SERVER)
             .setNoParent()
             .startSpan();
+
+    Utils.safeSleep(duration);
+
     span.setStatus(statusCode == 0 ? StatusCode.OK : StatusCode.ERROR);
-
-    try {
-      Thread.sleep(duration);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new IllegalStateException(GrpcGenerator.class.getSimpleName() + " interrupted.", e);
-    }
-
     span.end();
     long count = runCount.incrementAndGet();
     if (count % 10 == 0) {
-      System.out.printf("%s grpc spans have been produced.%n", count);
+      System.out.printf("%s grpc server spans have been produced.%n", count);
     }
   }
 

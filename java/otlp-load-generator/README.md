@@ -7,6 +7,7 @@ This project contains a Java application that generates OpenTelemetry span and m
 It currently generates the following data in line with the OpenTelemetry specification:
 - Spans and metrics that simulate an HTTP server 
 - Spans that simulate a gRPC server
+- Spans that simulate a Kafka consumer
 
 ## Run
 

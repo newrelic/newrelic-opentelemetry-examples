@@ -21,7 +21,8 @@ public class Generator {
   private final List<Runnable> generators;
 
   private Generator() {
-    this.generators = List.of(new HttpGenerator(), new GrpcGenerator());
+    this.generators =
+        List.of(new HttpServerGenerator(), new GrpcServerGenerator(), new KafkaConsumerGenerator());
   }
 
   private void run() {
