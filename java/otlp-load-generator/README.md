@@ -4,7 +4,10 @@
 
 This project contains a Java application that generates OpenTelemetry span and metric data and exports it over OTLP. The application can be run in a shell or as a docker container.
 
-It currently generates spans and metrics that simulate HTTP server requests according to the OpenTelemetry specification.
+It currently generates the following data in line with the OpenTelemetry specification:
+- Spans and metrics that simulate an HTTP server 
+- Spans that simulate a gRPC server
+- Spans that simulate a Kafka consumer
 
 ## Run
 
