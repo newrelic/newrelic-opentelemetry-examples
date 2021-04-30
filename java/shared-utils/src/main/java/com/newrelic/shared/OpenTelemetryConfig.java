@@ -1,5 +1,6 @@
 package com.newrelic.shared;
 
+import static com.newrelic.shared.EnvUtils.getEnvOrDefault;
 import static io.opentelemetry.sdk.metrics.common.InstrumentType.COUNTER;
 import static io.opentelemetry.sdk.metrics.common.InstrumentType.SUM_OBSERVER;
 import static io.opentelemetry.sdk.metrics.common.InstrumentType.UP_DOWN_COUNTER;
@@ -28,8 +29,15 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class OpenTelemetryConfig {
+
+  private static final Supplier<String> OTLP_HOST_SUPPLIER =
+      getEnvOrDefault("OTLP_HOST", Function.identity(), "http://localhost:4317");
+  private static final Supplier<String> NEW_RELIC_API_KEY_SUPPLIER =
+      getEnvOrDefault("NEW_RELIC_API_KEY", Function.identity(), "");
 
   public static void configureGlobal(String serviceName) {
     // Configure traces
@@ -51,10 +59,6 @@ public class OpenTelemetryConfig {
                     .build()));
   }
 
-  public static String otlpEndpoint() {
-    return "http://localhost:4317";
-  }
-
   public static OpenTelemetrySdk openTelemetrySdk(String serviceName) {
     return OpenTelemetrySdk.builder()
         .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
@@ -63,16 +67,21 @@ public class OpenTelemetryConfig {
   }
 
   public static SdkTracerProvider tracerProvider(String serviceName) {
-    return SdkTracerProvider.builder()
-        .setResource(resource(serviceName))
-        .addSpanProcessor(
-            BatchSpanProcessor.builder(
-                    OtlpGrpcSpanExporter.builder()
-                        .setEndpoint(otlpEndpoint())
-                        .addHeader("header-name", "header-value")
-                        .build())
-                .build())
-        .build();
+    var sdkTracerProvider =
+        SdkTracerProvider.builder()
+            .setResource(resource(serviceName))
+            .addSpanProcessor(
+                BatchSpanProcessor.builder(
+                        OtlpGrpcSpanExporter.builder()
+                            .setEndpoint(OTLP_HOST_SUPPLIER.get())
+                            .addHeader("api-key", NEW_RELIC_API_KEY_SUPPLIER.get())
+                            .build())
+                    .build())
+            .build();
+
+    Runtime.getRuntime().addShutdownHook(new Thread(sdkTracerProvider::close));
+
+    return sdkTracerProvider;
   }
 
   public static SdkMeterProvider meterProvider(String serviceName) {
@@ -98,15 +107,20 @@ public class OpenTelemetryConfig {
   }
 
   public static IntervalMetricReader intervalMetricReader(SdkMeterProvider meterProvider) {
-    return IntervalMetricReader.builder()
-        .setMetricExporter(
-            OtlpGrpcMetricExporter.builder()
-                .setEndpoint(otlpEndpoint())
-                .addHeader("header-name", "header-value")
-                .build())
-        .setExportIntervalMillis(5000)
-        .setMetricProducers(List.of(meterProvider))
-        .build();
+    var reader =
+        IntervalMetricReader.builder()
+            .setMetricExporter(
+                OtlpGrpcMetricExporter.builder()
+                    .setEndpoint(OTLP_HOST_SUPPLIER.get())
+                    .addHeader("api-key", NEW_RELIC_API_KEY_SUPPLIER.get())
+                    .build())
+            .setExportIntervalMillis(5000)
+            .setMetricProducers(List.of(meterProvider))
+            .build();
+
+    Runtime.getRuntime().addShutdownHook(new Thread(reader::shutdown));
+
+    return reader;
   }
 
   private OpenTelemetryConfig() {}

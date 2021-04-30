@@ -4,8 +4,6 @@ receivers:
   otlp:
     protocols:
       grpc:
-processors:
-  batch:
 exporters:
   logging:
     logLevel: $LOG_EXPORTER_LOG_LEVEL
