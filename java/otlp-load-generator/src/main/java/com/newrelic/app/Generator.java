@@ -15,17 +15,14 @@ public class Generator {
 
   public static void main(String[] args) {
     OpenTelemetryConfig.configureGlobal("otlp-load-generator");
-    new Generator().run();
-  }
 
-  private final List<Runnable> generators;
+    var outboundGenerators = List.<Runnable>of(new KafkaGenerators.ProducerGenerator());
+    var inboundGenerators =
+        List.of(
+            new HttpGenerators.ServerGenerator(outboundGenerators),
+            new GrpcGenerators.ServerGenerator(outboundGenerators),
+            new KafkaGenerators.ConsumerGenerator(outboundGenerators));
 
-  private Generator() {
-    this.generators =
-        List.of(new HttpServerGenerator(), new GrpcServerGenerator(), new KafkaConsumerGenerator());
-  }
-
-  private void run() {
     // Create some configurable number of threads.
     // Each thread runs an infinite loop where in each iteration,
     // a random generator is selected and run.
@@ -34,20 +31,22 @@ public class Generator {
     Runtime.getRuntime().addShutdownHook(new Thread(executor::shutdown));
 
     for (int i = 0; i < threads; i++) {
-      executor.submit(new Task());
+      executor.submit(new Task(inboundGenerators));
     }
   }
 
-  private class Task implements Runnable {
+  private static class Task implements Runnable {
+
+    private final List<Runnable> inboundGenerators;
+
+    private Task(List<Runnable> inboundGenerators) {
+      this.inboundGenerators = inboundGenerators;
+    }
 
     @Override
     public void run() {
       while (true) {
-        try {
-          randomFromList(generators).run();
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
+        randomFromList(inboundGenerators).run();
       }
     }
   }
