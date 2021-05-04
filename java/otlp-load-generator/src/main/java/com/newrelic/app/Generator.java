@@ -17,12 +17,15 @@ public class Generator {
     OpenTelemetryConfig.configureGlobal("otlp-load-generator");
 
     var outboundGenerators =
-        List.of(new KafkaGenerators.ProducerGenerator(), new HttpGenerators.ClientGenerator());
+        List.of(
+            new GrpcGenerators.ClientGenerator(),
+            new HttpGenerators.ClientGenerator(),
+            new KafkaGenerators.ProducerGenerator());
 
     var inboundGenerators =
         List.of(
-            new HttpGenerators.ServerGenerator(outboundGenerators),
             new GrpcGenerators.ServerGenerator(outboundGenerators),
+            new HttpGenerators.ServerGenerator(outboundGenerators),
             new KafkaGenerators.ConsumerGenerator(outboundGenerators));
 
     // Create some configurable number of threads.

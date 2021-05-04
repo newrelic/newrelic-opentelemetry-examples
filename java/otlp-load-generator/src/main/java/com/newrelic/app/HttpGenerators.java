@@ -36,14 +36,13 @@ public class HttpGenerators {
 
     private final List<Runnable> outboundGenerators;
     private final Tracer tracer;
-    private final Meter meter;
     private final LongValueRecorder durationRecorder;
     private final AtomicLong runCount = new AtomicLong();
 
     ServerGenerator(List<Runnable> outboundGenerators) {
       this.outboundGenerators = outboundGenerators;
       this.tracer = GlobalOpenTelemetry.getTracer(HttpGenerators.class.getName());
-      this.meter = GlobalMeterProvider.getMeter(HttpGenerators.class.getName());
+      Meter meter = GlobalMeterProvider.getMeter(HttpGenerators.class.getName());
       this.durationRecorder = meter.longValueRecorderBuilder("http.server.duration").build();
     }
 
@@ -129,7 +128,7 @@ public class HttpGenerators {
 
             long count = runCount.incrementAndGet();
             if (count % 10 == 0) {
-              System.out.printf("%s http server spans have been produced.%n", count);
+              System.out.printf("%s http client spans have been produced.%n", count);
             }
           });
     }
