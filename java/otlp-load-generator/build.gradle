@@ -6,6 +6,8 @@ plugins {
 
 dependencies {
     implementation project(':shared-utils')
+
+    implementation("org.apache.commons:commons-text:${project['apache-commons-text.version']}")
 }
 
 def generatorMainClass = 'com.newrelic.app.Generator'
