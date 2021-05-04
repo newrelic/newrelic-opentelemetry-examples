@@ -16,7 +16,9 @@ public class Generator {
   public static void main(String[] args) {
     OpenTelemetryConfig.configureGlobal("otlp-load-generator");
 
-    var outboundGenerators = List.<Runnable>of(new KafkaGenerators.ProducerGenerator());
+    var outboundGenerators =
+        List.of(new KafkaGenerators.ProducerGenerator(), new HttpGenerators.ClientGenerator());
+
     var inboundGenerators =
         List.of(
             new HttpGenerators.ServerGenerator(outboundGenerators),
