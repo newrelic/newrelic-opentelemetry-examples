@@ -8,11 +8,10 @@ The `docker-compose.yaml` file configures the collector via `otel-config.yaml`.
 
 ## Run
 
-To run, first add a New Relic API key to the `NEW_RELIC_API_KEY` environment variable in `docker-compose.yaml`. This will add the API key to all outbound requests to New Relic.
-
-Then, run the collector via:
+To run, export your New Relic API key as an environment variable `NEW_RELIC_API_KEY` environment variable, which is referenced in `docker-compose.yaml`. This will add the API key to all outbound requests to New Relic. Then run the collector via `docker-compose`:
 
 ```shell
+export NEW_RELIC_API_KEY=<INSERT-API-KEY-HERE>
 docker-compose -f docker-compose.yaml up
 ```
 
