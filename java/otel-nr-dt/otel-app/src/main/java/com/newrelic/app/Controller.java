@@ -26,36 +26,58 @@ public class Controller {
 
   @GetMapping("/callNewRelicApp")
   public String callNewRelic() throws IOException, InterruptedException {
-    // Start a span, extracting context from the incoming request if available. In this example, no
-    // context will be extracted from the request since this route initializes the trace.
-    var span = serverSpan("/callNewRelicApp", HttpMethod.GET.name());
+    // Extract the propagated context from the request. In this example, no context will be
+    // extracted from the request since this route initializes the trace.
+    var extractedContext = extractContext();
 
-    // Create an HTTP request to the New Relic App's GET /ping route.
-    var client = HttpClient.newHttpClient();
-    var requestBuilder = HttpRequest.newBuilder().uri(URI.create("http://localhost:8081/ping"));
+    try (var scope = extractedContext.makeCurrent()) {
+      // Start a span in the scope of the extracted context.
+      var span = serverSpan("/callNewRelicApp", HttpMethod.GET.name());
 
-    // Inject the span's content into the request's headers.
-    injectContext(span, requestBuilder);
+      // Send the request and return the response body as the response, and end the span.
+      try {
+        // Create an HTTP request to the New Relic App's GET /ping route.
+        var client = HttpClient.newHttpClient();
+        var requestBuilder = HttpRequest.newBuilder().uri(URI.create("http://localhost:8081/ping"));
 
-    // Send the request and return the response body as the response, and end the span.
-    try {
-      return client.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString()).body();
-    } finally {
-      span.end();
+        // Inject the span's content into the request's headers.
+        injectContext(span, requestBuilder);
+
+        // Send the HTTP request, and return the response body
+        return client.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString()).body();
+      } finally {
+        span.end();
+      }
     }
   }
 
   @GetMapping("/ping")
   public String ping() {
-    // Start a span, extracting context from the incoming request.
-    var span = serverSpan("/ping", HttpMethod.GET.name());
+    // Extract the propagated context from the request.
+    var extractedContext = extractContext();
 
-    // Return the response, and end the span.
-    try {
-      return "pong";
-    } finally {
-      span.end();
+    try (var scope = extractedContext.makeCurrent()) {
+      // Start a span in the scope of the extracted context.
+      var span = serverSpan("/ping", HttpMethod.GET.name());
+
+      // Return the response, and end the span.
+      try {
+        return "pong";
+      } finally {
+        span.end();
+      }
     }
+  }
+
+  /**
+   * Extract the propagated context from the {@link #httpServletRequest}.
+   *
+   * @return the extracted context
+   */
+  private Context extractContext() {
+    return GlobalOpenTelemetry.getPropagators()
+        .getTextMapPropagator()
+        .extract(Context.current(), httpServletRequest, EXTRACTOR);
   }
 
   /**
@@ -71,11 +93,9 @@ public class Controller {
         .spanBuilder(path)
         .setSpanKind(SpanKind.SERVER)
         .setAttribute(SemanticAttributes.HTTP_METHOD, method)
-        .setParent(
-            // Extract context from the incoming request.
-            GlobalOpenTelemetry.getPropagators()
-                .getTextMapPropagator()
-                .extract(Context.root(), httpServletRequest, EXTRACTOR))
+        .setAttribute(SemanticAttributes.HTTP_SCHEME, "http")
+        .setAttribute(SemanticAttributes.HTTP_HOST, "localhost:8080")
+        .setAttribute(SemanticAttributes.HTTP_TARGET, path)
         .startSpan();
   }
 
