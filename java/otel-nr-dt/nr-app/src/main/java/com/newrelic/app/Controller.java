@@ -25,7 +25,7 @@ public class Controller {
     var client = HttpClient.newHttpClient();
     var requestBuilder = HttpRequest.newBuilder().uri(URI.create("http://localhost:8080/ping"));
 
-    // Grab distributed trace headers from the New Relic API, and inject them into the HTTP.
+    // Grab distributed trace headers from the New Relic API, and inject them into the HTTP request.
     // request's headers
     var distributedTraceHeaders = ConcurrentHashMapHeaders.build(HeaderType.MESSAGE);
     NewRelic.getAgent().getTransaction().insertDistributedTraceHeaders(distributedTraceHeaders);
@@ -40,6 +40,8 @@ public class Controller {
   @GetMapping("/ping")
   public String ping() {
     // Extract distributed trace headers from the incoming request's headers.
+    // NOTE: This illustrates how to extract context, but isn't necessary in this case because the
+    // New Relic agent automatically supports extracting W3C trace context.
     var distributedTraceHeaders = ConcurrentHashMapHeaders.build(HeaderType.MESSAGE);
     for (var iter = httpServletRequest.getHeaderNames().asIterator(); iter.hasNext(); ) {
       var header = iter.next();
