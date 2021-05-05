@@ -13,6 +13,8 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.exporter.logging.LoggingMetricExporter;
+import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -21,6 +23,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
@@ -46,7 +49,8 @@ public class OpenTelemetryConfig {
     // Configure metrics
     SdkMeterProvider sdkMeterProvider = meterProvider(serviceName);
     GlobalMeterProvider.set(sdkMeterProvider);
-    intervalMetricReader(sdkMeterProvider).start();
+    intervalMetricReader(sdkMeterProvider, otlpMetricExporter()).start();
+    intervalMetricReader(sdkMeterProvider, new LoggingMetricExporter()).start();
   }
 
   public static Resource resource(String serviceName) {
@@ -70,6 +74,7 @@ public class OpenTelemetryConfig {
     var sdkTracerProvider =
         SdkTracerProvider.builder()
             .setResource(resource(serviceName))
+            .addSpanProcessor(BatchSpanProcessor.builder(new LoggingSpanExporter()).build())
             .addSpanProcessor(
                 BatchSpanProcessor.builder(
                         OtlpGrpcSpanExporter.builder()
@@ -106,14 +111,18 @@ public class OpenTelemetryConfig {
             .build());
   }
 
-  public static IntervalMetricReader intervalMetricReader(SdkMeterProvider meterProvider) {
+  public static OtlpGrpcMetricExporter otlpMetricExporter() {
+    return OtlpGrpcMetricExporter.builder()
+        .setEndpoint(OTLP_HOST_SUPPLIER.get())
+        .addHeader("api-key", NEW_RELIC_API_KEY_SUPPLIER.get())
+        .build();
+  }
+
+  public static IntervalMetricReader intervalMetricReader(
+      SdkMeterProvider meterProvider, MetricExporter metricExporter) {
     var reader =
         IntervalMetricReader.builder()
-            .setMetricExporter(
-                OtlpGrpcMetricExporter.builder()
-                    .setEndpoint(OTLP_HOST_SUPPLIER.get())
-                    .addHeader("api-key", NEW_RELIC_API_KEY_SUPPLIER.get())
-                    .build())
+            .setMetricExporter(metricExporter)
             .setExportIntervalMillis(5000)
             .setMetricProducers(List.of(meterProvider))
             .build();
