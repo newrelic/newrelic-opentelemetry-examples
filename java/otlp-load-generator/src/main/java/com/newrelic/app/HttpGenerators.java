@@ -29,6 +29,7 @@ public class HttpGenerators {
       List.of("/user/${id}", "/role/${id}", "/permission/${id}");
   private static final List<String> METHODS = List.of("GET", "POST", "PUT", "DELETE");
   private static final List<Long> STATUS_CODES = List.of(200L, 201L, 202L, 400L, 404L, 500L);
+  private static final List<String> PEER_IPS = List.of("127.0.0.1", "127.0.0.2");
 
   private HttpGenerators() {}
 
@@ -117,6 +118,7 @@ public class HttpGenerators {
               .setAttribute(SemanticAttributes.HTTP_FLAVOR, rr.flavor)
               .setAttribute(SemanticAttributes.HTTP_URL, rr.url(true))
               .setAttribute(SemanticAttributes.HTTP_STATUS_CODE, rr.statusCode)
+              .setAttribute(SemanticAttributes.NET_PEER_IP, rr.peerIp)
               .setSpanKind(SpanKind.CLIENT)
               .startSpan();
 
@@ -147,6 +149,7 @@ public class HttpGenerators {
     rr.fragment = "";
     rr.flavor = "1.1";
     rr.requestContentLength = rr.method.equals("GET") ? 0L : RANDOM.nextInt(1000);
+    rr.peerIp = randomFromList(PEER_IPS);
 
     rr.statusCode = randomFromList(STATUS_CODES);
     rr.responseContentLength =
@@ -168,6 +171,7 @@ public class HttpGenerators {
     private String fragment; // foo
     private String flavor; // 1.1
     private long requestContentLength; // 1024
+    private String peerIp;
 
     // Response fields
     private long statusCode; // 200
