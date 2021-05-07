@@ -30,6 +30,7 @@ public class GrpcGenerators {
           Pair.of("RoleService", "RemoveRole"),
           Pair.of("RoleService", "GetRole"));
   private static final String RPC_SYSTEM_GRPC = "grpc";
+  private static final List<String> PEER_IPS = List.of("127.0.0.1", "127.0.0.2");
 
   private GrpcGenerators() {}
 
@@ -134,6 +135,7 @@ public class GrpcGenerators {
               .setAttribute(SemanticAttributes.RPC_SERVICE, rr.service())
               .setAttribute(SemanticAttributes.RPC_METHOD, rr.method)
               .setAttribute(SemanticAttributes.RPC_GRPC_STATUS_CODE, rr.statusCode.getValue())
+              .setAttribute(SemanticAttributes.NET_PEER_IP, rr.peerIp)
               .setSpanKind(SpanKind.CLIENT)
               .startSpan();
 
@@ -145,6 +147,7 @@ public class GrpcGenerators {
                     .put(SemanticAttributes.RPC_SYSTEM.getKey(), RPC_SYSTEM_GRPC)
                     .put(SemanticAttributes.RPC_SERVICE.getKey(), rr.service())
                     .put(SemanticAttributes.RPC_METHOD.getKey(), rr.method)
+                    .put(SemanticAttributes.NET_PEER_IP.getKey(), rr.peerIp)
                     .build();
             durationRecorder.record(rr.duration, metricLabels);
             requestSizeRecorder.record(rr.requestContentSize, metricLabels);
@@ -178,6 +181,7 @@ public class GrpcGenerators {
     rr.duration = RANDOM.nextInt(1000);
     rr.requestContentSize = RANDOM.nextInt(1000);
     rr.responseContentSize = RANDOM.nextInt(1000);
+    rr.peerIp = randomFromList(PEER_IPS);
 
     return rr;
   }
@@ -190,6 +194,7 @@ public class GrpcGenerators {
     private long duration;
     private long requestContentSize;
     private long responseContentSize;
+    private String peerIp;
 
     private String service() {
       return String.format("%s.%s", service, method);

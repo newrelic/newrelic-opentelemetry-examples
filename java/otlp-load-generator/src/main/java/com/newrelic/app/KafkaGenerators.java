@@ -49,7 +49,7 @@ public class KafkaGenerators {
               .setAttribute(
                   SemanticAttributes.MESSAGING_DESTINATION_KIND, MESSAGING_DESTINATION_KIND_TOPIC)
               .setAttribute(SemanticAttributes.MESSAGING_KAFKA_MESSAGE_KEY, km.messageKey)
-              .setAttribute(SemanticAttributes.MESSAGING_MESSAGE_PAYLOAD_SIZE_BYTES, km.payloadSize)
+              .setAttribute(SemanticAttributes.MESSAGING_KAFKA_PARTITION, km.partition)
               .setSpanKind(SpanKind.PRODUCER)
               .startSpan();
 
