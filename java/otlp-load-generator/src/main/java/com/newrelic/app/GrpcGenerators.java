@@ -69,7 +69,7 @@ public class GrpcGenerators {
               .setAttribute(SemanticAttributes.RPC_SYSTEM, RPC_SYSTEM_GRPC)
               .setAttribute(SemanticAttributes.RPC_SERVICE, rr.service())
               .setAttribute(SemanticAttributes.RPC_METHOD, rr.method)
-              .setAttribute(SemanticAttributes.RPC_GRPC_STATUS_CODE, rr.statusCode.getValue())
+              .setAttribute(SemanticAttributes.RPC_GRPC_STATUS_CODE, rr.statusCode)
               .setSpanKind(SpanKind.SERVER)
               .setNoParent()
               .startSpan();
@@ -91,7 +91,7 @@ public class GrpcGenerators {
 
             safeSleep(rr.duration);
             randomFromList(outboundGenerators).run();
-            span.setStatus(rr.statusCode.getValue() == 0 ? StatusCode.UNSET : StatusCode.ERROR);
+            span.setStatus(rr.statusCode == 0 ? StatusCode.UNSET : StatusCode.ERROR);
 
             long count = runCount.incrementAndGet();
             if (count % 10 == 0) {
@@ -134,7 +134,7 @@ public class GrpcGenerators {
               .setAttribute(SemanticAttributes.RPC_SYSTEM, RPC_SYSTEM_GRPC)
               .setAttribute(SemanticAttributes.RPC_SERVICE, rr.service())
               .setAttribute(SemanticAttributes.RPC_METHOD, rr.method)
-              .setAttribute(SemanticAttributes.RPC_GRPC_STATUS_CODE, rr.statusCode.getValue())
+              .setAttribute(SemanticAttributes.RPC_GRPC_STATUS_CODE, rr.statusCode)
               .setAttribute(SemanticAttributes.NET_PEER_IP, rr.peerIp)
               .setSpanKind(SpanKind.CLIENT)
               .startSpan();
@@ -156,7 +156,7 @@ public class GrpcGenerators {
             responsesPerRpcRecorder.record(1, metricLabels);
 
             safeSleep(rr.duration);
-            span.setStatus(rr.statusCode.getValue() == 0 ? StatusCode.UNSET : StatusCode.ERROR);
+            span.setStatus(rr.statusCode == 0 ? StatusCode.UNSET : StatusCode.ERROR);
 
             long count = runCount.incrementAndGet();
             if (count % 10 == 0) {
@@ -177,7 +177,7 @@ public class GrpcGenerators {
     rr.packageName = "com.foo.package";
     rr.service = serviceMethod.getLeft();
     rr.method = serviceMethod.getRight();
-    rr.statusCode = randomFromList(List.of(SemanticAttributes.RpcGrpcStatusCodeValues.values()));
+    rr.statusCode = RANDOM.nextInt(17); // gRPC codes are [0, 16]
     rr.duration = RANDOM.nextInt(1000);
     rr.requestContentSize = RANDOM.nextInt(1000);
     rr.responseContentSize = RANDOM.nextInt(1000);
@@ -190,7 +190,7 @@ public class GrpcGenerators {
     private String packageName;
     private String service;
     private String method;
-    private SemanticAttributes.RpcGrpcStatusCodeValues statusCode;
+    private long statusCode;
     private long duration;
     private long requestContentSize;
     private long responseContentSize;
