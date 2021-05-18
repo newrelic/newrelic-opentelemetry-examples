@@ -9,6 +9,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes.MessagingOperationValues;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -83,7 +84,8 @@ public class KafkaGenerators {
       var duration = RANDOM.nextInt(1000);
       var km = randomKafkaMessage();
       var operation =
-          randomFromList(List.of(SemanticAttributes.MessagingOperationValues.values())).getValue();
+          randomFromList(
+              List.of(MessagingOperationValues.RECEIVE, MessagingOperationValues.PROCESS));
 
       var span =
           tracer

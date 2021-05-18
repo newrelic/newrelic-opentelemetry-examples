@@ -1,9 +1,15 @@
 package com.newrelic.otel.initializer;
 
+import static io.opentelemetry.sdk.metrics.common.InstrumentType.COUNTER;
+import static io.opentelemetry.sdk.metrics.common.InstrumentType.SUM_OBSERVER;
+import static io.opentelemetry.sdk.metrics.common.InstrumentType.UP_DOWN_COUNTER;
+import static io.opentelemetry.sdk.metrics.common.InstrumentType.UP_DOWN_SUM_OBSERVER;
+
 import io.opentelemetry.sdk.autoconfigure.spi.SdkMeterProviderConfigurer;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
@@ -19,22 +25,19 @@ public class MetricConfigurer implements SdkMeterProviderConfigurer {
    */
   @Override
   public void configure(SdkMeterProviderBuilder builder) {
-    setAggregatorFactory(builder, InstrumentType.COUNTER, AggregatorFactory.sum(false));
-    setAggregatorFactory(builder, InstrumentType.UP_DOWN_COUNTER, AggregatorFactory.sum(false));
-    setAggregatorFactory(builder, InstrumentType.SUM_OBSERVER, AggregatorFactory.minMaxSumCount());
-    setAggregatorFactory(
-        builder, InstrumentType.UP_DOWN_SUM_OBSERVER, AggregatorFactory.minMaxSumCount());
+    setDeltaSumAggregatorFactory(builder, COUNTER);
+    setDeltaSumAggregatorFactory(builder, UP_DOWN_COUNTER);
+    setDeltaSumAggregatorFactory(builder, SUM_OBSERVER);
+    setDeltaSumAggregatorFactory(builder, UP_DOWN_SUM_OBSERVER);
   }
 
-  private static void setAggregatorFactory(
-      SdkMeterProviderBuilder builder,
-      InstrumentType instrumentType,
-      AggregatorFactory aggregatorFactory) {
-    builder.registerView(
+  private static void setDeltaSumAggregatorFactory(
+      SdkMeterProviderBuilder meterProviderBuilder, InstrumentType instrumentType) {
+    meterProviderBuilder.registerView(
         InstrumentSelector.builder().setInstrumentType(instrumentType).build(),
         View.builder()
+            .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.DELTA))
             .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
-            .setAggregatorFactory(aggregatorFactory)
             .build());
   }
 }

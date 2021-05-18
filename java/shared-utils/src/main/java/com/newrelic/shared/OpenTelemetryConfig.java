@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
@@ -91,22 +92,20 @@ public class OpenTelemetryConfig {
 
   public static SdkMeterProvider meterProvider(String serviceName) {
     var meterProviderBuilder = SdkMeterProvider.builder().setResource(resource(serviceName));
-    setAggregatorFactory(meterProviderBuilder, COUNTER, AggregatorFactory.sum(false));
-    setAggregatorFactory(meterProviderBuilder, UP_DOWN_COUNTER, AggregatorFactory.sum(false));
-    setAggregatorFactory(meterProviderBuilder, SUM_OBSERVER, AggregatorFactory.minMaxSumCount());
-    setAggregatorFactory(
-        meterProviderBuilder, UP_DOWN_SUM_OBSERVER, AggregatorFactory.minMaxSumCount());
+    // Override default cumulative sum aggregator with delta sum aggregator
+    setDeltaSumAggregatorFactory(meterProviderBuilder, COUNTER);
+    setDeltaSumAggregatorFactory(meterProviderBuilder, UP_DOWN_COUNTER);
+    setDeltaSumAggregatorFactory(meterProviderBuilder, SUM_OBSERVER);
+    setDeltaSumAggregatorFactory(meterProviderBuilder, UP_DOWN_SUM_OBSERVER);
     return meterProviderBuilder.build();
   }
 
-  private static void setAggregatorFactory(
-      SdkMeterProviderBuilder meterProviderBuilder,
-      InstrumentType instrumentType,
-      AggregatorFactory aggregatorFactory) {
+  private static void setDeltaSumAggregatorFactory(
+      SdkMeterProviderBuilder meterProviderBuilder, InstrumentType instrumentType) {
     meterProviderBuilder.registerView(
         InstrumentSelector.builder().setInstrumentType(instrumentType).build(),
         View.builder()
-            .setAggregatorFactory(aggregatorFactory)
+            .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.DELTA))
             .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
             .build());
   }

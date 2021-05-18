@@ -5,6 +5,7 @@ import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Random;
@@ -32,6 +33,7 @@ public class Controller {
             .setAttribute(SemanticAttributes.HTTP_SCHEME, "http")
             .setAttribute(SemanticAttributes.HTTP_HOST, "localhost:8080")
             .setAttribute(SemanticAttributes.HTTP_TARGET, "/ping")
+            .setSpanKind(SpanKind.SERVER)
             .startSpan();
     try (var scope = span.makeCurrent()) {
       var sleepTime = new Random().nextInt(200);
