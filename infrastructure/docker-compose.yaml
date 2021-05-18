@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+  webapi:
+    build: AspNetCoreWebApi
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
+    ports:
+      - "5001:80"
+    depends_on:
+     - redis
+
+  redis:
+    image: redis:6.2.3-alpine
+    ports:
+      - "6379"
+
+  otel-collector:
+    image: otel/opentelemetry-collector:0.26.0
+    command: ["--config=/etc/otel-collector-config.yaml", "${OTELCOL_ARGS}"]
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT_NO_SCHEME: ${OTEL_EXPORTER_OTLP_ENDPOINT_NO_SCHEME}
+      NEW_RELIC_API_KEY: ${NEW_RELIC_API_KEY}
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317"        # OTLP gRPC receiver
+
+  otel-agent-infrastructure:
+    image: otel/opentelemetry-collector-contrib:0.26.0
+    command: ["--config=/etc/otel-agent-config.yaml", "${OTELCOL_ARGS}"]
+    environment:
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=my-infrastructure"
+    volumes:
+      - ./otel-agent-infrastructure-config.yaml:/etc/otel-agent-config.yaml
+
+  otel-agent-dotnet:
+    image: otel/opentelemetry-collector-contrib:0.26.0
+    command: ["--config=/etc/otel-agent-config.yaml", "${OTELCOL_ARGS}"]
+    environment:
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=aspnetcore-webapi,telemetry.sdk.name=opentelemetry"
+    volumes:
+      - ./otel-agent-dotnet-config.yaml:/etc/otel-agent-config.yaml
