@@ -42,8 +42,12 @@ public class OpenTelemetryConfig {
       getEnvOrDefault("OTLP_HOST", Function.identity(), "http://localhost:4317");
   private static final Supplier<String> NEW_RELIC_API_KEY_SUPPLIER =
       getEnvOrDefault("NEW_RELIC_API_KEY", Function.identity(), "");
+  private static final Supplier<Boolean> LOG_EXPORTER_ENABLED =
+      getEnvOrDefault("LOG_EXPORTER_ENABLED", Boolean::valueOf, false);
 
-  public static void configureGlobal(String serviceName) {
+  public static void configureGlobal(String defaultServiceName) {
+    var serviceName =
+        getEnvOrDefault("SERVICE_NAME", Function.identity(), defaultServiceName).get();
     // Configure traces
     GlobalOpenTelemetry.set(openTelemetrySdk(serviceName));
 
@@ -51,7 +55,9 @@ public class OpenTelemetryConfig {
     SdkMeterProvider sdkMeterProvider = meterProvider(serviceName);
     GlobalMeterProvider.set(sdkMeterProvider);
     intervalMetricReader(sdkMeterProvider, otlpMetricExporter()).start();
-    intervalMetricReader(sdkMeterProvider, new LoggingMetricExporter()).start();
+    if (LOG_EXPORTER_ENABLED.get()) {
+      intervalMetricReader(sdkMeterProvider, new LoggingMetricExporter()).start();
+    }
   }
 
   public static Resource resource(String serviceName) {
@@ -72,18 +78,23 @@ public class OpenTelemetryConfig {
   }
 
   public static SdkTracerProvider tracerProvider(String serviceName) {
-    var sdkTracerProvider =
+    var sdkTracerProviderBuilder =
         SdkTracerProvider.builder()
             .setResource(resource(serviceName))
-            .addSpanProcessor(BatchSpanProcessor.builder(new LoggingSpanExporter()).build())
             .addSpanProcessor(
                 BatchSpanProcessor.builder(
                         OtlpGrpcSpanExporter.builder()
                             .setEndpoint(OTLP_HOST_SUPPLIER.get())
                             .addHeader("api-key", NEW_RELIC_API_KEY_SUPPLIER.get())
                             .build())
-                    .build())
-            .build();
+                    .build());
+
+    if (LOG_EXPORTER_ENABLED.get()) {
+      sdkTracerProviderBuilder.addSpanProcessor(
+          BatchSpanProcessor.builder(new LoggingSpanExporter()).build());
+    }
+
+    var sdkTracerProvider = sdkTracerProviderBuilder.build();
 
     Runtime.getRuntime().addShutdownHook(new Thread(sdkTracerProvider::close));
 
