@@ -4,6 +4,8 @@ receivers:
   otlp:
     protocols:
       grpc:
+  fluentforward:
+    endpoint: 0.0.0.0:8006
 exporters:
   logging:
     logLevel: $LOG_EXPORTER_LOG_LEVEL
@@ -18,7 +20,6 @@ service:
     traces:
       receivers: [otlp]
       exporters: [logging, newrelic]
-    # TODO: add log exporter once available
-    # logs:
-    #   receivers: [otlp]
-    #   exporters: [logging, newrelic]
+    logs:
+      receivers: [fluentforward]
+      exporters: [logging, newrelic]

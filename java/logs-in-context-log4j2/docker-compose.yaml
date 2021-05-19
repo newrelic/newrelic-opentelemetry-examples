@@ -1,0 +1,19 @@
+version: '3'
+services:
+  app:
+    build: ./
+    environment:
+      SERVICE_NAME: "logs-in-context"
+      OTLP_HOST: "http://collector:4317"
+    ports:
+      - "8080:8080"
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:8006
+    networks:
+      - nr-exporter-docker
+
+networks:
+  nr-exporter-docker:
+    name: nr-exporter-docker
