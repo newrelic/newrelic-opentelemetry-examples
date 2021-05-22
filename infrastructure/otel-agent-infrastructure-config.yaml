@@ -1,4 +1,5 @@
 receivers:
+  docker_stats:
   hostmetrics:
     collection_interval: 5s
     scrapers:
@@ -9,6 +10,10 @@ receivers:
     scrapers:
       disk:
       filesystem:
+  syslog:
+    tcp:
+      listen_address: "0.0.0.0:54526"
+    protocol: rfc5424
 
 processors:
   batch:
@@ -28,4 +33,8 @@ service:
     metrics:
       receivers: [hostmetrics, hostmetrics/disk]
       processors: [resourcedetection/system, batch]
+      exporters: [otlp]
+    logs:
+      receivers: [syslog]
+      processors: [batch]
       exporters: [otlp, logging]

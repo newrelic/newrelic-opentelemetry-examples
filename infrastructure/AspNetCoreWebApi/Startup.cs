@@ -37,7 +37,7 @@ namespace AspNetCoreWebApi
                             .CreateDefault()
                             .AddService("aspnetcore-webapi")
                             .AddAttributes(new Dictionary<string, object> {
-                                { "telemetry.sdk.name", "opentelemetry"}
+                                { "telemetry.sdk.name", "opentelemetry" }
                             }))
                     .AddAspNetCoreInstrumentation()
                     .AddOtlpExporter(options => {

@@ -1,4 +1,4 @@
-version: "3.9"
+version: "3"
 services:
   webapi:
     build: AspNetCoreWebApi
@@ -32,6 +32,8 @@ services:
       OTEL_RESOURCE_ATTRIBUTES: "service.name=my-infrastructure"
     volumes:
       - ./otel-agent-infrastructure-config.yaml:/etc/otel-agent-config.yaml
+    ports:
+      - "54526:54526"
 
   otel-agent-dotnet:
     image: otel/opentelemetry-collector-contrib:0.26.0
