@@ -1,4 +1,10 @@
 .idea/
+.vscode/
+
 build/
 .gradle/
 .DS_STORE
+
+# Ignore .NET build output
+[Bb]in/
+[Oo]bj/

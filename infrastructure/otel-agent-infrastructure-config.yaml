@@ -1,0 +1,35 @@
+receivers:
+  hostmetrics:
+    collection_interval: 5s
+    scrapers:
+      cpu:
+      memory:
+  hostmetrics/disk:
+    collection_interval: 10s
+    scrapers:
+      disk:
+      filesystem:
+  redis:
+    endpoint: $REDIS_ADDRESS
+    password: $REDIS_PASSWORD
+    collection_interval: 10s
+
+processors:
+  batch:
+  resourcedetection/system:
+    detectors: [env, system]
+    override: true
+
+exporters:
+  otlp:
+    endpoint: otel-collector:4317
+    insecure: true
+  logging:
+    loglevel: debug
+
+service:
+  pipelines:
+    metrics:
+      receivers: [hostmetrics, hostmetrics/disk, redis]
+      processors: [resourcedetection/system, batch]
+      exporters: [otlp]
