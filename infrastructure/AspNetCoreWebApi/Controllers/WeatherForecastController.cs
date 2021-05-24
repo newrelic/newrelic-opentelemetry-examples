@@ -17,16 +17,25 @@ namespace AspNetCoreWebApi.Controllers
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
+        private readonly Redis _redis;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(Redis redis, ILogger<WeatherForecastController> logger)
         {
+            _redis = redis;
             _logger = logger;
         }
 
         [HttpGet]
-        public IEnumerable<WeatherForecast> Get()
+        public async Task<IEnumerable<WeatherForecast>> Get()
         {
             var rng = new Random();
+
+            var userId = rng.Next(1, 10).ToString();
+            var productId = rng.Next(100, 200).ToString();
+            var quantity = rng.Next(20, 50);
+            await _redis.AddItemAsync(userId, productId, quantity);
+            var cart = await _redis.GetCartAsync(userId);
+
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
                 Date = DateTime.Now.AddDays(index),

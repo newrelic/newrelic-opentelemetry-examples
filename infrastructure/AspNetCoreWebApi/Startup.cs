@@ -45,6 +45,9 @@ namespace AspNetCoreWebApi
                     });
             });
 
+            var redis = new Redis(Environment.GetEnvironmentVariable("REDIS_ADDRESS"));
+            services.AddSingleton<Redis>(redis);
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "AspNetCoreWebApi", Version = "v1" });
