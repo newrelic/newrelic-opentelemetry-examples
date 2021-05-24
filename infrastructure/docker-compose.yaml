@@ -37,11 +37,3 @@ services:
       - ./otel-agent-infrastructure-config.yaml:/etc/otel-agent-config.yaml
     ports:
       - "54526:54526"
-
-  otel-agent-dotnet:
-    image: otel/opentelemetry-collector-contrib:0.26.0
-    command: ["--config=/etc/otel-agent-config.yaml", "${OTELCOL_ARGS}"]
-    environment:
-      OTEL_RESOURCE_ATTRIBUTES: "service.name=aspnetcore-webapi,telemetry.sdk.name=opentelemetry"
-    volumes:
-      - ./otel-agent-dotnet-config.yaml:/etc/otel-agent-config.yaml
