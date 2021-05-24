@@ -30,6 +30,11 @@ namespace AspNetCoreWebApi
         {
             services.AddControllers();
 
+            var redis = new Redis(Environment.GetEnvironmentVariable("REDIS_ADDRESS"));
+            redis.InitializeAsync().GetAwaiter().GetResult();
+
+            services.AddSingleton<Redis>(redis);
+
             services.AddOpenTelemetryTracing(builder => {
                 builder
                     .SetResourceBuilder(
@@ -40,13 +45,11 @@ namespace AspNetCoreWebApi
                                 { "telemetry.sdk.name", "opentelemetry" }
                             }))
                     .AddAspNetCoreInstrumentation()
+                    .AddRedisInstrumentation(redis.ConnectionMultiplexer)
                     .AddOtlpExporter(options => {
                         options.Endpoint = new Uri(Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT"));
                     });
             });
-
-            var redis = new Redis(Environment.GetEnvironmentVariable("REDIS_ADDRESS"));
-            services.AddSingleton<Redis>(redis);
 
             services.AddSwaggerGen(c =>
             {
