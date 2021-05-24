@@ -1,5 +1,4 @@
 receivers:
-  docker_stats:
   hostmetrics:
     collection_interval: 5s
     scrapers:
@@ -10,10 +9,6 @@ receivers:
     scrapers:
       disk:
       filesystem:
-  syslog:
-    tcp:
-      listen_address: "0.0.0.0:54526"
-    protocol: rfc5424
   redis:
     endpoint: $REDIS_ADDRESS
     password: $REDIS_PASSWORD
@@ -38,7 +33,3 @@ service:
       receivers: [hostmetrics, hostmetrics/disk, redis]
       processors: [resourcedetection/system, batch]
       exporters: [otlp]
-    logs:
-      receivers: [syslog]
-      processors: [batch]
-      exporters: [otlp, logging]
