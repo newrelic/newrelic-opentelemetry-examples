@@ -3,17 +3,28 @@ services:
   app:
     build: ./
     environment:
-      SERVICE_NAME: "logs-in-context"
-      OTLP_HOST: "http://collector:4317"
+      OTLP_HOST: 'http://collector:4317'
     ports:
-      - "8080:8080"
+      - '8080:8080'
     logging:
       driver: fluentd
       options:
         fluentd-address: localhost:8006
-    networks:
-      - nr-exporter-docker
+    depends_on:
+      - otel-collector
 
-networks:
-  nr-exporter-docker:
-    name: nr-exporter-docker
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.27.0
+    volumes:
+      - ./otel-config.yaml:/otel-config.yaml
+    entrypoint: ['/otelcontribcol']
+    command: ['--config', '/otel-config.yaml']
+    environment:
+      LOG_EXPORTER_LOG_LEVEL: 'DEBUG'
+      NEW_RELIC_API_KEY: '${NEW_RELIC_API_KEY}'
+      SERVICE_NAME: 'logs-in-context'
+    ports:
+      - '4317:4317' # OTLP gRPC receiver
+      - '13133:13133' # health_check
+      - '8006:8006' # Fluentd forward receiver
+      - '8006:8006/udp' # Fluentd forward receiver
