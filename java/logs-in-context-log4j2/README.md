@@ -26,6 +26,10 @@ The result is JSON structured logs, with one JSON object per line, which have th
 
 The application runs with Docker, and the [docker-compose.yaml](./docker-compose.yaml) is configured to use the [Fluentd logging driver](https://docs.docker.com/config/containers/logging/fluentd/) to forward logs to an [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) running as an agent next to the service configured to receive Fluentd logs and forward them to New Relic.
 
+Similar example using FluentBit:
+
+![](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/img/app-to-file-logs-fb.png?raw=true)
+
 Next, build the application, and run the application with docker compose:
 
 ```shell
