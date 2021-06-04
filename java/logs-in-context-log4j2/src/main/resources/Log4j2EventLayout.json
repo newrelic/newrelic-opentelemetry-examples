@@ -52,6 +52,5 @@
   "span.id": {
     "$resolver": "mdc",
     "key": "span_id"
-  },
-  "service.name": "${env:SERVICE_NAME:-logs-in-context}"
+  }
 }
