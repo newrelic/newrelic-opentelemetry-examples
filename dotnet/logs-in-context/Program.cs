@@ -16,7 +16,8 @@ namespace logs_in_context
         {
             Log.Logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
-                .WriteTo.Console()
+                .Enrich.With<OTelEnricher>()
+                .WriteTo.Console(new OTelFormatter())
                 .CreateLogger();
 
             CreateHostBuilder(args).Build().Run();
