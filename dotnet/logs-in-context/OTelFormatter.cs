@@ -111,7 +111,7 @@ namespace logs_in_context
         {
             JsonValueFormatter.WriteQuotedJsonString("timestamp", output);
             output.Write(JsonColon);
-            output.Write(timestamp.ToString("o"));
+            JsonValueFormatter.WriteQuotedJsonString(timestamp.ToString("o"), output);
         }
 
         private void WriteFormattedJsonData(string key, LogEventPropertyValue value, TextWriter output)

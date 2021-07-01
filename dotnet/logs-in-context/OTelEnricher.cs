@@ -12,13 +12,8 @@ namespace logs_in_context
 
             if (activity != null)
             {
-                System.Console.WriteLine("Got activity");
                 logEvent.AddOrUpdateProperty(propertyFactory.CreateProperty("trace.id", activity.SpanId));
                 logEvent.AddOrUpdateProperty(propertyFactory.CreateProperty("span.id", activity.TraceId));
-            }
-            else
-            {
-                System.Console.WriteLine("No activity found");
             }
         }
     }

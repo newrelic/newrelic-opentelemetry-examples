@@ -28,12 +28,23 @@ namespace logs_in_context
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // This example uses an insecure gRPC service. In a production system you should use a secure service instead.
+            // See: https://docs.microsoft.com/aspnet/core/grpc/troubleshoot#call-insecure-grpc-services-with-net-core-client
+            AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+
             services.AddOpenTelemetryTracing(
                 (builder) => builder
-                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("logs-in-context-example"))
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(GetEnvironmentVariableValueOrNull("SERVICE_NAME")))
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddConsoleExporter()
+                    .AddOtlpExporter(o =>
+                        {
+                            var collectorUrlString = GetEnvironmentVariableValueOrNull("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT", "OTEL_EXPORTER_OTLP_ENDPOINT");
+                            if (collectorUrlString != null)
+                            {
+                                o.Endpoint = new Uri("http://otel-collector:4317");
+                            }
+                        })
                     );
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -62,6 +73,20 @@ namespace logs_in_context
             {
                 endpoints.MapControllers();
             });
+        }
+
+        private static string GetEnvironmentVariableValueOrNull(params string[] environmentVariableNames)
+        {
+            foreach (var variable in environmentVariableNames)
+            {
+                var valueFromEnvironment = System.Environment.GetEnvironmentVariable(variable);
+                if (valueFromEnvironment != null)
+                {
+                    return valueFromEnvironment;
+                }
+            }
+
+            return null;
         }
     }
 }

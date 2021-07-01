@@ -1,0 +1,32 @@
+extensions:
+  health_check: {}
+receivers:
+  otlp:
+    protocols:
+      grpc:
+  fluentforward:
+    endpoint: 0.0.0.0:8006
+processors:
+  resource:
+    attributes:
+      - key: service.name
+        value: $SERVICE_NAME
+        action: insert
+exporters:
+  logging:
+    logLevel: $LOG_EXPORTER_LOG_LEVEL
+  newrelic:
+    apikey: $NEW_RELIC_API_KEY
+service:
+  extensions: [health_check]
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      exporters: [logging, newrelic]
+    traces:
+      receivers: [otlp]
+      exporters: [logging, newrelic]
+    logs:
+      receivers: [fluentforward]
+      processors: [resource]
+      exporters: [logging, newrelic]
