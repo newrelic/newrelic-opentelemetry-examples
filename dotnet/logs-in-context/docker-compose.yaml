@@ -3,6 +3,7 @@ services:
   app:
     build: ./
     environment:
+      LOGGING_SCENARIO: ${LOGGING_SCENARIO}
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4317"
       SERVICE_NAME: "logs-in-context-example"
     ports:
