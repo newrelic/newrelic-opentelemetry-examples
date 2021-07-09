@@ -32,7 +32,7 @@ When running the application using the provided [docker-compose.yaml](./docker-c
 
 ## Using OpenTelemetry
 
-[LogBootstrapper.cs](/.LogBootstrapper.cs) programmatically configures OpenTelemetry to capture and include trace context on each log message. A custom OpenTelemetry log exporter is defined in [OTelLogExporter.cs](./OTelLogExporter.cs) which is used to export the log messages as JSON objects to `STDOUT`.
+[LogBootstrapper.cs](./LogBootstrapper.cs) programmatically configures OpenTelemetry to capture and include trace context on each log message. A custom OpenTelemetry log exporter is defined in [OTelLogExporter.cs](./OTelLogExporter.cs) which is used to export the log messages as JSON objects to `STDOUT`.
 
 ## Run
 
