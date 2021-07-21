@@ -11,9 +11,9 @@ services:
       options:
         fluentd-address: localhost:8006
     depends_on:
-      - otel-collector
+      - collector
 
-  otel-collector:
+  collector:
     image: otel/opentelemetry-collector-contrib:0.27.0
     volumes:
       - ./otel-config.yaml:/otel-config.yaml

@@ -24,17 +24,22 @@ The result is JSON structured logs, with one JSON object per line, which have th
 
 ## Run
 
-The application runs with Docker, and the [docker-compose.yaml](./docker-compose.yaml) is configured to use the [Fluentd logging driver](https://docs.docker.com/config/containers/logging/fluentd/) to forward logs to an [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) running as an agent next to the service configured to receive Fluentd logs and forward them to New Relic.
+The application runs with Docker. The [docker-compose.yaml](./docker-compose.yaml) contains service definitions for the application and an [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/). The application is configured to use the [Fluentd logging driver](https://docs.docker.com/config/containers/logging/fluentd/) to forward logs the collector. The collector is configured to receive Fluentd logs and forward them to New Relic using the [New Relic exporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/newrelicexporter).
 
-Similar example using FluentBit:
+The following image illustrates a similar example using FluentBit:
 
 ![](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/img/app-to-file-logs-fb.png?raw=true)
 
-Next, build the application, and run the application with docker compose:
+Next, build and run the application:
 
 ```shell
+// Build the application with gradle
 ./gradlew logs-in-context-log4j2:bootJar
 
+// Export your New Relic API key as an environment variable
+export NEW_RELIC_API_KEY=<INSERT-API-KEY-HERE>
+
+// Run the application and the collector with docker compose
 docker-compose -f logs-in-context-log4j2/docker-compose.yaml up
 ```
 
