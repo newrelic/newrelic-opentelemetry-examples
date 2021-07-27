@@ -30,7 +30,7 @@ namespace aspnetcore
                 // telemetry generated from this service.
                 var resourceBuilder = ResourceBuilder
                     .CreateDefault()
-                    .AddService("My-First-OpenTelemetry-Service")
+                    .AddService("OpenTelemetry-Dotnet-Example")
                     .AddAttributes(new Dictionary<string, object> {
                         { "environment", "production" }
                     })
