@@ -21,10 +21,6 @@ namespace aspnetcore.Controllers
         private readonly ILogger<WeatherForecastController> _logger;
         private static HttpClient _httpClient = new HttpClient();
 
-        // An ActivitySource is .NET's term for an OpenTelemetry Tracer.
-        // Spans generated from this ActivitySource are associated with the ActivitySource's name and version.
-        private readonly ActivitySource _tracer = new ActivitySource("WeatherForecast", "1.2.3");
-
         public WeatherForecastController(ILogger<WeatherForecastController> logger)
         {
             _logger = logger;
@@ -33,13 +29,7 @@ namespace aspnetcore.Controllers
         [HttpGet]
         public async Task<IEnumerable<WeatherForecast>> Get()
         {
-            // Using the OpenTelemetry API - start a span
-            using var span = _tracer.StartActivity("GetWeatherForecast", ActivityKind.Internal);
-
-            // Decorate the span with additional attributes
-            span?.AddTag("SomeKey", "SomeValue");
-
-            await _httpClient.GetStringAsync("https://www.newrelic.com");
+            await DoSomeWork();
 
             var rng = new Random();
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
@@ -49,6 +39,28 @@ namespace aspnetcore.Controllers
                 Summary = Summaries[rng.Next(Summaries.Length)]
             })
             .ToArray();
+        }
+
+        // An ActivitySource is .NET's term for an OpenTelemetry Tracer.
+        // Spans generated from this ActivitySource are associated with the ActivitySource's name and version.
+        private static ActivitySource _tracer = new ActivitySource("WeatherForecast", "1.2.3");
+
+        private async Task DoSomeWork()
+        {
+            // Start a span using the OpenTelemetry API
+            using var span = _tracer.StartActivity("DoSomeWork", ActivityKind.Internal);
+
+            // Decorate the span with additional attributes
+            span?.AddTag("SomeKey", "SomeValue");
+
+            // Do some work
+            await Task.Delay(50);
+
+            // Make an external call
+            await _httpClient.GetStringAsync("https://www.newrelic.com");
+
+            // Do some more work
+            await Task.Delay(10);
         }
     }
 }
