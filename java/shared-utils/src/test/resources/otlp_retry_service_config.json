@@ -1,0 +1,30 @@
+{
+  "methodConfig": [{
+    "name": [
+      {
+        "service": "opentelemetry.proto.collector.trace.v1.TraceService"
+      },
+      {
+        "service": "opentelemetry.proto.collector.metrics.v1.MetricsService"
+      },
+      {
+        "service": "opentelemetry.proto.collector.logs.v1.LogsService"
+      }
+    ],
+    "retryPolicy": {
+      "backoffMultiplier": 2.0,
+      "maxAttempts": 5.0,
+      "initialBackoff": "0.5s",
+      "retryableStatusCodes": [
+        1.0,
+        4.0,
+        8.0,
+        10.0,
+        11.0,
+        14.0,
+        15.0
+      ],
+      "maxBackoff": "30s"
+    }
+  }]
+}
