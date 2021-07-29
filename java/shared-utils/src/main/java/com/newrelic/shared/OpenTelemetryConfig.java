@@ -84,8 +84,9 @@ public class OpenTelemetryConfig {
             .addSpanProcessor(
                 BatchSpanProcessor.builder(
                         OtlpGrpcSpanExporter.builder()
-                            .setEndpoint(OTLP_HOST_SUPPLIER.get())
-                            .addHeader("api-key", NEW_RELIC_API_KEY_SUPPLIER.get())
+                            .setChannel(
+                                OtlpUtil.managedChannel(
+                                    OTLP_HOST_SUPPLIER.get(), NEW_RELIC_API_KEY_SUPPLIER.get()))
                             .build())
                     .build());
 
@@ -123,8 +124,8 @@ public class OpenTelemetryConfig {
 
   public static OtlpGrpcMetricExporter otlpMetricExporter() {
     return OtlpGrpcMetricExporter.builder()
-        .setEndpoint(OTLP_HOST_SUPPLIER.get())
-        .addHeader("api-key", NEW_RELIC_API_KEY_SUPPLIER.get())
+        .setChannel(
+            OtlpUtil.managedChannel(OTLP_HOST_SUPPLIER.get(), NEW_RELIC_API_KEY_SUPPLIER.get()))
         .build();
   }
 

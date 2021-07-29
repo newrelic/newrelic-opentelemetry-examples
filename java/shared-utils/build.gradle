@@ -11,7 +11,14 @@ dependencies {
     api 'io.opentelemetry:opentelemetry-exporter-otlp'
     api 'io.opentelemetry:opentelemetry-exporter-otlp-metrics'
     api 'io.opentelemetry:opentelemetry-semconv'
+    api 'io.opentelemetry:opentelemetry-proto'
 
-    api platform("io.grpc:grpc-bom:${project['grpc.version']}")
-    api 'io.grpc:grpc-netty-shaded'
+    implementation 'io.grpc:grpc-netty-shaded'
+    implementation("io.grpc:grpc-stub")
+
+    implementation "com.google.code.gson:gson:${project['gson.version']}"
+
+    testImplementation 'io.opentelemetry:opentelemetry-sdk-testing'
+    testImplementation 'com.linecorp.armeria:armeria-grpc'
+    testImplementation 'com.linecorp.armeria:armeria-junit5'
 }
