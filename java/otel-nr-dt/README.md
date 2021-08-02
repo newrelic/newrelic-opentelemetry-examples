@@ -21,7 +21,7 @@ The OpenTelemetry application is configured to export data via OTLP to a collect
 export OTLP_HOST=http://my-collector-host:4317
 ```
 
-For a real working example, you should run a collector instance locally via docker by following the [nr-exporter-docker](../../collector/nr-exporter-docker/README.md) example.
+For a real working example, you should run a collector instance locally via docker by following the [nr-otlp-export](../../collector/nr-otlp-export/README.md) example.
 
 After running the collector, run both applications from a shell in the [java root](../) as follows. NOTE: you'll need to export your New Relic account license key as an environment variable for the New Relic application to run.
 ```shell

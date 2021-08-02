@@ -12,6 +12,7 @@ This project contains examples illustrating usage of OpenTelemetry with New Reli
 ## Examples Index
 
 * Collector
+  * [OpenTelemetry Collector with OTLP Export to New Relic](./collector/nr-otlp-export): Run the OpenTelemetry Collector with OTLP gRPC export to New Relic.
   * [OpenTelemetry Collector with New Relic Exporter](./collector/nr-exporter-docker): Run the OpenTelemetry Collector with the New Relic exporter.
   * [Kubernetes Collector Tail Based Sampling](./collector/k8s-collector-tail-sampling): Configure a Kubernetes environment to do tail based sampling with the Collector before exporting to New Relic.
 * Go
