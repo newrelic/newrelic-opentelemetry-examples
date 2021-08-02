@@ -1,0 +1,27 @@
+extensions:
+  health_check: {}
+receivers:
+  otlp:
+    protocols:
+      grpc:
+  fluentforward:
+    endpoint: 0.0.0.0:8006
+exporters:
+  logging:
+    logLevel: $LOG_EXPORTER_LOG_LEVEL
+  otlp:
+    endpoint: $OTEL_EXPORTER_OTLP_ENDPOINT
+    headers:
+      "api-key": $NEW_RELIC_API_KEY
+service:
+  extensions: [health_check]
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      exporters: [logging, otlp]
+    traces:
+      receivers: [otlp]
+      exporters: [logging, otlp]
+    logs:
+      receivers: [fluentforward]
+      exporters: [logging, otlp]

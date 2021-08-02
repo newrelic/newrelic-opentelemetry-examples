@@ -13,7 +13,7 @@ The project consists of two modules:
 
 The application is configured to export data via OTLP to a collector running at `http://localhost:4317`.
 
-You can adjust where data is exported to, or you can run a collector instance locally via docker by following the [nr-exporter-docker](../../collector/nr-exporter-docker/README.md) example.
+You can adjust where data is exported to, or you can run a collector instance locally via docker by following the [nr-otlp-export](../../collector/nr-otlp-export/README.md) example.
 
 After running the collector, run the application from a shell in the [java root](../) via:
 ```
