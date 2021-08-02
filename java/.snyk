@@ -1,0 +1,13 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.14.1
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  SNYK-JAVA-IONETTY-1042268:
+    - '*':
+        reason: No fix available.
+        expires: 2022-08-02T00:00:00.000Z
+  SNYK-JAVA-ORGGLASSFISH-1297098:
+    - '*':
+        reason: No fix available.
+        expires: 2022-08-02T00:00:00.000Z
+patch: {}
