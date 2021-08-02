@@ -19,4 +19,4 @@ jobs:
           java-version: 11
       - name: Test Snyk Java
         working-directory: java
-        run: snyk test --all-sub-projects
+        run: cat .snyk && snyk test --all-sub-projects --policy-path=.snyk
