@@ -6,10 +6,10 @@ import static com.newrelic.app.Utils.safeSleep;
 import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
-import io.opentelemetry.api.metrics.LongValueRecorder;
+import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
@@ -37,14 +37,14 @@ public class HttpGenerators {
 
     private final List<Runnable> outboundGenerators;
     private final Tracer tracer;
-    private final LongValueRecorder durationRecorder;
+    private final LongHistogram durationRecorder;
     private final AtomicLong runCount = new AtomicLong();
 
     ServerGenerator(List<Runnable> outboundGenerators) {
       this.outboundGenerators = outboundGenerators;
       this.tracer = GlobalOpenTelemetry.getTracer(HttpGenerators.class.getName());
-      Meter meter = GlobalMeterProvider.getMeter(HttpGenerators.class.getName());
-      this.durationRecorder = meter.longValueRecorderBuilder("http.server.duration").build();
+      Meter meter = GlobalMeterProvider.get().get(HttpGenerators.class.getName());
+      this.durationRecorder = meter.histogramBuilder("http.server.duration").ofLongs().build();
     }
 
     @Override
@@ -75,7 +75,7 @@ public class HttpGenerators {
           () -> {
             durationRecorder.record(
                 rr.duration,
-                Labels.builder()
+                Attributes.builder()
                     .put(SemanticAttributes.HTTP_METHOD.getKey(), rr.method)
                     .put(SemanticAttributes.HTTP_HOST.getKey(), rr.host())
                     .put(SemanticAttributes.HTTP_SCHEME.getKey(), rr.scheme)

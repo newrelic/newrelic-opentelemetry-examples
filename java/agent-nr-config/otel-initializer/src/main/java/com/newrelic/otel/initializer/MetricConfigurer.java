@@ -1,9 +1,9 @@
 package com.newrelic.otel.initializer;
 
 import static io.opentelemetry.sdk.metrics.common.InstrumentType.COUNTER;
-import static io.opentelemetry.sdk.metrics.common.InstrumentType.SUM_OBSERVER;
+import static io.opentelemetry.sdk.metrics.common.InstrumentType.OBSERVABLE_SUM;
+import static io.opentelemetry.sdk.metrics.common.InstrumentType.OBSERVABLE_UP_DOWN_SUM;
 import static io.opentelemetry.sdk.metrics.common.InstrumentType.UP_DOWN_COUNTER;
-import static io.opentelemetry.sdk.metrics.common.InstrumentType.UP_DOWN_SUM_OBSERVER;
 
 import io.opentelemetry.sdk.autoconfigure.spi.SdkMeterProviderConfigurer;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
@@ -18,7 +18,8 @@ public class MetricConfigurer implements SdkMeterProviderConfigurer {
 
   /**
    * Override the default instrument aggregators defined in {@link
-   * io.opentelemetry.sdk.metrics.ViewRegistry}. NOTE: This class is referenced in {@code
+   * io.opentelemetry.sdk.metrics.internal.view.ViewRegistry}. NOTE: This class is referenced in
+   * {@code
    * /resources/META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.SdkMeterProviderConfigurer}.
    *
    * @param builder the builder
@@ -27,8 +28,8 @@ public class MetricConfigurer implements SdkMeterProviderConfigurer {
   public void configure(SdkMeterProviderBuilder builder) {
     setDeltaSumAggregatorFactory(builder, COUNTER);
     setDeltaSumAggregatorFactory(builder, UP_DOWN_COUNTER);
-    setDeltaSumAggregatorFactory(builder, SUM_OBSERVER);
-    setDeltaSumAggregatorFactory(builder, UP_DOWN_SUM_OBSERVER);
+    setDeltaSumAggregatorFactory(builder, OBSERVABLE_SUM);
+    setDeltaSumAggregatorFactory(builder, OBSERVABLE_UP_DOWN_SUM);
   }
 
   private static void setDeltaSumAggregatorFactory(
