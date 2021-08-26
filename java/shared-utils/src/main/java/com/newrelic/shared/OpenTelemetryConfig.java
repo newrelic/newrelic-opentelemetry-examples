@@ -2,9 +2,9 @@ package com.newrelic.shared;
 
 import static com.newrelic.shared.EnvUtils.getEnvOrDefault;
 import static io.opentelemetry.sdk.metrics.common.InstrumentType.COUNTER;
-import static io.opentelemetry.sdk.metrics.common.InstrumentType.SUM_OBSERVER;
+import static io.opentelemetry.sdk.metrics.common.InstrumentType.OBSERVABLE_SUM;
+import static io.opentelemetry.sdk.metrics.common.InstrumentType.OBSERVABLE_UP_DOWN_SUM;
 import static io.opentelemetry.sdk.metrics.common.InstrumentType.UP_DOWN_COUNTER;
-import static io.opentelemetry.sdk.metrics.common.InstrumentType.UP_DOWN_SUM_OBSERVER;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_INSTANCE_ID;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_NAME;
 
@@ -107,8 +107,8 @@ public class OpenTelemetryConfig {
     // Override default cumulative sum aggregator with delta sum aggregator
     setDeltaSumAggregatorFactory(meterProviderBuilder, COUNTER);
     setDeltaSumAggregatorFactory(meterProviderBuilder, UP_DOWN_COUNTER);
-    setDeltaSumAggregatorFactory(meterProviderBuilder, SUM_OBSERVER);
-    setDeltaSumAggregatorFactory(meterProviderBuilder, UP_DOWN_SUM_OBSERVER);
+    setDeltaSumAggregatorFactory(meterProviderBuilder, OBSERVABLE_SUM);
+    setDeltaSumAggregatorFactory(meterProviderBuilder, OBSERVABLE_UP_DOWN_SUM);
     return meterProviderBuilder.build();
   }
 

@@ -10,8 +10,8 @@ bootRun {
 
 // Spring boot uses logback by default. To use Log4j2, must exclude spring-boot-starter-logging from all
 // dependencies, and instead include spring-boot-starter-log4j2
-configurations {
-    compile.exclude module: 'spring-boot-starter-logging'
+configurations.all {
+    exclude module: 'spring-boot-starter-logging'
 }
 
 dependencies {

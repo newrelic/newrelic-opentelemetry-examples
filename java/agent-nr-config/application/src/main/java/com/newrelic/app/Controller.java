@@ -11,9 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class Controller {
 
-  private static final Meter METER = GlobalMeterProvider.getMeter(Application.class.getName());
-  private static final LongCounter MY_COUNTER =
-      METER.longCounterBuilder("my-custom-counter").build();
+  private static final Meter METER = GlobalMeterProvider.get().get(Application.class.getName());
+  private static final LongCounter MY_COUNTER = METER.counterBuilder("my-custom-counter").build();
 
   @GetMapping("/ping")
   public String ping() {

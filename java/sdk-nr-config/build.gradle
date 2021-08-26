@@ -8,7 +8,12 @@ bootRun {
     mainClass.set 'com.newrelic.app.Application'
 }
 
+configurations.all {
+    exclude module: 'spring-boot-starter-logging'
+}
+
 dependencies {
     implementation project(':shared-utils')
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
 }
