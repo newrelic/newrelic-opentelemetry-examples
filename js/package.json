@@ -1,0 +1,19 @@
+{
+  "scripts": {
+    "start": "webpack-dev-server -d --progress --colors --port 8091 --config webpack.config.js --hot --inline --host 0.0.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.11.5",
+    "babel-loader": "^8.1.0",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.0.3",
+    "@opentelemetry/exporter-collector": "^0.24.0",
+    "@opentelemetry/exporter-collector-proto": "^0.24.0",
+    "@opentelemetry/tracing": "^0.24.0",
+    "@opentelemetry/web": "^0.24.0"
+  }
+}
