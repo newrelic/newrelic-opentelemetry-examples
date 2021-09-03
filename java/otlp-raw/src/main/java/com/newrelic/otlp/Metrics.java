@@ -28,6 +28,7 @@ import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.proto.metrics.v1.Summary;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
@@ -45,69 +46,122 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
 
   @Override
   public List<TestCase<ExportMetricsServiceRequest>> testCases() {
-    return List.of(
-        of("gauge", id -> gauge("my_gauge", id)),
-        of("intGauge", id -> intGauge("my_int_gauge", id)),
-        of("summary", id -> summary("my_summary", id)),
+    var testCases = new ArrayList<TestCase<ExportMetricsServiceRequest>>();
+
+    // gauge
+    testCases.add(of("gauge with starttime", id -> gauge("my_gauge", id, true)));
+    testCases.add(of("gauge without starttime", id -> gauge("my_gauge", id, false)));
+    // int gauge
+    testCases.add(of("intgauge with starttime", id -> intGauge("my_int_gauge", id, true)));
+    testCases.add(of("intgauge without starttime", id -> intGauge("my_int_gauge", id, false)));
+
+    // summary
+    testCases.add(of("summary with starttime", id -> summary("my_summary", id, true)));
+    testCases.add(of("summary without starttime", id -> summary("my_summary", id, false)));
+
+    // sum
+    testCases.add(
         of(
-            "cumulative monotonic sum",
-            id -> sum("my_cumulative_monotonic_sum", id, true, AGGREGATION_TEMPORALITY_CUMULATIVE)),
+            "sum monotonic cumulative with starttime",
+            id -> sum("my_sum", id, true, AGGREGATION_TEMPORALITY_CUMULATIVE, true)));
+    testCases.add(
         of(
-            "cumulative non-monotonic sum",
-            id ->
-                sum(
-                    "my_cumulative_non_monotonic_sum",
-                    id,
-                    false,
-                    AGGREGATION_TEMPORALITY_CUMULATIVE)),
+            "sum monotonic cumulative without starttime",
+            id -> sum("my_sum", id, true, AGGREGATION_TEMPORALITY_CUMULATIVE, false)));
+    testCases.add(
         of(
-            "delta monotonic sum",
-            id -> sum("my_cumulative_monotonic_sum", id, true, AGGREGATION_TEMPORALITY_DELTA)),
+            "sum monotonic delta with starttime",
+            id -> sum("my_sum", id, true, AGGREGATION_TEMPORALITY_DELTA, true)));
+    testCases.add(
         of(
-            "delta non-monotonic sum",
-            id -> sum("my_cumulative_non_monotonic_sum", id, false, AGGREGATION_TEMPORALITY_DELTA)),
+            "sum monotonic delta without starttime",
+            id -> sum("my_sum", id, true, AGGREGATION_TEMPORALITY_DELTA, false)));
+    testCases.add(
         of(
-            "cumulative monotonic intSum",
-            id ->
-                intSum(
-                    "my_cumulative_monotonic_int_sum",
-                    id,
-                    true,
-                    AGGREGATION_TEMPORALITY_CUMULATIVE)),
+            "sum non monotonic cumulative with starttime",
+            id -> sum("my_sum", id, false, AGGREGATION_TEMPORALITY_CUMULATIVE, true)));
+    testCases.add(
         of(
-            "cumulative non-monotonic intSum",
-            id ->
-                intSum(
-                    "my_cumulative_non_monotonic_int_sum",
-                    id,
-                    false,
-                    AGGREGATION_TEMPORALITY_CUMULATIVE)),
+            "sum non monotonic cumulative without starttime",
+            id -> sum("my_sum", id, false, AGGREGATION_TEMPORALITY_CUMULATIVE, false)));
+    testCases.add(
         of(
-            "delta monotonic int intSum",
-            id ->
-                intSum("my_cumulative_monotonic_int_sum", id, true, AGGREGATION_TEMPORALITY_DELTA)),
+            "sum non monotonic delta with starttime",
+            id -> sum("my_sum", id, false, AGGREGATION_TEMPORALITY_DELTA, true)));
+    testCases.add(
         of(
-            "delta non-monotonic intSum",
-            id ->
-                intSum(
-                    "my_cumulative_non_monotonic_int_sum",
-                    id,
-                    false,
-                    AGGREGATION_TEMPORALITY_DELTA)),
+            "sum non monotonic delta without starttime",
+            id -> sum("my_sum", id, false, AGGREGATION_TEMPORALITY_DELTA, false)));
+    // int sum
+    testCases.add(
         of(
-            "cumulative histogram",
-            id -> histogram("my_cumulative_histogram", id, AGGREGATION_TEMPORALITY_CUMULATIVE)),
+            "intsum monotonic cumulative with starttime",
+            id -> intSum("my_int_sum", id, true, AGGREGATION_TEMPORALITY_CUMULATIVE, true)));
+    testCases.add(
         of(
-            "delta histogram",
-            id -> histogram("my_delta_histogram", id, AGGREGATION_TEMPORALITY_DELTA)),
+            "intsum monotonic cumulative without starttime",
+            id -> intSum("my_int_sum", id, true, AGGREGATION_TEMPORALITY_CUMULATIVE, false)));
+    testCases.add(
         of(
-            "cumulative intHistogram",
-            id ->
-                intHistogram(
-                    "my_cumulative_int_histogram", id, AGGREGATION_TEMPORALITY_CUMULATIVE)),
+            "intsum monotonic delta with starttime",
+            id -> intSum("my_int_sum", id, true, AGGREGATION_TEMPORALITY_DELTA, true)));
+    testCases.add(
         of(
-            "delta intHistogram",
-            id -> intHistogram("my_delta_int_histogram", id, AGGREGATION_TEMPORALITY_DELTA)));
+            "intsum monotonic delta without starttime",
+            id -> intSum("my_int_sum", id, true, AGGREGATION_TEMPORALITY_DELTA, false)));
+    testCases.add(
+        of(
+            "intsum non monotonic cumulative with starttime",
+            id -> intSum("my_int_sum", id, false, AGGREGATION_TEMPORALITY_CUMULATIVE, true)));
+    testCases.add(
+        of(
+            "intsum non monotonic cumulative without starttime",
+            id -> intSum("my_int_sum", id, false, AGGREGATION_TEMPORALITY_CUMULATIVE, false)));
+    testCases.add(
+        of(
+            "intsum non monotonic delta with starttime",
+            id -> intSum("my_int_sum", id, false, AGGREGATION_TEMPORALITY_DELTA, true)));
+    testCases.add(
+        of(
+            "intsum non monotonic delta without starttime",
+            id -> intSum("my_int_sum", id, false, AGGREGATION_TEMPORALITY_DELTA, false)));
+
+    // histogram
+    testCases.add(
+        of(
+            "histogram cumulative with starttime",
+            id -> histogram("my_histogram", id, AGGREGATION_TEMPORALITY_CUMULATIVE, true)));
+    testCases.add(
+        of(
+            "histogram cumulative without starttime",
+            id -> histogram("my_histogram", id, AGGREGATION_TEMPORALITY_CUMULATIVE, false)));
+    testCases.add(
+        of(
+            "histogram delta with starttime",
+            id -> histogram("my_histogram", id, AGGREGATION_TEMPORALITY_DELTA, true)));
+    testCases.add(
+        of(
+            "histogram delta without starttime",
+            id -> histogram("my_histogram", id, AGGREGATION_TEMPORALITY_DELTA, false)));
+    // int histogram
+    testCases.add(
+        of(
+            "inthistgoram cumulative with starttime",
+            id -> intHistogram("my_int_histogram", id, AGGREGATION_TEMPORALITY_CUMULATIVE, true)));
+    testCases.add(
+        of(
+            "inthistgoram cumulative without starttime",
+            id -> intHistogram("my_int_histogram", id, AGGREGATION_TEMPORALITY_CUMULATIVE, false)));
+    testCases.add(
+        of(
+            "inthistgoram delta with starttime",
+            id -> intHistogram("my_int_histogram", id, AGGREGATION_TEMPORALITY_DELTA, true)));
+    testCases.add(
+        of(
+            "inthistgoram delta without starttime",
+            id -> intHistogram("my_int_histogram", id, AGGREGATION_TEMPORALITY_DELTA, false)));
+
+    return testCases;
   }
 
   @Override
@@ -115,39 +169,138 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
     return "Metric";
   }
 
-  private static ExportMetricsServiceRequest gauge(String name, String id) {
+  private static ExportMetricsServiceRequest gauge(
+      String name, String id, boolean includeStartTime) {
     return metricsRequest(
-        Metric.newBuilder()
-            .setName(name)
-            .setDescription("description")
+        metricBuilder(name)
             .setGauge(
                 Gauge.newBuilder()
-                    .addDataPoints(
-                        NumberDataPoint.newBuilder()
-                            .setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)))
-                            .setTimeUnixNano(toEpochNano(Instant.now()))
-                            .setAsDouble(1.0)
-                            .addAttributes(idAttribute(id))
-                            .addAllAttributes(allTheAttributes(name + "_"))
-                            .build())
+                    .addDataPoints(numberDataPoint(name, id, includeStartTime))
                     .build())
             .build());
   }
 
-  private static ExportMetricsServiceRequest intGauge(String name, String id) {
+  private static ExportMetricsServiceRequest intGauge(
+      String name, String id, boolean includeStartTime) {
     return metricsRequest(
-        Metric.newBuilder()
-            .setName(name)
-            .setDescription("description")
+        metricBuilder(name)
             .setIntGauge(
-                IntGauge.newBuilder()
-                    .addDataPoints(
-                        IntDataPoint.newBuilder()
-                            .setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)))
-                            .setTimeUnixNano(toEpochNano(Instant.now()))
-                            .addLabels(idStringKeyValue(id))
-                            .setValue(100)
-                            .build())
+                IntGauge.newBuilder().addDataPoints(intDataPoint(id, includeStartTime)).build())
+            .build());
+  }
+
+  private static ExportMetricsServiceRequest summary(
+      String name, String id, boolean includeStartTime) {
+    var summaryDataPointBuilder =
+        SummaryDataPoint.newBuilder()
+            .setTimeUnixNano(toEpochNano(Instant.now()))
+            .setCount(2)
+            .setSum(99.0)
+            .addQuantileValues(
+                SummaryDataPoint.ValueAtQuantile.newBuilder()
+                    .setQuantile(0.0)
+                    .setValue(0.0)
+                    .build())
+            .addQuantileValues(
+                SummaryDataPoint.ValueAtQuantile.newBuilder()
+                    .setQuantile(1.0)
+                    .setValue(99.0)
+                    .build())
+            .addAttributes(idAttribute(id))
+            .addAllAttributes(allTheAttributes(name + "_"));
+    if (includeStartTime) {
+      summaryDataPointBuilder.setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)));
+    }
+    return metricsRequest(
+        metricBuilder(name)
+            .setSummary(Summary.newBuilder().addDataPoints(summaryDataPointBuilder.build()).build())
+            .build());
+  }
+
+  private static ExportMetricsServiceRequest sum(
+      String name,
+      String id,
+      boolean isMonotonic,
+      AggregationTemporality aggregationTemporality,
+      boolean includeStartTime) {
+    return metricsRequest(
+        metricBuilder(name)
+            .setSum(
+                Sum.newBuilder()
+                    .setIsMonotonic(isMonotonic)
+                    .setAggregationTemporality(aggregationTemporality)
+                    .addDataPoints(numberDataPoint(name, id, includeStartTime)))
+            .build());
+  }
+
+  private static ExportMetricsServiceRequest intSum(
+      String name,
+      String id,
+      boolean isMonotonic,
+      AggregationTemporality aggregationTemporality,
+      boolean includeStartTime) {
+    return metricsRequest(
+        metricBuilder(name)
+            .setIntSum(
+                IntSum.newBuilder()
+                    .setIsMonotonic(isMonotonic)
+                    .setAggregationTemporality(aggregationTemporality)
+                    .addDataPoints(intDataPoint(id, includeStartTime)))
+            .build());
+  }
+
+  private static ExportMetricsServiceRequest histogram(
+      String name,
+      String id,
+      AggregationTemporality aggregationTemporality,
+      boolean includeStartTime) {
+    var histogramDataPointBuilder =
+        HistogramDataPoint.newBuilder()
+            .setTimeUnixNano(toEpochNano(Instant.now()))
+            .setCount(11)
+            .setSum(100)
+            .addAllExplicitBounds(List.of(1.0, 2.0, 3.0))
+            .addAllBucketCounts(List.of(5L, 4L, 1L, 1L))
+            .addAttributes(idAttribute(id))
+            .addAllAttributes(allTheAttributes(name + "_"));
+    if (includeStartTime) {
+      histogramDataPointBuilder.setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)));
+    }
+    return metricsRequest(
+        metricBuilder(name)
+            .setHistogram(
+                Histogram.newBuilder()
+                    .setAggregationTemporality(aggregationTemporality)
+                    .addDataPoints(histogramDataPointBuilder)
+                    .build())
+            .build());
+  }
+
+  private static ExportMetricsServiceRequest intHistogram(
+      String name,
+      String id,
+      AggregationTemporality aggregationTemporality,
+      boolean includeStartTime) {
+    var intHistogramDataPointBuilder =
+        IntHistogramDataPoint.newBuilder()
+            .setTimeUnixNano(toEpochNano(Instant.now()))
+            .setCount(11)
+            .setSum(100)
+            .addAllExplicitBounds(List.of(1.0, 2.0, 3.0))
+            .addAllBucketCounts(List.of(5L, 4L, 1L, 1L))
+            .addLabels(idStringKeyValue(id))
+            .addAllLabels(
+                List.of(StringKeyValue.newBuilder().setKey("skey").setValue("value").build()));
+    if (includeStartTime) {
+      intHistogramDataPointBuilder.setStartTimeUnixNano(
+          toEpochNano(Instant.now().minusSeconds(10)));
+    }
+    return metricsRequest(
+        metricBuilder(name)
+            .setIntHistogram(
+                IntHistogram.newBuilder()
+                    .setAggregationTemporality(aggregationTemporality)
+                    .addDataPoints(intHistogramDataPointBuilder)
                     .build())
             .build());
   }
@@ -160,137 +313,35 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
         .build();
   }
 
-  private static ExportMetricsServiceRequest summary(String name, String id) {
-    return metricsRequest(
-        Metric.newBuilder()
-            .setName(name)
-            .setDescription("description")
-            .setSummary(
-                Summary.newBuilder()
-                    .addDataPoints(
-                        SummaryDataPoint.newBuilder()
-                            .setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)))
-                            .setTimeUnixNano(toEpochNano(Instant.now()))
-                            .setCount(2)
-                            .setSum(99.0)
-                            .addQuantileValues(
-                                SummaryDataPoint.ValueAtQuantile.newBuilder()
-                                    .setQuantile(0.0)
-                                    .setValue(0.0)
-                                    .build())
-                            .addQuantileValues(
-                                SummaryDataPoint.ValueAtQuantile.newBuilder()
-                                    .setQuantile(1.0)
-                                    .setValue(99.0)
-                                    .build())
-                            .addAttributes(idAttribute(id))
-                            .addAllAttributes(allTheAttributes(name + "_"))
-                            .build())
-                    .build())
-            .build());
+  private static NumberDataPoint numberDataPoint(
+      String metricName, String id, boolean includeStartTime) {
+    var numberDataPointBuilder =
+        NumberDataPoint.newBuilder()
+            .setTimeUnixNano(toEpochNano(Instant.now()))
+            .setAsDouble(1.0)
+            .addAttributes(idAttribute(id))
+            .addAllAttributes(allTheAttributes(metricName + "_"));
+    if (includeStartTime) {
+      numberDataPointBuilder.setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)));
+    }
+    return numberDataPointBuilder.build();
   }
 
-  private static ExportMetricsServiceRequest sum(
-      String name, String id, boolean isMonotonic, AggregationTemporality aggregationTemporality) {
-    return metricsRequest(
-        Metric.newBuilder()
-            .setName(name)
-            .setDescription("description")
-            .setSum(
-                Sum.newBuilder()
-                    .setIsMonotonic(isMonotonic)
-                    .setAggregationTemporality(aggregationTemporality)
-                    .addDataPoints(
-                        NumberDataPoint.newBuilder()
-                            .setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)))
-                            .setTimeUnixNano(toEpochNano(Instant.now()))
-                            .setAsDouble(1.0)
-                            .addAttributes(idAttribute(id))
-                            .addAllAttributes(allTheAttributes(name + "_"))
-                            .build())
-                    .build())
-            .build());
+  private static IntDataPoint intDataPoint(String id, boolean includeStartTime) {
+    var intDataPointBuilder =
+        IntDataPoint.newBuilder()
+            .setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)))
+            .setTimeUnixNano(toEpochNano(Instant.now()))
+            .addLabels(idStringKeyValue(id))
+            .setValue(100);
+    if (includeStartTime) {
+      intDataPointBuilder.setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)));
+    }
+    return intDataPointBuilder.build();
   }
 
-  private static ExportMetricsServiceRequest intSum(
-      String name, String id, boolean isMonotonic, AggregationTemporality aggregationTemporality) {
-    return metricsRequest(
-        Metric.newBuilder()
-            .setName(name)
-            .setDescription("description")
-            .setIntSum(
-                IntSum.newBuilder()
-                    .setIsMonotonic(isMonotonic)
-                    .setAggregationTemporality(aggregationTemporality)
-                    .addDataPoints(
-                        IntDataPoint.newBuilder()
-                            .setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)))
-                            .setTimeUnixNano(toEpochNano(Instant.now()))
-                            .setValue(1L)
-                            .addLabels(idStringKeyValue(id))
-                            .addAllLabels(
-                                List.of(
-                                    StringKeyValue.newBuilder()
-                                        .setKey("skey")
-                                        .setValue("value")
-                                        .build()))
-                            .build())
-                    .build())
-            .build());
-  }
-
-  private static ExportMetricsServiceRequest histogram(
-      String name, String id, AggregationTemporality aggregationTemporality) {
-    return metricsRequest(
-        Metric.newBuilder()
-            .setName(name)
-            .setDescription("description")
-            .setUnit("1")
-            .setHistogram(
-                Histogram.newBuilder()
-                    .setAggregationTemporality(aggregationTemporality)
-                    .addDataPoints(
-                        HistogramDataPoint.newBuilder()
-                            .setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)))
-                            .setTimeUnixNano(toEpochNano(Instant.now()))
-                            .setCount(11)
-                            .setSum(100)
-                            .addAllExplicitBounds(List.of(1.0, 2.0, 3.0))
-                            .addAllBucketCounts(List.of(5L, 4L, 1L, 1L))
-                            .addAttributes(idAttribute(id))
-                            .addAllAttributes(allTheAttributes(name + "_"))
-                            .build())
-                    .build())
-            .build());
-  }
-
-  private static ExportMetricsServiceRequest intHistogram(
-      String name, String id, AggregationTemporality aggregationTemporality) {
-    return metricsRequest(
-        Metric.newBuilder()
-            .setName(name)
-            .setDescription("description")
-            .setIntHistogram(
-                IntHistogram.newBuilder()
-                    .setAggregationTemporality(aggregationTemporality)
-                    .addDataPoints(
-                        IntHistogramDataPoint.newBuilder()
-                            .setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)))
-                            .setTimeUnixNano(toEpochNano(Instant.now()))
-                            .setCount(11)
-                            .setSum(100)
-                            .addAllExplicitBounds(List.of(1.0, 2.0, 3.0))
-                            .addAllBucketCounts(List.of(5L, 4L, 1L, 1L))
-                            .addLabels(idStringKeyValue(id))
-                            .addAllLabels(
-                                List.of(
-                                    StringKeyValue.newBuilder()
-                                        .setKey("skey")
-                                        .setValue("value")
-                                        .build()))
-                            .build())
-                    .build())
-            .build());
+  private static Metric.Builder metricBuilder(String name) {
+    return Metric.newBuilder().setName(name).setDescription("description").setUnit("unit");
   }
 
   private static ExportMetricsServiceRequest metricsRequest(Metric metric) {

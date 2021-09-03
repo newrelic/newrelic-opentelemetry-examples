@@ -1,0 +1,33 @@
+[ {
+  "description" : "description",
+  "endTimestamp" : 1630701665530,
+  "entity.guid" : "MTA5Mzg1MDJ8RVhUfFNFUlZJQ0V8LTkwMzM5MTM5NzM0MjMyNTk0MjA",
+  "entity.name" : "native-otlp-test",
+  "entity.type" : "SERVICE",
+  "instrumentation.provider" : "opentelemetry",
+  "message_id" : "8f1b85ee-e58c-4ca9-bc78-e9d5c0e5cb48",
+  "metricName" : "my_histogram",
+  "my_histogram" : {
+    "buckets" : 320,
+    "count" : 11,
+    "max" : 3.0,
+    "min" : 1.0,
+    "sum" : 100.0,
+    "type" : "distribution"
+  },
+  "my_histogram_bkey" : true,
+  "my_histogram_dkey" : 1.0,
+  "my_histogram_ikey" : 1,
+  "my_histogram_skey" : "value",
+  "newrelic.source" : "otlpAPI",
+  "otel.library.name" : "my-instrumentation-library",
+  "otel.library.version" : "foo",
+  "resource_bkey" : true,
+  "resource_dkey" : 1.0,
+  "resource_ikey" : 1,
+  "resource_skey" : "value",
+  "service.name" : "native-otlp-test",
+  "telemetry.sdk.name" : "opentelemetry",
+  "timestamp" : 1630701655530,
+  "unit" : "unit"
+} ]

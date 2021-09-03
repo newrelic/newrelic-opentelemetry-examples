@@ -1,0 +1,122 @@
+{
+  "resourceSpans": [{
+    "resource": {
+      "attributes": [{
+        "key": "service.name",
+        "value": {
+          "stringValue": "native-otlp-test"
+        }
+      }, {
+        "key": "telemetry.sdk.name",
+        "value": {
+          "stringValue": "opentelemetry"
+        }
+      }, {
+        "key": "instrumentation.provider",
+        "value": {
+          "stringValue": "opentelemetry"
+        }
+      }, {
+        "key": "resource_skey",
+        "value": {
+          "stringValue": "value"
+        }
+      }, {
+        "key": "resource_ikey",
+        "value": {
+          "intValue": "1"
+        }
+      }, {
+        "key": "resource_bkey",
+        "value": {
+          "boolValue": true
+        }
+      }, {
+        "key": "resource_dkey",
+        "value": {
+          "doubleValue": 1.0
+        }
+      }]
+    },
+    "instrumentationLibrarySpans": [{
+      "instrumentationLibrary": {
+        "name": "my-instrumentation-library",
+        "version": "foo"
+      },
+      "spans": [{
+        "traceId": "hSRwV7FhdMNmaC1wg4p5Wg==",
+        "spanId": "lK03Y59I9VI=",
+        "traceState": "foo",
+        "parentSpanId": "0dlxp3p8pPc=",
+        "name": "my-span",
+        "kind": "SPAN_KIND_INTERNAL",
+        "startTimeUnixNano": "1630701664922000000",
+        "endTimeUnixNano": "1630701674922000000",
+        "attributes": [{
+          "key": "message_id",
+          "value": {
+            "stringValue": "6c511992-48de-4f20-8240-f666a76f3e95"
+          }
+        }, {
+          "key": "span_skey",
+          "value": {
+            "stringValue": "value"
+          }
+        }, {
+          "key": "span_ikey",
+          "value": {
+            "intValue": "1"
+          }
+        }, {
+          "key": "span_bkey",
+          "value": {
+            "boolValue": true
+          }
+        }, {
+          "key": "span_dkey",
+          "value": {
+            "doubleValue": 1.0
+          }
+        }],
+        "droppedAttributesCount": 1,
+        "events": [{
+          "timeUnixNano": "1630701664923000000",
+          "name": "event-name",
+          "attributes": [{
+            "key": "span_event_skey",
+            "value": {
+              "stringValue": "value"
+            }
+          }, {
+            "key": "span_event_ikey",
+            "value": {
+              "intValue": "1"
+            }
+          }, {
+            "key": "span_event_bkey",
+            "value": {
+              "boolValue": true
+            }
+          }, {
+            "key": "span_event_dkey",
+            "value": {
+              "doubleValue": 1.0
+            }
+          }],
+          "droppedAttributesCount": 1
+        }],
+        "droppedEventsCount": 1,
+        "links": [{
+          "traceId": "BhB2kyiTQqe36HboybCvgw==",
+          "spanId": "o0ieKEC9WDQ="
+        }],
+        "droppedLinksCount": 1,
+        "status": {
+          "message": "status message!",
+          "code": "STATUS_CODE_OK"
+        }
+      }]
+    }],
+    "schemaUrl": "schema url"
+  }]
+}

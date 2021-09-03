@@ -3,6 +3,7 @@ package com.newrelic.otlp;
 import static com.newrelic.otlp.Common.serializeToJson;
 import static com.newrelic.shared.EnvUtils.getEnvOrDefault;
 import static com.newrelic.shared.EnvUtils.getOrThrow;
+import static java.util.stream.Collectors.toList;
 
 import com.google.protobuf.MessageOrBuilder;
 import io.grpc.ManagedChannel;
@@ -14,9 +15,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import okhttp3.HttpUrl;
 
 public class Application {
 
@@ -26,13 +32,15 @@ public class Application {
       getOrThrow("NEW_RELIC_INSIGHTS_API_KEY", Function.identity());
   private static final Supplier<String> NEW_RELIC_ACCOUNT_ID =
       getOrThrow("NEW_RELIC_ACCOUNT_ID", Function.identity());
-  private static final Supplier<String> OUTPUT_DIR =
-      getOrThrow("OUTPUT_DIR", Function.identity());
+  private static final Supplier<String> OUTPUT_DIR = getOrThrow("OUTPUT_DIR", Function.identity());
   private static final Supplier<String> NEW_RELIC_GRAPHQL_ENDPOINT =
       getEnvOrDefault(
           "NEW_RELIC_GRAPHQL_ENDPOINT",
           Function.identity(),
           "https://staging-api.newrelic.com/graphql");
+  private static final Supplier<String> NEW_RELIC_OTLP_ENDPOINT =
+      getEnvOrDefault(
+          "NEW_RELIC_OTLP_ENDPOINT", Function.identity(), "https://staging-otlp.nr-data.net:4317");
 
   public static void main(String[] args) {
     new Application().run();
@@ -40,79 +48,134 @@ public class Application {
 
   private final ManagedChannel managedChannel;
   private final NrqlClient nrqlClient;
+  private final List<TestCaseProvider<?>> testCaseProviders;
+  private final ExecutorService nrqlExecutor = Executors.newFixedThreadPool(5);
 
   Application() {
     managedChannel = managedChannel();
     nrqlClient = nrqlClient();
+    this.testCaseProviders =
+        List.of(new Traces(managedChannel), new Metrics(managedChannel), new Logs(managedChannel));
   }
 
   void run() {
-    var traces = new Traces(managedChannel);
-    var metrics = new Metrics(managedChannel);
-    var logs = new Logs(managedChannel);
-
-    List.of(traces, metrics, logs).forEach(this::runContract);
+    resetOutputDir();
+    var testFutures =
+        testCaseProviders.stream()
+            .flatMap(testCaseProvider -> runTests(testCaseProvider).stream())
+            .toArray(CompletableFuture[]::new);
+    CompletableFuture.allOf(testFutures).join();
+    nrqlExecutor.shutdown();
   }
 
-  <T extends MessageOrBuilder> void runContract(TestCaseProvider<T> testCaseProvider) {
-    var testCases = testCaseProvider.testCases();
-    for (var testCase : testCases) {
-      System.out.format(
-          "%n%n%nExporting %s test case %s with id: %s%n",
-          testCaseProvider.getClass().getSimpleName(), testCase.name, testCase.id);
-      var protobufJson = Common.serializeToProtobufJson(testCase.payload);
-      System.out.format("Protobuf JSON: %n%s%n", protobufJson);
-      testCaseProvider.exportGrpcProtobuf(testCase.payload);
+  <T extends MessageOrBuilder> List<CompletableFuture<?>> runTests(
+      TestCaseProvider<T> testCaseProvider) {
+    return testCaseProvider.testCases().stream()
+        .map(testCase -> runTest(testCaseProvider, testCase))
+        .collect(toList());
+  }
+
+  <T extends MessageOrBuilder> CompletableFuture<?> runTest(
+      TestCaseProvider<T> testCaseProvider, TestCase<T> testCase) {
+    System.out.format(
+        "Starting protobuf export for %s %s%n", testCaseProvider.newRelicDataType(), testCase);
+    testCaseProvider.exportGrpcProtobuf(testCase.payload);
+    System.out.format(
+        "Finished protobuf export for %s %s%n", testCaseProvider.newRelicDataType(), testCase.name);
+    var runNrqlAfter = Instant.now().plusSeconds(10);
+    return CompletableFuture.supplyAsync(
+            () -> fetchNrqlResults(testCaseProvider, testCase, runNrqlAfter), nrqlExecutor)
+        .thenAccept(
+            nrqlJson -> {
+              System.out.format(
+                  "Saving results for %s %s%n", testCaseProvider.newRelicDataType(), testCase);
+              var protobufJson = Common.serializeToProtobufJson(testCase.payload);
+              saveTestResults(testCaseProvider, testCase, protobufJson, nrqlJson);
+            });
+  }
+
+  private <T extends MessageOrBuilder> String fetchNrqlResults(
+      TestCaseProvider<T> testCaseProvider, TestCase<T> testCase, Instant runNrqlAfter) {
+    System.out.format(
+        "Waiting until time to run nrql query for %s %s%n",
+        testCaseProvider.newRelicDataType(), testCase);
+    while (Instant.now().isBefore(runNrqlAfter)) {
       try {
-        Thread.sleep(10000);
+        Thread.sleep(500);
       } catch (InterruptedException e) {
-        throw new IllegalStateException("Thread interrupted", e);
+        throw new IllegalStateException("Thread interrupted.", e);
       }
-      String nrqlQuery =
-          String.format(
-              "SELECT * FROM %s WHERE %s = '%s'",
-              testCaseProvider.newRelicDataType(), Common.ID_KEY, testCase.id);
-      var nrqlResults = nrqlClient.postNrql(nrqlQuery);
-      var nrdbJson = serializeToJson(nrqlResults);
-      System.out.format("NRDB JSON: %n%s%n", nrdbJson);
-      saveResults(testCaseProvider, testCase, protobufJson, nrdbJson);
     }
+
+    System.out.format(
+        "Starting nrql query for %s %s%n", testCaseProvider.newRelicDataType(), testCase);
+    var nrqlQuery =
+        String.format(
+            "SELECT * FROM %s WHERE %s = '%s'",
+            testCaseProvider.newRelicDataType(), Common.ID_KEY, testCase.id);
+    var nrqlResults = nrqlClient.postNrql(nrqlQuery);
+    System.out.format(
+        "Finished nrql query for %s %s%n", testCaseProvider.newRelicDataType(), testCase);
+    return serializeToJson(nrqlResults);
   }
 
-  private static <T extends MessageOrBuilder> void saveResults(
-      TestCaseProvider<T> testCaseProvider, TestCase<T> testCase, String protobufJson, String nrdbJson) {
-    var dirString = OUTPUT_DIR.get();
-    var dir = Paths.get(dirString).toFile();
-    if (!dir.exists()) {
-      dir.mkdir();
+  private void resetOutputDir() {
+    var outputDir = Paths.get(OUTPUT_DIR.get()).toFile();
+    if (!outputDir.exists()) {
+      outputDir.mkdir();
     }
-    var normalizedTestName = testCase.name.replace(" ", "-").toLowerCase();
-    var protoFilename =
-        String.format(
-            "%s-%s-proto.json", testCaseProvider.newRelicDataType().toLowerCase(), normalizedTestName);
-    var nrdbFileName =
-        String.format(
-            "%s-%s-nrdb.json", testCaseProvider.newRelicDataType().toLowerCase(), normalizedTestName);
-    writeToFile(Paths.get(dirString, protoFilename), protobufJson);
-    writeToFile(Paths.get(dirString, nrdbFileName), nrdbJson);
+    testCaseProviders.forEach(
+        testCaseProvider -> {
+          var dir =
+              Paths.get(OUTPUT_DIR.get(), testCaseProvider.newRelicDataType().toLowerCase())
+                  .toFile();
+          if (dir.exists()) {
+            var files = dir.listFiles();
+            if (files != null && files.length > 0) {
+              for (var file : files) {
+                file.delete();
+              }
+            }
+            dir.delete();
+          }
+          dir.mkdir();
+        });
+  }
+
+  private static <T extends MessageOrBuilder> void saveTestResults(
+      TestCaseProvider<T> testCaseProvider,
+      TestCase<T> testCase,
+      String protobufJson,
+      String nrdbJson) {
+    var outputDir = OUTPUT_DIR.get();
+    var testCaseDir = testCaseProvider.newRelicDataType().toLowerCase();
+    var protoFilename = String.format("%s-proto.json", testCase.name);
+    var nrdbFileName = String.format("%s-nrdb.json", testCase.name);
+    writeToFile(Paths.get(outputDir, testCaseDir, protoFilename), protobufJson);
+    writeToFile(Paths.get(outputDir, testCaseDir, nrdbFileName), nrdbJson);
   }
 
   private static void writeToFile(Path path, String content) {
     try {
       Files.write(path, content.getBytes(StandardCharsets.UTF_8));
     } catch (IOException e) {
-      throw new IllegalStateException(
-          "Failed to write to file " + path.toAbsolutePath(), e);
+      throw new IllegalStateException("Failed to write to file " + path.toAbsolutePath(), e);
     }
   }
 
   private NrqlClient nrqlClient() {
-    return new NrqlClient(NEW_RELIC_GRAPHQL_ENDPOINT.get(), NEW_RELIC_ACCOUNT_ID.get(), NEW_RELIC_USER_API_KEY.get());
+    return new NrqlClient(
+        NEW_RELIC_GRAPHQL_ENDPOINT.get(), NEW_RELIC_ACCOUNT_ID.get(), NEW_RELIC_USER_API_KEY.get());
   }
 
   private ManagedChannel managedChannel() {
-    var managedChannelBuilder = ManagedChannelBuilder.forTarget("staging-otlp.nr-data.net:4317");
-    managedChannelBuilder.useTransportSecurity();
+    var url = HttpUrl.parse(NEW_RELIC_OTLP_ENDPOINT.get());
+    var managedChannelBuilder = ManagedChannelBuilder.forTarget(url.host());
+    if (url.scheme().equals("https")) {
+      managedChannelBuilder.useTransportSecurity();
+    } else {
+      managedChannelBuilder.usePlaintext();
+    }
     var metadata = new Metadata();
     metadata.put(
         Metadata.Key.of("api-key", Metadata.ASCII_STRING_MARSHALLER),

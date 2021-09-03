@@ -1,0 +1,71 @@
+{
+  "resourceMetrics": [{
+    "resource": {
+      "attributes": [{
+        "key": "service.name",
+        "value": {
+          "stringValue": "native-otlp-test"
+        }
+      }, {
+        "key": "telemetry.sdk.name",
+        "value": {
+          "stringValue": "opentelemetry"
+        }
+      }, {
+        "key": "instrumentation.provider",
+        "value": {
+          "stringValue": "opentelemetry"
+        }
+      }, {
+        "key": "resource_skey",
+        "value": {
+          "stringValue": "value"
+        }
+      }, {
+        "key": "resource_ikey",
+        "value": {
+          "intValue": "1"
+        }
+      }, {
+        "key": "resource_bkey",
+        "value": {
+          "boolValue": true
+        }
+      }, {
+        "key": "resource_dkey",
+        "value": {
+          "doubleValue": 1.0
+        }
+      }]
+    },
+    "instrumentationLibraryMetrics": [{
+      "instrumentationLibrary": {
+        "name": "my-instrumentation-library",
+        "version": "foo"
+      },
+      "metrics": [{
+        "name": "my_int_histogram",
+        "description": "description",
+        "unit": "unit",
+        "intHistogram": {
+          "dataPoints": [{
+            "labels": [{
+              "key": "message_id",
+              "value": "0c4533eb-701f-4617-b891-5865e895888e"
+            }, {
+              "key": "skey",
+              "value": "value"
+            }],
+            "timeUnixNano": "1630701665535000000",
+            "count": "11",
+            "sum": "100",
+            "bucketCounts": ["5", "4", "1", "1"],
+            "explicitBounds": [1.0, 2.0, 3.0]
+          }],
+          "aggregationTemporality": "AGGREGATION_TEMPORALITY_DELTA"
+        }
+      }]
+    }],
+    "schemaUrl": "schema url"
+  }]
+}

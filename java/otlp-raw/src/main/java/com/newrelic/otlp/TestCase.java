@@ -16,7 +16,13 @@ class TestCase<T> {
   }
 
   static <T> TestCase<T> of(String name, Function<String, T> payloadGenerator) {
-    String id = UUID.randomUUID().toString();
-    return new TestCase<>(name, id, payloadGenerator.apply(id));
+    var id = UUID.randomUUID().toString();
+    var normalizedName = name.replace(" ", "-").toLowerCase();
+    return new TestCase<>(normalizedName, id, payloadGenerator.apply(id));
+  }
+
+  @Override
+  public String toString() {
+    return "TestCase{" + "name=" + name + "," + "id=" + id + "}";
   }
 }

@@ -1,0 +1,33 @@
+[ {
+  "description" : "description",
+  "endTimestamp" : 1630701665516,
+  "entity.guid" : "MTA5Mzg1MDJ8RVhUfFNFUlZJQ0V8LTkwMzM5MTM5NzM0MjMyNTk0MjA",
+  "entity.name" : "native-otlp-test",
+  "entity.type" : "SERVICE",
+  "instrumentation.provider" : "opentelemetry",
+  "message_id" : "e2cc1945-e094-4fa7-8de1-a7e6b759b1ee",
+  "metricName" : "my_sum",
+  "my_sum" : {
+    "count" : 1,
+    "latest" : 1.0,
+    "max" : 1.0,
+    "min" : 1.0,
+    "sum" : 1.0,
+    "type" : "gauge"
+  },
+  "my_sum_bkey" : true,
+  "my_sum_dkey" : 1.0,
+  "my_sum_ikey" : 1,
+  "my_sum_skey" : "value",
+  "newrelic.source" : "otlpAPI",
+  "otel.library.name" : "my-instrumentation-library",
+  "otel.library.version" : "foo",
+  "resource_bkey" : true,
+  "resource_dkey" : 1.0,
+  "resource_ikey" : 1,
+  "resource_skey" : "value",
+  "service.name" : "native-otlp-test",
+  "telemetry.sdk.name" : "opentelemetry",
+  "timestamp" : 1630701655517,
+  "unit" : "unit"
+} ]

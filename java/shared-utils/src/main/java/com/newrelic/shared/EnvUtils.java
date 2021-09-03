@@ -11,10 +11,7 @@ public class EnvUtils {
 
   public static <T> Supplier<T> getEnvOrDefault(
       String key, Function<String, T> transformer, T defaultValue) {
-    return () ->
-        envOrSystemProperty(key)
-            .map(transformer)
-            .orElse(defaultValue);
+    return () -> envOrSystemProperty(key).map(transformer).orElse(defaultValue);
   }
 
   public static <T> Supplier<T> getOrThrow(String key, Function<String, T> transformer) {
@@ -25,7 +22,7 @@ public class EnvUtils {
   }
 
   private static Optional<String> envOrSystemProperty(String key) {
-    return  Optional.ofNullable(System.getenv(key))
+    return Optional.ofNullable(System.getenv(key))
         .filter(NOT_EMPTY)
         .or(() -> Optional.ofNullable(System.getProperty(key)))
         .filter(NOT_EMPTY);

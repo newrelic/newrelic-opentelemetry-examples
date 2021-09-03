@@ -1,0 +1,88 @@
+{
+  "resourceMetrics": [{
+    "resource": {
+      "attributes": [{
+        "key": "service.name",
+        "value": {
+          "stringValue": "native-otlp-test"
+        }
+      }, {
+        "key": "telemetry.sdk.name",
+        "value": {
+          "stringValue": "opentelemetry"
+        }
+      }, {
+        "key": "instrumentation.provider",
+        "value": {
+          "stringValue": "opentelemetry"
+        }
+      }, {
+        "key": "resource_skey",
+        "value": {
+          "stringValue": "value"
+        }
+      }, {
+        "key": "resource_ikey",
+        "value": {
+          "intValue": "1"
+        }
+      }, {
+        "key": "resource_bkey",
+        "value": {
+          "boolValue": true
+        }
+      }, {
+        "key": "resource_dkey",
+        "value": {
+          "doubleValue": 1.0
+        }
+      }]
+    },
+    "instrumentationLibraryMetrics": [{
+      "instrumentationLibrary": {
+        "name": "my-instrumentation-library",
+        "version": "foo"
+      },
+      "metrics": [{
+        "name": "my_sum",
+        "description": "description",
+        "unit": "unit",
+        "sum": {
+          "dataPoints": [{
+            "startTimeUnixNano": "1630701655517000000",
+            "timeUnixNano": "1630701665516000000",
+            "asDouble": 1.0,
+            "attributes": [{
+              "key": "message_id",
+              "value": {
+                "stringValue": "e2cc1945-e094-4fa7-8de1-a7e6b759b1ee"
+              }
+            }, {
+              "key": "my_sum_skey",
+              "value": {
+                "stringValue": "value"
+              }
+            }, {
+              "key": "my_sum_ikey",
+              "value": {
+                "intValue": "1"
+              }
+            }, {
+              "key": "my_sum_bkey",
+              "value": {
+                "boolValue": true
+              }
+            }, {
+              "key": "my_sum_dkey",
+              "value": {
+                "doubleValue": 1.0
+              }
+            }]
+          }],
+          "aggregationTemporality": "AGGREGATION_TEMPORALITY_DELTA"
+        }
+      }]
+    }],
+    "schemaUrl": "schema url"
+  }]
+}
