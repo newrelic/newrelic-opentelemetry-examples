@@ -1,0 +1,91 @@
+{
+  "resourceMetrics": [{
+    "resource": {
+      "attributes": [{
+        "key": "service.name",
+        "value": {
+          "stringValue": "native-otlp-test"
+        }
+      }, {
+        "key": "telemetry.sdk.name",
+        "value": {
+          "stringValue": "opentelemetry"
+        }
+      }, {
+        "key": "instrumentation.provider",
+        "value": {
+          "stringValue": "opentelemetry"
+        }
+      }, {
+        "key": "resource_skey",
+        "value": {
+          "stringValue": "value"
+        }
+      }, {
+        "key": "resource_ikey",
+        "value": {
+          "intValue": "1"
+        }
+      }, {
+        "key": "resource_bkey",
+        "value": {
+          "boolValue": true
+        }
+      }, {
+        "key": "resource_dkey",
+        "value": {
+          "doubleValue": 1.0
+        }
+      }]
+    },
+    "instrumentationLibraryMetrics": [{
+      "instrumentationLibrary": {
+        "name": "my-instrumentation-library",
+        "version": "foo"
+      },
+      "metrics": [{
+        "name": "my_cumulative_histogram",
+        "description": "description",
+        "unit": "1",
+        "histogram": {
+          "dataPoints": [{
+            "startTimeUnixNano": "1630687361832000000",
+            "timeUnixNano": "1630687371832000000",
+            "count": "11",
+            "sum": 100.0,
+            "bucketCounts": ["5", "4", "1", "1"],
+            "explicitBounds": [1.0, 2.0, 3.0],
+            "attributes": [{
+              "key": "message_id",
+              "value": {
+                "stringValue": "799054e5-a527-476e-b4e1-fd8a25d7c951"
+              }
+            }, {
+              "key": "my_cumulative_histogram_skey",
+              "value": {
+                "stringValue": "value"
+              }
+            }, {
+              "key": "my_cumulative_histogram_ikey",
+              "value": {
+                "intValue": "1"
+              }
+            }, {
+              "key": "my_cumulative_histogram_bkey",
+              "value": {
+                "boolValue": true
+              }
+            }, {
+              "key": "my_cumulative_histogram_dkey",
+              "value": {
+                "doubleValue": 1.0
+              }
+            }]
+          }],
+          "aggregationTemporality": "AGGREGATION_TEMPORALITY_CUMULATIVE"
+        }
+      }]
+    }],
+    "schemaUrl": "schema url"
+  }]
+}

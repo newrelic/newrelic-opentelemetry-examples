@@ -1,0 +1,28 @@
+[ {
+  "description" : "description",
+  "endTimestamp" : 1630687371823,
+  "entity.guid" : "MTA5Mzg1MDJ8RVhUfFNFUlZJQ0V8LTkwMzM5MTM5NzM0MjMyNTk0MjA",
+  "entity.name" : "native-otlp-test",
+  "entity.type" : "SERVICE",
+  "instrumentation.provider" : "opentelemetry",
+  "message_id" : "5cce3d78-bd13-44ab-a060-1d0a23654823",
+  "metricName" : "my_cumulative_monotonic_sum",
+  "my_cumulative_monotonic_sum" : {
+    "count" : 1.0,
+    "type" : "count"
+  },
+  "my_cumulative_monotonic_sum_bkey" : true,
+  "my_cumulative_monotonic_sum_dkey" : 1.0,
+  "my_cumulative_monotonic_sum_ikey" : 1,
+  "my_cumulative_monotonic_sum_skey" : "value",
+  "newrelic.source" : "otlpAPI",
+  "otel.library.name" : "my-instrumentation-library",
+  "otel.library.version" : "foo",
+  "resource_bkey" : true,
+  "resource_dkey" : 1.0,
+  "resource_ikey" : 1,
+  "resource_skey" : "value",
+  "service.name" : "native-otlp-test",
+  "telemetry.sdk.name" : "opentelemetry",
+  "timestamp" : 1630687361823
+} ]
