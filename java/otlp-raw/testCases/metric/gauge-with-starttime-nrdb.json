@@ -1,1 +1,32 @@
-[ ]
+[ {
+  "description" : "description",
+  "entity.guid" : "OBFUSCATED",
+  "entity.name" : "native-otlp-test",
+  "entity.type" : "SERVICE",
+  "instrumentation.provider" : "opentelemetry",
+  "message_id" : "OBFUSCATED",
+  "metricName" : "my_gauge",
+  "my_gauge" : {
+    "count" : 1,
+    "latest" : 1.0,
+    "max" : 1.0,
+    "min" : 1.0,
+    "sum" : 1.0,
+    "type" : "gauge"
+  },
+  "my_gauge_bkey" : true,
+  "my_gauge_dkey" : 1.0,
+  "my_gauge_ikey" : 1,
+  "my_gauge_skey" : "value",
+  "newrelic.source" : "otlpAPI",
+  "otel.library.name" : "my-instrumentation-library",
+  "otel.library.version" : "foo",
+  "resource_bkey" : true,
+  "resource_dkey" : 1.0,
+  "resource_ikey" : 1,
+  "resource_skey" : "value",
+  "service.name" : "native-otlp-test",
+  "telemetry.sdk.name" : "opentelemetry",
+  "timestamp" : 0,
+  "unit" : "unit"
+} ]

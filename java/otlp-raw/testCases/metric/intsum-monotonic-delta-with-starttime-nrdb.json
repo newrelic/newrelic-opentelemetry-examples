@@ -1,5 +1,4 @@
 [ {
-  "collector.name" : "newrelic-otel-ingest",
   "description" : "description",
   "endTimestamp" : 0,
   "entity.guid" : "OBFUSCATED",
@@ -12,11 +11,11 @@
     "count" : 100.0,
     "type" : "count"
   },
-  "newrelic.source" : "metricAPI",
+  "newrelic.source" : "otlpAPI",
   "otel.library.name" : "my-instrumentation-library",
   "otel.library.version" : "foo",
   "resource_bkey" : true,
-  "resource_dkey" : 1,
+  "resource_dkey" : 1.0,
   "resource_ikey" : 1,
   "resource_skey" : "value",
   "service.name" : "native-otlp-test",

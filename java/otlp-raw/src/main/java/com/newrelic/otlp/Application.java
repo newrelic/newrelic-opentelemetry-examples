@@ -43,7 +43,7 @@ public class Application {
           "https://staging-api.newrelic.com/graphql");
   private static final Supplier<String> NEW_RELIC_OTLP_ENDPOINT =
       getEnvOrDefault(
-          "NEW_RELIC_OTLP_ENDPOINT", Function.identity(), "https://staging.otlp.nr-data.net:4317");
+          "NEW_RELIC_OTLP_ENDPOINT", Function.identity(), "https://staging-otlp.nr-data.net:4317");
   private static final Supplier<Boolean> OBFUSCATE_OUTPUT =
       getEnvOrDefault("OBFUSCATE_OUTPUT", Boolean::parseBoolean, true);
 
