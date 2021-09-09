@@ -1,87 +1,49 @@
 {
-  "resourceMetrics": [{
-    "resource": {
-      "attributes": [{
-        "key": "service.name",
-        "value": {
-          "stringValue": "native-otlp-test"
+  "resourceMetrics" : [ {
+    "instrumentationLibraryMetrics" : [ {
+      "instrumentationLibrary" : {
+        "name" : "my-instrumentation-library",
+        "version" : "foo"
+      }
+    } ],
+    "resource" : {
+      "attributes" : [ {
+        "key" : "service.name",
+        "value" : {
+          "stringValue" : "native-otlp-test"
         }
       }, {
-        "key": "telemetry.sdk.name",
-        "value": {
-          "stringValue": "opentelemetry"
+        "key" : "telemetry.sdk.name",
+        "value" : {
+          "stringValue" : "opentelemetry"
         }
       }, {
-        "key": "instrumentation.provider",
-        "value": {
-          "stringValue": "opentelemetry"
+        "key" : "instrumentation.provider",
+        "value" : {
+          "stringValue" : "opentelemetry"
         }
       }, {
-        "key": "resource_skey",
-        "value": {
-          "stringValue": "value"
+        "key" : "resource_skey",
+        "value" : {
+          "stringValue" : "value"
         }
       }, {
-        "key": "resource_ikey",
-        "value": {
-          "intValue": "1"
+        "key" : "resource_ikey",
+        "value" : {
+          "intValue" : "1"
         }
       }, {
-        "key": "resource_bkey",
-        "value": {
-          "boolValue": true
+        "key" : "resource_bkey",
+        "value" : {
+          "boolValue" : true
         }
       }, {
-        "key": "resource_dkey",
-        "value": {
-          "doubleValue": 1.0
+        "key" : "resource_dkey",
+        "value" : {
+          "doubleValue" : 1.0
         }
-      }]
+      } ]
     },
-    "instrumentationLibraryMetrics": [{
-      "instrumentationLibrary": {
-        "name": "my-instrumentation-library",
-        "version": "foo"
-      },
-      "metrics": [{
-        "name": "my_gauge",
-        "description": "description",
-        "unit": "unit",
-        "gauge": {
-          "dataPoints": [{
-            "startTimeUnixNano": "1630701655495000000",
-            "timeUnixNano": "1630701665494000000",
-            "asDouble": 1.0,
-            "attributes": [{
-              "key": "message_id",
-              "value": {
-                "stringValue": "b665af16-f96a-4611-9384-ab346c36c000"
-              }
-            }, {
-              "key": "my_gauge_skey",
-              "value": {
-                "stringValue": "value"
-              }
-            }, {
-              "key": "my_gauge_ikey",
-              "value": {
-                "intValue": "1"
-              }
-            }, {
-              "key": "my_gauge_bkey",
-              "value": {
-                "boolValue": true
-              }
-            }, {
-              "key": "my_gauge_dkey",
-              "value": {
-                "doubleValue": 1.0
-              }
-            }]
-          }]
-        }
-      }]
-    }],
-    "schemaUrl": "schema url"
-  }]
+    "schemaUrl" : "schema url"
+  } ]
 }

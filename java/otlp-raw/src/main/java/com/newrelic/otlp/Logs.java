@@ -2,6 +2,8 @@ package com.newrelic.otlp;
 
 import static com.newrelic.otlp.Common.allTheAttributes;
 import static com.newrelic.otlp.Common.idAttribute;
+import static com.newrelic.otlp.Common.obfuscateKeyValues;
+import static com.newrelic.otlp.Common.obfuscateResource;
 import static com.newrelic.otlp.Common.spanIdByteString;
 import static com.newrelic.otlp.Common.toEpochNano;
 import static com.newrelic.otlp.Common.traceIdByteString;
@@ -16,6 +18,7 @@ import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.proto.logs.v1.SeverityNumber;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 
 class Logs implements TestCaseProvider<ExportLogsServiceRequest> {
 
@@ -38,6 +41,29 @@ class Logs implements TestCaseProvider<ExportLogsServiceRequest> {
   @Override
   public String newRelicDataType() {
     return "Log";
+  }
+
+  @Override
+  public ExportLogsServiceRequest obfuscateAttributeKeys(
+      ExportLogsServiceRequest request, Set<String> attributeKeys) {
+    var requestBuilder = ExportLogsServiceRequest.newBuilder();
+    for (var rLog : request.getResourceLogsList()) {
+      var rLogBuilder = rLog.toBuilder();
+      rLogBuilder.setResource(obfuscateResource(rLog.getResource(), attributeKeys));
+      rLogBuilder.clearInstrumentationLibraryLogs();
+      for (var ilLog : rLog.getInstrumentationLibraryLogsList()) {
+        var ilLogBuilder = ilLog.toBuilder();
+        ilLogBuilder.clearLogs();
+        for (var log : ilLog.getLogsList()) {
+          var logBuilder = log.toBuilder();
+          logBuilder.clearAttributes();
+          logBuilder.addAllAttributes(obfuscateKeyValues(log.getAttributesList(), attributeKeys));
+        }
+        rLogBuilder.addInstrumentationLibraryLogs(ilLogBuilder.build());
+      }
+      requestBuilder.addResourceLogs(rLogBuilder.build());
+    }
+    return requestBuilder.build();
   }
 
   private static ExportLogsServiceRequest logRequest(String id) {

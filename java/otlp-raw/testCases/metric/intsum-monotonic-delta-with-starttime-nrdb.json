@@ -1,25 +1,26 @@
 [ {
+  "collector.name" : "newrelic-otel-ingest",
   "description" : "description",
-  "endTimestamp" : 1630701665519,
-  "entity.guid" : "MTA5Mzg1MDJ8RVhUfFNFUlZJQ0V8LTkwMzM5MTM5NzM0MjMyNTk0MjA",
+  "endTimestamp" : 0,
+  "entity.guid" : "OBFUSCATED",
   "entity.name" : "native-otlp-test",
   "entity.type" : "SERVICE",
   "instrumentation.provider" : "opentelemetry",
-  "message_id" : "0de138db-66f3-48c7-a562-282688dc1782",
+  "message_id" : "OBFUSCATED",
   "metricName" : "my_int_sum",
   "my_int_sum" : {
     "count" : 100.0,
     "type" : "count"
   },
-  "newrelic.source" : "otlpAPI",
+  "newrelic.source" : "metricAPI",
   "otel.library.name" : "my-instrumentation-library",
   "otel.library.version" : "foo",
   "resource_bkey" : true,
-  "resource_dkey" : 1.0,
+  "resource_dkey" : 1,
   "resource_ikey" : 1,
   "resource_skey" : "value",
   "service.name" : "native-otlp-test",
   "telemetry.sdk.name" : "opentelemetry",
-  "timestamp" : 1630701655519,
+  "timestamp" : 0,
   "unit" : "unit"
 } ]

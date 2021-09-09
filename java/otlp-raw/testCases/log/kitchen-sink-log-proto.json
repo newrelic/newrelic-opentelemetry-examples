@@ -1,87 +1,48 @@
 {
-  "resourceLogs": [{
-    "resource": {
-      "attributes": [{
-        "key": "service.name",
-        "value": {
-          "stringValue": "native-otlp-test"
+  "resourceLogs" : [ {
+    "instrumentationLibraryLogs" : [ {
+      "instrumentationLibrary" : {
+        "name" : "my-instrumentation-library",
+        "version" : "foo"
+      }
+    } ],
+    "resource" : {
+      "attributes" : [ {
+        "key" : "service.name",
+        "value" : {
+          "stringValue" : "native-otlp-test"
         }
       }, {
-        "key": "telemetry.sdk.name",
-        "value": {
-          "stringValue": "opentelemetry"
+        "key" : "telemetry.sdk.name",
+        "value" : {
+          "stringValue" : "opentelemetry"
         }
       }, {
-        "key": "instrumentation.provider",
-        "value": {
-          "stringValue": "opentelemetry"
+        "key" : "instrumentation.provider",
+        "value" : {
+          "stringValue" : "opentelemetry"
         }
       }, {
-        "key": "resource_skey",
-        "value": {
-          "stringValue": "value"
+        "key" : "resource_skey",
+        "value" : {
+          "stringValue" : "value"
         }
       }, {
-        "key": "resource_ikey",
-        "value": {
-          "intValue": "1"
+        "key" : "resource_ikey",
+        "value" : {
+          "intValue" : "1"
         }
       }, {
-        "key": "resource_bkey",
-        "value": {
-          "boolValue": true
+        "key" : "resource_bkey",
+        "value" : {
+          "boolValue" : true
         }
       }, {
-        "key": "resource_dkey",
-        "value": {
-          "doubleValue": 1.0
+        "key" : "resource_dkey",
+        "value" : {
+          "doubleValue" : 1.0
         }
-      }]
-    },
-    "instrumentationLibraryLogs": [{
-      "instrumentationLibrary": {
-        "name": "my-instrumentation-library",
-        "version": "foo"
-      },
-      "logs": [{
-        "timeUnixNano": "1630701667355000000",
-        "severityNumber": "SEVERITY_NUMBER_DEBUG",
-        "severityText": "DEBUG",
-        "name": "name",
-        "body": {
-          "stringValue": "body"
-        },
-        "attributes": [{
-          "key": "message_id",
-          "value": {
-            "stringValue": "996a4f89-56c0-4fe5-bf13-33fd89282ccc"
-          }
-        }, {
-          "key": "log_skey",
-          "value": {
-            "stringValue": "value"
-          }
-        }, {
-          "key": "log_ikey",
-          "value": {
-            "intValue": "1"
-          }
-        }, {
-          "key": "log_bkey",
-          "value": {
-            "boolValue": true
-          }
-        }, {
-          "key": "log_dkey",
-          "value": {
-            "doubleValue": 1.0
-          }
-        }],
-        "droppedAttributesCount": 1,
-        "flags": 1,
-        "traceId": "TnJ5rZ05MnSKja9QOnsTpA==",
-        "spanId": "hMypb8SEXWo="
-      }]
-    }]
-  }]
+      } ]
+    }
+  } ]
 }

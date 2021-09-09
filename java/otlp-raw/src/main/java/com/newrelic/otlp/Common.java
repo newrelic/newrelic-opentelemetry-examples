@@ -1,5 +1,7 @@
 package com.newrelic.otlp;
 
+import static java.util.stream.Collectors.toList;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,12 +17,19 @@ import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.proto.common.v1.AnyValue;
+import io.opentelemetry.proto.common.v1.ArrayValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
 import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.common.v1.KeyValueList;
+import io.opentelemetry.proto.common.v1.StringKeyValue;
 import io.opentelemetry.proto.resource.v1.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class Common {
@@ -32,7 +41,8 @@ public class Common {
       new ObjectMapper()
           .registerModule(new Jdk8Module())
           .registerModule(new JavaTimeModule())
-          .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+          .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+          .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
 
   private Common() {}
 
@@ -58,6 +68,113 @@ public class Common {
     } catch (JsonProcessingException e) {
       throw new IllegalStateException("Failed to serialize to JSON", e);
     }
+  }
+
+  static String obfuscateJson(String json, Set<String> fields) throws JsonProcessingException {
+    Object deserialized = MAPPER.readValue(json, Object.class);
+    Object obfuscated = obfuscateObject(deserialized, fields);
+    return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(obfuscated);
+  }
+
+  private static Object obfuscateObject(Object object, Set<String> fields) {
+    if (object instanceof List) {
+      List<Object> response = new ArrayList<>();
+      List<?> list = (List<?>) object;
+      for (Object entry : list) {
+        response.add(obfuscateObject(entry, fields));
+      }
+      return response;
+    }
+    if (object instanceof Map) {
+      Map<Object, Object> response = new HashMap<>();
+      Map<?, ?> map = new HashMap<>((Map<?, ?>) object);
+      for (Map.Entry<?, ?> entry : map.entrySet()) {
+        Object key = entry.getKey();
+        Object value = entry.getValue();
+        if (fields.contains(key)) {
+          Object obfuscatedValue = null;
+          if (value instanceof Number) {
+            obfuscatedValue = 0;
+          } else if (value instanceof Boolean) {
+            obfuscatedValue = false;
+          } else if (value instanceof String) {
+            obfuscatedValue = "OBFUSCATED";
+          }
+          response.put(key, obfuscatedValue);
+        } else {
+          response.put(key, obfuscateObject(value, fields));
+        }
+      }
+      return response;
+    }
+    return object;
+  }
+
+  static Resource obfuscateResource(Resource original, Set<String> attributeKeys) {
+    var attributes = original.getAttributesList();
+    return original.toBuilder()
+        .clearAttributes()
+        .addAllAttributes(obfuscateKeyValues(attributes, attributeKeys))
+        .build();
+  }
+
+  static List<StringKeyValue> obfuscateStringKeyValues(
+      List<StringKeyValue> original, Set<String> attributeKeys) {
+    return original.stream()
+        .map(
+            keyValue -> {
+              var key = keyValue.getKey();
+              if (!attributeKeys.contains(key)) {
+                return keyValue;
+              }
+              return keyValue.toBuilder().setValue("OBFUSCATED").build();
+            })
+        .collect(toList());
+  }
+
+  static List<KeyValue> obfuscateKeyValues(List<KeyValue> original, Set<String> attributeKeys) {
+    return original.stream()
+        .map(
+            keyValue -> {
+              var key = keyValue.getKey();
+              if (!attributeKeys.contains(key)) {
+                return keyValue;
+              }
+              var value = keyValue.getValue();
+              var builder = KeyValue.newBuilder().setKey(key);
+              if (value.hasArrayValue()) {
+                builder.setValue(
+                    AnyValue.newBuilder().setArrayValue(ArrayValue.newBuilder().build()).build());
+              }
+              if (value.hasBoolValue()) {
+                builder.setValue(AnyValue.newBuilder().setBoolValue(false).build());
+              }
+              if (value.hasStringValue()) {
+                builder.setValue(AnyValue.newBuilder().setStringValue("OBFUSCATED").build());
+              }
+              if (value.hasIntValue()) {
+                builder.setValue(AnyValue.newBuilder().setIntValue(0).build());
+              }
+              if (value.hasIntValue()) {
+                builder.setValue(AnyValue.newBuilder().setIntValue(0).build());
+              }
+              if (value.hasDoubleValue()) {
+                builder.setValue(AnyValue.newBuilder().setDoubleValue(0.0).build());
+              }
+              if (value.hasKvlistValue()) {
+                builder.setValue(
+                    AnyValue.newBuilder()
+                        .setKvlistValue(KeyValueList.newBuilder().build())
+                        .build());
+              }
+              if (value.hasBytesValue()) {
+                builder
+                    .setValue(AnyValue.newBuilder().setBytesValue(ByteString.EMPTY).build())
+                    .build();
+              }
+              return builder.build();
+            })
+        .collect(toList());
   }
 
   static Resource resource() {

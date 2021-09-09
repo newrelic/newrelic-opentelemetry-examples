@@ -1,10 +1,12 @@
 package com.newrelic.otlp;
 
+import static com.newrelic.otlp.Common.obfuscateJson;
 import static com.newrelic.otlp.Common.serializeToJson;
 import static com.newrelic.shared.EnvUtils.getEnvOrDefault;
 import static com.newrelic.shared.EnvUtils.getOrThrow;
 import static java.util.stream.Collectors.toList;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.protobuf.MessageOrBuilder;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -17,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,7 +43,9 @@ public class Application {
           "https://staging-api.newrelic.com/graphql");
   private static final Supplier<String> NEW_RELIC_OTLP_ENDPOINT =
       getEnvOrDefault(
-          "NEW_RELIC_OTLP_ENDPOINT", Function.identity(), "https://staging-otlp.nr-data.net:4317");
+          "NEW_RELIC_OTLP_ENDPOINT", Function.identity(), "https://staging.otlp.nr-data.net:4317");
+  private static final Supplier<Boolean> OBFUSCATE_OUTPUT =
+      getEnvOrDefault("OBFUSCATE_OUTPUT", Boolean::parseBoolean, true);
 
   public static void main(String[] args) {
     new Application().run();
@@ -79,9 +84,14 @@ public class Application {
       TestCaseProvider<T> testCaseProvider, TestCase<T> testCase) {
     System.out.format(
         "Starting protobuf export for %s %s%n", testCaseProvider.newRelicDataType(), testCase);
-    testCaseProvider.exportGrpcProtobuf(testCase.payload);
-    System.out.format(
-        "Finished protobuf export for %s %s%n", testCaseProvider.newRelicDataType(), testCase.name);
+    try {
+      testCaseProvider.exportGrpcProtobuf(testCase.payload);
+      System.out.format(
+          "Finished protobuf export for %s %s%n", testCaseProvider.newRelicDataType(), testCase.name);
+    } catch (Exception e) {
+      System.out.format(
+          "An error occurred during protobuf export for %s %s: %s%n", testCaseProvider.newRelicDataType(), testCase.name, e.getMessage());
+    }
     var runNrqlAfter = Instant.now().plusSeconds(10);
     return CompletableFuture.supplyAsync(
             () -> fetchNrqlResults(testCaseProvider, testCase, runNrqlAfter), nrqlExecutor)
@@ -89,7 +99,11 @@ public class Application {
             nrqlJson -> {
               System.out.format(
                   "Saving results for %s %s%n", testCaseProvider.newRelicDataType(), testCase);
-              var protobufJson = Common.serializeToProtobufJson(testCase.payload);
+              T payload = testCase.payload;
+              if (OBFUSCATE_OUTPUT.get()) {
+                payload = testCaseProvider.obfuscateAttributeKeys(payload, Set.of(Common.ID_KEY));
+              }
+              var protobufJson = Common.serializeToProtobufJson(payload);
               saveTestResults(testCaseProvider, testCase, protobufJson, nrqlJson);
             });
   }
@@ -151,8 +165,57 @@ public class Application {
     var testCaseDir = testCaseProvider.newRelicDataType().toLowerCase();
     var protoFilename = String.format("%s-proto.json", testCase.name);
     var nrdbFileName = String.format("%s-nrdb.json", testCase.name);
-    writeToFile(Paths.get(outputDir, testCaseDir, protoFilename), protobufJson);
-    writeToFile(Paths.get(outputDir, testCaseDir, nrdbFileName), nrdbJson);
+    var obfuscatedProtobufJson = maybeObfuscateProtbufJson(protobufJson);
+    var obfuscatedNrdbJson = maybeObfuscateNrdbJson(nrdbJson);
+    writeToFile(Paths.get(outputDir, testCaseDir, protoFilename), obfuscatedProtobufJson);
+    writeToFile(Paths.get(outputDir, testCaseDir, nrdbFileName), obfuscatedNrdbJson);
+  }
+
+  private static String maybeObfuscateNrdbJson(String nrdbJson) {
+    if (!OBFUSCATE_OUTPUT.get()) {
+      return nrdbJson;
+    }
+    try {
+      return obfuscateJson(
+          nrdbJson,
+          Set.of(
+              "entity.guid",
+              "entityGuid",
+              "message_id",
+              "timestamp",
+              "guid",
+              "parent.id",
+              "parentId",
+              "id",
+              "trace.id",
+              "traceId",
+              "span.id",
+              "messageId",
+              "entity.guids",
+              "endTimestamp"));
+    } catch (JsonProcessingException e) {
+      throw new IllegalStateException("Error obfuscating NRDB json.", e);
+    }
+  }
+
+  private static String maybeObfuscateProtbufJson(String protobufJson) {
+    if (!OBFUSCATE_OUTPUT.get()) {
+      return protobufJson;
+    }
+    try {
+      return obfuscateJson(
+          protobufJson,
+          Set.of(
+              "startTimeUnixNano",
+              "timeUnixNano",
+              "timestamp",
+              "traceId",
+              "parentSpanId",
+              "spanId",
+              "endTimeUnixNano"));
+    } catch (JsonProcessingException e) {
+      throw new IllegalStateException("Error obfuscating NRDB json.", e);
+    }
   }
 
   private static void writeToFile(Path path, String content) {
@@ -170,7 +233,7 @@ public class Application {
 
   private ManagedChannel managedChannel() {
     var url = HttpUrl.parse(NEW_RELIC_OTLP_ENDPOINT.get());
-    var managedChannelBuilder = ManagedChannelBuilder.forTarget(url.host());
+    var managedChannelBuilder = ManagedChannelBuilder.forAddress(url.host(), url.port());
     if (url.scheme().equals("https")) {
       managedChannelBuilder.useTransportSecurity();
     } else {

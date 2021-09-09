@@ -1,93 +1,49 @@
 {
-  "resourceMetrics": [{
-    "resource": {
-      "attributes": [{
-        "key": "service.name",
-        "value": {
-          "stringValue": "native-otlp-test"
+  "resourceMetrics" : [ {
+    "instrumentationLibraryMetrics" : [ {
+      "instrumentationLibrary" : {
+        "name" : "my-instrumentation-library",
+        "version" : "foo"
+      }
+    } ],
+    "resource" : {
+      "attributes" : [ {
+        "key" : "service.name",
+        "value" : {
+          "stringValue" : "native-otlp-test"
         }
       }, {
-        "key": "telemetry.sdk.name",
-        "value": {
-          "stringValue": "opentelemetry"
+        "key" : "telemetry.sdk.name",
+        "value" : {
+          "stringValue" : "opentelemetry"
         }
       }, {
-        "key": "instrumentation.provider",
-        "value": {
-          "stringValue": "opentelemetry"
+        "key" : "instrumentation.provider",
+        "value" : {
+          "stringValue" : "opentelemetry"
         }
       }, {
-        "key": "resource_skey",
-        "value": {
-          "stringValue": "value"
+        "key" : "resource_skey",
+        "value" : {
+          "stringValue" : "value"
         }
       }, {
-        "key": "resource_ikey",
-        "value": {
-          "intValue": "1"
+        "key" : "resource_ikey",
+        "value" : {
+          "intValue" : "1"
         }
       }, {
-        "key": "resource_bkey",
-        "value": {
-          "boolValue": true
+        "key" : "resource_bkey",
+        "value" : {
+          "boolValue" : true
         }
       }, {
-        "key": "resource_dkey",
-        "value": {
-          "doubleValue": 1.0
+        "key" : "resource_dkey",
+        "value" : {
+          "doubleValue" : 1.0
         }
-      }]
+      } ]
     },
-    "instrumentationLibraryMetrics": [{
-      "instrumentationLibrary": {
-        "name": "my-instrumentation-library",
-        "version": "foo"
-      },
-      "metrics": [{
-        "name": "my_summary",
-        "description": "description",
-        "unit": "unit",
-        "summary": {
-          "dataPoints": [{
-            "startTimeUnixNano": "1630701655510000000",
-            "timeUnixNano": "1630701665509000000",
-            "count": "2",
-            "sum": 99.0,
-            "quantileValues": [{
-            }, {
-              "quantile": 1.0,
-              "value": 99.0
-            }],
-            "attributes": [{
-              "key": "message_id",
-              "value": {
-                "stringValue": "7f29c11b-25f8-4ba9-98e6-d52d72e9aaa9"
-              }
-            }, {
-              "key": "my_summary_skey",
-              "value": {
-                "stringValue": "value"
-              }
-            }, {
-              "key": "my_summary_ikey",
-              "value": {
-                "intValue": "1"
-              }
-            }, {
-              "key": "my_summary_bkey",
-              "value": {
-                "boolValue": true
-              }
-            }, {
-              "key": "my_summary_dkey",
-              "value": {
-                "doubleValue": 1.0
-              }
-            }]
-          }]
-        }
-      }]
-    }],
-    "schemaUrl": "schema url"
-  }]
+    "schemaUrl" : "schema url"
+  } ]
 }

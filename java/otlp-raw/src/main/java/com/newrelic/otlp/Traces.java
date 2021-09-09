@@ -3,6 +3,8 @@ package com.newrelic.otlp;
 import static com.newrelic.otlp.Common.allTheAttributes;
 import static com.newrelic.otlp.Common.idAttribute;
 import static com.newrelic.otlp.Common.instrumentationLibrary;
+import static com.newrelic.otlp.Common.obfuscateKeyValues;
+import static com.newrelic.otlp.Common.obfuscateResource;
 import static com.newrelic.otlp.Common.spanIdByteString;
 import static com.newrelic.otlp.Common.toByteString;
 import static com.newrelic.otlp.Common.toEpochNano;
@@ -20,6 +22,7 @@ import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 
 class Traces implements TestCaseProvider<ExportTraceServiceRequest> {
 
@@ -42,6 +45,46 @@ class Traces implements TestCaseProvider<ExportTraceServiceRequest> {
   @Override
   public String newRelicDataType() {
     return "Span";
+  }
+
+  @Override
+  public ExportTraceServiceRequest obfuscateAttributeKeys(
+      ExportTraceServiceRequest request, Set<String> attributeKeys) {
+    var requestBuilder = ExportTraceServiceRequest.newBuilder();
+    for (var rSpan : request.getResourceSpansList()) {
+      var rSpanBuilder = rSpan.toBuilder();
+      rSpanBuilder.setResource(obfuscateResource(rSpan.getResource(), attributeKeys));
+      rSpanBuilder.clearInstrumentationLibrarySpans();
+      for (var ilSpan : rSpan.getInstrumentationLibrarySpansList()) {
+        var ilSpanBuilder = ilSpan.toBuilder();
+        ilSpanBuilder.clearSpans();
+        for (var span : ilSpan.getSpansList()) {
+          var spanBuilder = span.toBuilder();
+          spanBuilder.clearAttributes();
+          spanBuilder.addAllAttributes(obfuscateKeyValues(span.getAttributesList(), attributeKeys));
+          spanBuilder.clearEvents();
+          for (var event : span.getEventsList()) {
+            spanBuilder.addEvents(
+                event.toBuilder()
+                    .clearAttributes()
+                    .addAllAttributes(obfuscateKeyValues(event.getAttributesList(), attributeKeys))
+                    .build());
+          }
+          spanBuilder.clearLinks();
+          for (var link : span.getLinksList()) {
+            spanBuilder.addLinks(
+                link.toBuilder()
+                    .clearAttributes()
+                    .addAllAttributes(obfuscateKeyValues(link.getAttributesList(), attributeKeys))
+                    .build());
+          }
+          ilSpanBuilder.addSpans(spanBuilder.build());
+        }
+        rSpanBuilder.addInstrumentationLibrarySpans(ilSpanBuilder.build());
+      }
+      requestBuilder.addResourceSpans(rSpanBuilder.build());
+    }
+    return requestBuilder.build();
   }
 
   private static ExportTraceServiceRequest traceRequest(String id) {

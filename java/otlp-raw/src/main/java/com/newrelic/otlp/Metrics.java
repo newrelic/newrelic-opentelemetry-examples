@@ -2,6 +2,9 @@ package com.newrelic.otlp;
 
 import static com.newrelic.otlp.Common.allTheAttributes;
 import static com.newrelic.otlp.Common.idAttribute;
+import static com.newrelic.otlp.Common.obfuscateKeyValues;
+import static com.newrelic.otlp.Common.obfuscateResource;
+import static com.newrelic.otlp.Common.obfuscateStringKeyValues;
 import static com.newrelic.otlp.Common.toEpochNano;
 import static com.newrelic.otlp.TestCase.of;
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_CUMULATIVE;
@@ -30,6 +33,7 @@ import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
 
@@ -167,6 +171,125 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
   @Override
   public String newRelicDataType() {
     return "Metric";
+  }
+
+  @Override
+  public ExportMetricsServiceRequest obfuscateAttributeKeys(
+      ExportMetricsServiceRequest request, Set<String> attributeKeys) {
+    var requestBuilder = ExportMetricsServiceRequest.newBuilder();
+    for (var rMetric : request.getResourceMetricsList()) {
+      var rMetricBuilder = rMetric.toBuilder();
+      rMetricBuilder.setResource(obfuscateResource(rMetric.getResource(), attributeKeys));
+      rMetricBuilder.clearInstrumentationLibraryMetrics();
+      for (var ilMetric : rMetric.getInstrumentationLibraryMetricsList()) {
+        var ilMetricBuilder = ilMetric.toBuilder();
+        ilMetricBuilder.clearMetrics();
+        for (var metric : ilMetric.getMetricsList()) {
+          var metricBuilder = metric.toBuilder();
+          if (metricBuilder.hasGauge()) {
+            metricBuilder.clearGauge();
+            var gaugeBuilder = metricBuilder.getGaugeBuilder();
+            gaugeBuilder.clearDataPoints();
+            for (var datapoint : metric.getGauge().getDataPointsList()) {
+              gaugeBuilder.addDataPoints(
+                  datapoint.toBuilder()
+                      .clearAttributes()
+                      .addAllAttributes(
+                          obfuscateKeyValues(datapoint.getAttributesList(), attributeKeys))
+                      .build());
+            }
+            metricBuilder.setGauge(gaugeBuilder.build());
+          }
+          if (metricBuilder.hasIntGauge()) {
+            metricBuilder.clearIntGauge();
+            var intGaugeBuilder = metricBuilder.getIntGaugeBuilder();
+            intGaugeBuilder.clearDataPoints();
+            for (var datapoint : metric.getIntGauge().getDataPointsList()) {
+              intGaugeBuilder.addDataPoints(
+                  datapoint.toBuilder()
+                      .clearLabels()
+                      .addAllLabels(
+                          obfuscateStringKeyValues(datapoint.getLabelsList(), attributeKeys))
+                      .build());
+            }
+            metricBuilder.setIntGauge(intGaugeBuilder.build());
+          }
+          if (metricBuilder.hasSum()) {
+            metricBuilder.clearSum();
+            var sumBuilder = metricBuilder.getSumBuilder();
+            sumBuilder.clearDataPoints();
+            for (var datapoint : metric.getSum().getDataPointsList()) {
+              sumBuilder.addDataPoints(
+                  datapoint.toBuilder()
+                      .clearAttributes()
+                      .addAllAttributes(
+                          obfuscateKeyValues(datapoint.getAttributesList(), attributeKeys))
+                      .build());
+            }
+            metricBuilder.setSum(sumBuilder.build());
+          }
+          if (metricBuilder.hasIntSum()) {
+            metricBuilder.clearIntSum();
+            var intSumBuilder = metricBuilder.getIntSumBuilder();
+            intSumBuilder.clearDataPoints();
+            for (var datapoint : metric.getIntSum().getDataPointsList()) {
+              intSumBuilder.addDataPoints(
+                  datapoint.toBuilder()
+                      .clearLabels()
+                      .addAllLabels(
+                          obfuscateStringKeyValues(datapoint.getLabelsList(), attributeKeys))
+                      .build());
+            }
+            metricBuilder.setIntSum(intSumBuilder.build());
+          }
+          if (metricBuilder.hasHistogram()) {
+            metricBuilder.clearHistogram();
+            var histogramBuilder = metricBuilder.getHistogramBuilder();
+            histogramBuilder.clearDataPoints();
+            for (var datapoint : metric.getHistogram().getDataPointsList()) {
+              histogramBuilder.addDataPoints(
+                  datapoint.toBuilder()
+                      .clearAttributes()
+                      .addAllAttributes(
+                          obfuscateKeyValues(datapoint.getAttributesList(), attributeKeys))
+                      .build());
+            }
+            metricBuilder.setHistogram(histogramBuilder.build());
+          }
+          if (metricBuilder.hasIntHistogram()) {
+            metricBuilder.clearIntHistogram();
+            var intHistogramBuilder = metricBuilder.getIntHistogramBuilder();
+            intHistogramBuilder.clearDataPoints();
+            for (var datapoint : metric.getIntHistogram().getDataPointsList()) {
+              intHistogramBuilder.addDataPoints(
+                  datapoint.toBuilder()
+                      .clearLabels()
+                      .addAllLabels(
+                          obfuscateStringKeyValues(datapoint.getLabelsList(), attributeKeys))
+                      .build());
+            }
+            metricBuilder.setIntHistogram(intHistogramBuilder.build());
+          }
+          if (metricBuilder.hasSummary()) {
+            metricBuilder.clearSummary();
+            var summaryBuilder = metricBuilder.getSummaryBuilder();
+            summaryBuilder.clearDataPoints();
+            for (var datapoint : metric.getSummary().getDataPointsList()) {
+              summaryBuilder.addDataPoints(
+                  datapoint.toBuilder()
+                      .clearLabels()
+                      .addAllLabels(
+                          obfuscateStringKeyValues(datapoint.getLabelsList(), attributeKeys))
+                      .build());
+            }
+            metricBuilder.setSummary(summaryBuilder.build());
+          }
+        }
+        rMetricBuilder.addInstrumentationLibraryMetrics(ilMetricBuilder.build());
+      }
+      requestBuilder.addResourceMetrics(rMetricBuilder.build());
+    }
+    return requestBuilder.build();
   }
 
   private static ExportMetricsServiceRequest gauge(
