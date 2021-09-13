@@ -46,6 +46,8 @@ public class Application {
           "NEW_RELIC_OTLP_ENDPOINT", Function.identity(), "https://staging-otlp.nr-data.net:4317");
   private static final Supplier<Boolean> OBFUSCATE_OUTPUT =
       getEnvOrDefault("OBFUSCATE_OUTPUT", Boolean::parseBoolean, true);
+  private static final Supplier<Integer> INGEST_WAIT_SECONDS =
+      getEnvOrDefault("INGEST_WAIT_SECONDS", Integer::valueOf, 20);
 
   public static void main(String[] args) {
     new Application().run();
@@ -92,7 +94,7 @@ public class Application {
       System.out.format(
           "An error occurred during protobuf export for %s %s: %s%n", testCaseProvider.newRelicDataType(), testCase.name, e.getMessage());
     }
-    var runNrqlAfter = Instant.now().plusSeconds(10);
+    var runNrqlAfter = Instant.now().plusSeconds(INGEST_WAIT_SECONDS.get());
     return CompletableFuture.supplyAsync(
             () -> fetchNrqlResults(testCaseProvider, testCase, runNrqlAfter), nrqlExecutor)
         .thenAccept(
