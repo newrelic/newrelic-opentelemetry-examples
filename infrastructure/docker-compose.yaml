@@ -16,7 +16,7 @@ services:
       - "6379"
 
   otel-collector:
-    image: otel/opentelemetry-collector:0.26.0
+    image: otel/opentelemetry-collector:0.33.0
     command: ["--config=/etc/otel-collector-config.yaml", "${OTELCOL_ARGS}"]
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT_NO_SCHEME: ${OTEL_EXPORTER_OTLP_ENDPOINT_NO_SCHEME}
@@ -27,7 +27,7 @@ services:
       - "4317"        # OTLP gRPC receiver
 
   otel-agent-infrastructure:
-    image: otel/opentelemetry-collector-contrib:0.26.0
+    image: otel/opentelemetry-collector-contrib:0.33.0
     command: ["--config=/etc/otel-agent-config.yaml", "${OTELCOL_ARGS}"]
     environment:
       OTEL_RESOURCE_ATTRIBUTES: "service.name=my-infrastructure"
