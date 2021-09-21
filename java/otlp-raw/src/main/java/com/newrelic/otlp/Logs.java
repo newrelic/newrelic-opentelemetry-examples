@@ -12,6 +12,7 @@ import io.grpc.ManagedChannel;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.LogsServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
+import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
 import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
@@ -35,7 +36,9 @@ class Logs implements TestCaseProvider<ExportLogsServiceRequest> {
 
   @Override
   public List<TestCase<ExportLogsServiceRequest>> testCases() {
-    return List.of(TestCase.of("kitchen sink log", Logs::logRequest));
+    return List.of(
+        TestCase.of("kitchen sink log", Logs::kitchenSinkLog),
+        TestCase.of("attribute precedence", Logs::attributePrecedence));
   }
 
   @Override
@@ -67,7 +70,7 @@ class Logs implements TestCaseProvider<ExportLogsServiceRequest> {
     return requestBuilder.build();
   }
 
-  private static ExportLogsServiceRequest logRequest(String id) {
+  private static ExportLogsServiceRequest kitchenSinkLog(String id) {
     return ExportLogsServiceRequest.newBuilder()
         .addResourceLogs(
             ResourceLogs.newBuilder()
@@ -88,6 +91,41 @@ class Logs implements TestCaseProvider<ExportLogsServiceRequest> {
                                 .setFlags(1)
                                 .setTraceId(traceIdByteString())
                                 .setSpanId(spanIdByteString())
+                                .build())
+                        .build())
+                .buildPartial())
+        .build();
+  }
+
+  private static ExportLogsServiceRequest attributePrecedence(String id) {
+    var duplicateKey = "duplicate-key";
+    return ExportLogsServiceRequest.newBuilder()
+        .addResourceLogs(
+            ResourceLogs.newBuilder()
+                .setResource(
+                    Common.resource().toBuilder()
+                        .addAttributes(
+                            KeyValue.newBuilder()
+                                .setKey(duplicateKey)
+                                .setValue(
+                                    AnyValue.newBuilder().setStringValue("resource-value").build())
+                                .build()))
+                .addInstrumentationLibraryLogs(
+                    InstrumentationLibraryLogs.newBuilder()
+                        .setInstrumentationLibrary(Common.instrumentationLibrary())
+                        .addLogs(
+                            LogRecord.newBuilder()
+                                .setTimeUnixNano(toEpochNano(Instant.now()))
+                                .setBody(AnyValue.newBuilder().setStringValue("body").build())
+                                .addAttributes(idAttribute(id))
+                                .addAttributes(
+                                    KeyValue.newBuilder()
+                                        .setKey(duplicateKey)
+                                        .setValue(
+                                            AnyValue.newBuilder()
+                                                .setStringValue("log-record-value")
+                                                .build())
+                                        .build())
                                 .build())
                         .build())
                 .buildPartial())

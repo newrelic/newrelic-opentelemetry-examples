@@ -13,6 +13,8 @@ import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATI
 import io.grpc.ManagedChannel;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
+import io.opentelemetry.proto.common.v1.AnyValue;
+import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.common.v1.StringKeyValue;
 import io.opentelemetry.proto.metrics.v1.AggregationTemporality;
 import io.opentelemetry.proto.metrics.v1.Gauge;
@@ -164,6 +166,9 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
         of(
             "inthistgoram delta without starttime",
             id -> intHistogram("my_int_histogram", id, AGGREGATION_TEMPORALITY_DELTA, false)));
+
+    // other test cases
+    testCases.add(of("attribute precedence", Metrics::attributePrecedence));
 
     return testCases;
   }
@@ -489,6 +494,51 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
                     InstrumentationLibraryMetrics.newBuilder()
                         .setInstrumentationLibrary(Common.instrumentationLibrary())
                         .addMetrics(metric)
+                        .build())
+                .build())
+        .build();
+  }
+
+  private static ExportMetricsServiceRequest attributePrecedence(String id) {
+    var duplicateKey = "duplicate-key";
+    return ExportMetricsServiceRequest.newBuilder()
+        .addResourceMetrics(
+            ResourceMetrics.newBuilder()
+                .setResource(
+                    Common.resource().toBuilder()
+                        .addAttributes(
+                            KeyValue.newBuilder()
+                                .setKey(duplicateKey)
+                                .setValue(
+                                    AnyValue.newBuilder().setStringValue("resource-value").build())
+                                .build()))
+                .addInstrumentationLibraryMetrics(
+                    InstrumentationLibraryMetrics.newBuilder()
+                        .setInstrumentationLibrary(Common.instrumentationLibrary())
+                        .addMetrics(
+                            metricBuilder("my-sum")
+                                .setSum(
+                                    Sum.newBuilder()
+                                        .setAggregationTemporality(AGGREGATION_TEMPORALITY_DELTA)
+                                        .setIsMonotonic(true)
+                                        .addDataPoints(
+                                            NumberDataPoint.newBuilder()
+                                                .setAsDouble(1.0)
+                                                .setTimeUnixNano(toEpochNano(Instant.now()))
+                                                .setStartTimeUnixNano(
+                                                    toEpochNano(Instant.now().minusSeconds(10)))
+                                                .addAttributes(idAttribute(id))
+                                                .addAttributes(
+                                                    KeyValue.newBuilder()
+                                                        .setKey(duplicateKey)
+                                                        .setValue(
+                                                            AnyValue.newBuilder()
+                                                                .setStringValue("data-point-value")
+                                                                .build()))
+                                                .setAsDouble(1.0)
+                                                .build())
+                                        .build())
+                                .build())
                         .build())
                 .build())
         .build();

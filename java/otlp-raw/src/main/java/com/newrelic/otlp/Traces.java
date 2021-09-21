@@ -15,6 +15,8 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
+import io.opentelemetry.proto.common.v1.AnyValue;
+import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span;
@@ -39,7 +41,9 @@ class Traces implements TestCaseProvider<ExportTraceServiceRequest> {
 
   @Override
   public List<TestCase<ExportTraceServiceRequest>> testCases() {
-    return List.of(TestCase.of("kitchen sink trace", Traces::traceRequest));
+    return List.of(
+        TestCase.of("kitchen sink trace", Traces::kitchenSinkTrace),
+        TestCase.of("attribute precedence", Traces::attributePrecedence));
   }
 
   @Override
@@ -87,7 +91,7 @@ class Traces implements TestCaseProvider<ExportTraceServiceRequest> {
     return requestBuilder.build();
   }
 
-  private static ExportTraceServiceRequest traceRequest(String id) {
+  private static ExportTraceServiceRequest kitchenSinkTrace(String id) {
     var now = Instant.now();
     return ExportTraceServiceRequest.newBuilder()
         .addResourceSpans(
@@ -134,6 +138,47 @@ class Traces implements TestCaseProvider<ExportTraceServiceRequest> {
                                     Status.newBuilder()
                                         .setCode(Status.StatusCode.STATUS_CODE_OK)
                                         .setMessage("status message!")
+                                        .build())
+                                .build())
+                        .build())
+                .buildPartial())
+        .build();
+  }
+
+  private static ExportTraceServiceRequest attributePrecedence(String id) {
+    var now = Instant.now();
+    var duplicateKey = "duplicate-key";
+    return ExportTraceServiceRequest.newBuilder()
+        .addResourceSpans(
+            ResourceSpans.newBuilder()
+                .setResource(
+                    Common.resource().toBuilder()
+                        .addAttributes(
+                            KeyValue.newBuilder()
+                                .setKey(duplicateKey)
+                                .setValue(
+                                    AnyValue.newBuilder().setStringValue("resource-value").build())
+                                .build()))
+                .setSchemaUrl("schema url")
+                .addInstrumentationLibrarySpans(
+                    InstrumentationLibrarySpans.newBuilder()
+                        .setInstrumentationLibrary(instrumentationLibrary())
+                        .addSpans(
+                            Span.newBuilder()
+                                .setTraceId(traceIdByteString())
+                                .setSpanId(spanIdByteString())
+                                .setName("my-span")
+                                .setKind(Span.SpanKind.SPAN_KIND_INTERNAL)
+                                .setStartTimeUnixNano(toEpochNano(now))
+                                .setEndTimeUnixNano(toEpochNano(now.plusSeconds(10)))
+                                .addAttributes(idAttribute(id))
+                                .addAttributes(
+                                    KeyValue.newBuilder()
+                                        .setKey(duplicateKey)
+                                        .setValue(
+                                            AnyValue.newBuilder()
+                                                .setStringValue("span-value")
+                                                .build())
                                         .build())
                                 .build())
                         .build())

@@ -1,0 +1,23 @@
+[ {
+  "duplicate-key" : "log-record-value",
+  "entity.guid" : "OBFUSCATED",
+  "entity.guids" : "OBFUSCATED",
+  "entity.name" : "native-otlp-test",
+  "entity.type" : "SERVICE",
+  "instrumentation.provider" : "opentelemetry",
+  "message" : "body",
+  "messageId" : "OBFUSCATED",
+  "message_id" : "OBFUSCATED",
+  "newrelic.logPattern" : "body",
+  "newrelic.logs.batchIndex" : 1,
+  "newrelic.source" : "otelLogAPI",
+  "otel.library.name" : "my-instrumentation-library",
+  "otel.library.version" : "foo",
+  "resource_bkey" : true,
+  "resource_dkey" : 1.0,
+  "resource_ikey" : 1,
+  "resource_skey" : "value",
+  "service.name" : "native-otlp-test",
+  "telemetry.sdk.name" : "opentelemetry",
+  "timestamp" : 0
+} ]
