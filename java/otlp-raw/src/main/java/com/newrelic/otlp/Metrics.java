@@ -284,6 +284,7 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
             }
             metricBuilder.setSummary(summaryBuilder.build());
           }
+          ilMetricBuilder.addMetrics(metricBuilder.build());
         }
         rMetricBuilder.addInstrumentationLibraryMetrics(ilMetricBuilder.build());
       }

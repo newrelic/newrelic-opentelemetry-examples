@@ -4,7 +4,50 @@
       "instrumentationLibrary" : {
         "name" : "my-instrumentation-library",
         "version" : "foo"
-      }
+      },
+      "metrics" : [ {
+        "description" : "description",
+        "name" : "my_summary",
+        "summary" : {
+          "dataPoints" : [ {
+            "attributes" : [ {
+              "key" : "message_id",
+              "value" : {
+                "stringValue" : "3e6c30b1-c618-4d05-b539-773aedfe860e"
+              }
+            }, {
+              "key" : "my_summary_skey",
+              "value" : {
+                "stringValue" : "value"
+              }
+            }, {
+              "key" : "my_summary_ikey",
+              "value" : {
+                "intValue" : "1"
+              }
+            }, {
+              "key" : "my_summary_bkey",
+              "value" : {
+                "boolValue" : true
+              }
+            }, {
+              "key" : "my_summary_dkey",
+              "value" : {
+                "doubleValue" : 1.0
+              }
+            } ],
+            "count" : "2",
+            "quantileValues" : [ { }, {
+              "quantile" : 1.0,
+              "value" : 99.0
+            } ],
+            "startTimeUnixNano" : "OBFUSCATED",
+            "sum" : 99.0,
+            "timeUnixNano" : "OBFUSCATED"
+          } ]
+        },
+        "unit" : "unit"
+      } ]
     } ],
     "resource" : {
       "attributes" : [ {

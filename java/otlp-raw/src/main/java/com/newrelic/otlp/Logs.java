@@ -58,6 +58,7 @@ class Logs implements TestCaseProvider<ExportLogsServiceRequest> {
           var logBuilder = log.toBuilder();
           logBuilder.clearAttributes();
           logBuilder.addAllAttributes(obfuscateKeyValues(log.getAttributesList(), attributeKeys));
+          ilLogBuilder.addLogs(logBuilder.build());
         }
         rLogBuilder.addInstrumentationLibraryLogs(ilLogBuilder.build());
       }

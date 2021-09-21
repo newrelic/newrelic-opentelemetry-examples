@@ -4,7 +4,29 @@
       "instrumentationLibrary" : {
         "name" : "my-instrumentation-library",
         "version" : "foo"
-      }
+      },
+      "metrics" : [ {
+        "description" : "description",
+        "intHistogram" : {
+          "dataPoints" : [ {
+            "bucketCounts" : [ "5", "4", "1", "1" ],
+            "count" : "11",
+            "explicitBounds" : [ 1.0, 2.0, 3.0 ],
+            "labels" : [ {
+              "key" : "message_id",
+              "value" : "OBFUSCATED"
+            }, {
+              "key" : "skey",
+              "value" : "value"
+            } ],
+            "startTimeUnixNano" : "OBFUSCATED",
+            "sum" : "100",
+            "timeUnixNano" : "OBFUSCATED"
+          } ]
+        },
+        "name" : "my_int_histogram",
+        "unit" : "unit"
+      } ]
     } ],
     "resource" : {
       "attributes" : [ {

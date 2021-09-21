@@ -4,7 +4,23 @@
       "instrumentationLibrary" : {
         "name" : "my-instrumentation-library",
         "version" : "foo"
-      }
+      },
+      "metrics" : [ {
+        "description" : "description",
+        "intGauge" : {
+          "dataPoints" : [ {
+            "labels" : [ {
+              "key" : "message_id",
+              "value" : "OBFUSCATED"
+            } ],
+            "startTimeUnixNano" : "OBFUSCATED",
+            "timeUnixNano" : "OBFUSCATED",
+            "value" : "100"
+          } ]
+        },
+        "name" : "my_int_gauge",
+        "unit" : "unit"
+      } ]
     } ],
     "resource" : {
       "attributes" : [ {

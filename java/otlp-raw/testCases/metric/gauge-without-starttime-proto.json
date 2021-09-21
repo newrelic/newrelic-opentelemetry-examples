@@ -4,7 +4,44 @@
       "instrumentationLibrary" : {
         "name" : "my-instrumentation-library",
         "version" : "foo"
-      }
+      },
+      "metrics" : [ {
+        "description" : "description",
+        "gauge" : {
+          "dataPoints" : [ {
+            "asDouble" : 1.0,
+            "attributes" : [ {
+              "key" : "message_id",
+              "value" : {
+                "stringValue" : "OBFUSCATED"
+              }
+            }, {
+              "key" : "my_gauge_skey",
+              "value" : {
+                "stringValue" : "value"
+              }
+            }, {
+              "key" : "my_gauge_ikey",
+              "value" : {
+                "intValue" : "1"
+              }
+            }, {
+              "key" : "my_gauge_bkey",
+              "value" : {
+                "boolValue" : true
+              }
+            }, {
+              "key" : "my_gauge_dkey",
+              "value" : {
+                "doubleValue" : 1.0
+              }
+            } ],
+            "timeUnixNano" : "OBFUSCATED"
+          } ]
+        },
+        "name" : "my_gauge",
+        "unit" : "unit"
+      } ]
     } ],
     "resource" : {
       "attributes" : [ {

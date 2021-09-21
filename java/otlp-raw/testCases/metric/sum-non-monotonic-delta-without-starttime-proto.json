@@ -4,7 +4,44 @@
       "instrumentationLibrary" : {
         "name" : "my-instrumentation-library",
         "version" : "foo"
-      }
+      },
+      "metrics" : [ {
+        "description" : "description",
+        "name" : "my_sum",
+        "sum" : {
+          "dataPoints" : [ {
+            "asDouble" : 1.0,
+            "attributes" : [ {
+              "key" : "message_id",
+              "value" : {
+                "stringValue" : "OBFUSCATED"
+              }
+            }, {
+              "key" : "my_sum_skey",
+              "value" : {
+                "stringValue" : "value"
+              }
+            }, {
+              "key" : "my_sum_ikey",
+              "value" : {
+                "intValue" : "1"
+              }
+            }, {
+              "key" : "my_sum_bkey",
+              "value" : {
+                "boolValue" : true
+              }
+            }, {
+              "key" : "my_sum_dkey",
+              "value" : {
+                "doubleValue" : 1.0
+              }
+            } ],
+            "timeUnixNano" : "OBFUSCATED"
+          } ]
+        },
+        "unit" : "unit"
+      } ]
     } ],
     "resource" : {
       "attributes" : [ {
