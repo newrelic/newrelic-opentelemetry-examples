@@ -217,6 +217,8 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
           if (metricBuilder.hasSum()) {
             metricBuilder.clearSum();
             var sumBuilder = metricBuilder.getSumBuilder();
+            sumBuilder.setIsMonotonic(metric.getSum().getIsMonotonic());
+            sumBuilder.setAggregationTemporality(metric.getSum().getAggregationTemporality());
             sumBuilder.clearDataPoints();
             for (var datapoint : metric.getSum().getDataPointsList()) {
               sumBuilder.addDataPoints(
@@ -231,6 +233,8 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
           if (metricBuilder.hasIntSum()) {
             metricBuilder.clearIntSum();
             var intSumBuilder = metricBuilder.getIntSumBuilder();
+            intSumBuilder.setIsMonotonic(metric.getIntSum().getIsMonotonic());
+            intSumBuilder.setAggregationTemporality(metric.getIntSum().getAggregationTemporality());
             intSumBuilder.clearDataPoints();
             for (var datapoint : metric.getIntSum().getDataPointsList()) {
               intSumBuilder.addDataPoints(
@@ -245,6 +249,8 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
           if (metricBuilder.hasHistogram()) {
             metricBuilder.clearHistogram();
             var histogramBuilder = metricBuilder.getHistogramBuilder();
+            histogramBuilder.setAggregationTemporality(
+                metric.getHistogram().getAggregationTemporality());
             histogramBuilder.clearDataPoints();
             for (var datapoint : metric.getHistogram().getDataPointsList()) {
               histogramBuilder.addDataPoints(
@@ -259,6 +265,8 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
           if (metricBuilder.hasIntHistogram()) {
             metricBuilder.clearIntHistogram();
             var intHistogramBuilder = metricBuilder.getIntHistogramBuilder();
+            intHistogramBuilder.setAggregationTemporality(
+                metric.getIntHistogram().getAggregationTemporality());
             intHistogramBuilder.clearDataPoints();
             for (var datapoint : metric.getIntHistogram().getDataPointsList()) {
               intHistogramBuilder.addDataPoints(
@@ -277,6 +285,9 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
             for (var datapoint : metric.getSummary().getDataPointsList()) {
               summaryBuilder.addDataPoints(
                   datapoint.toBuilder()
+                      .clearAttributes()
+                      .addAllAttributes(
+                          obfuscateKeyValues(datapoint.getAttributesList(), attributeKeys))
                       .clearLabels()
                       .addAllLabels(
                           obfuscateStringKeyValues(datapoint.getLabelsList(), attributeKeys))

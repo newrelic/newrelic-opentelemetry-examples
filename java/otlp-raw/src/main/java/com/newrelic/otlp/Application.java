@@ -89,10 +89,12 @@ public class Application {
     try {
       testCaseProvider.exportGrpcProtobuf(testCase.payload);
       System.out.format(
-          "Finished protobuf export for %s %s%n", testCaseProvider.newRelicDataType(), testCase.name);
+          "Finished protobuf export for %s %s%n",
+          testCaseProvider.newRelicDataType(), testCase.name);
     } catch (Exception e) {
       System.out.format(
-          "An error occurred during protobuf export for %s %s: %s%n", testCaseProvider.newRelicDataType(), testCase.name, e.getMessage());
+          "An error occurred during protobuf export for %s %s: %s%n",
+          testCaseProvider.newRelicDataType(), testCase.name, e.getMessage());
     }
     var runNrqlAfter = Instant.now().plusSeconds(INGEST_WAIT_SECONDS.get());
     return CompletableFuture.supplyAsync(

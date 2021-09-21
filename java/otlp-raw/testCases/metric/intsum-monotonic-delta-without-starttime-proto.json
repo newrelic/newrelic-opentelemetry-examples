@@ -8,6 +8,7 @@
       "metrics" : [ {
         "description" : "description",
         "intSum" : {
+          "aggregationTemporality" : "AGGREGATION_TEMPORALITY_DELTA",
           "dataPoints" : [ {
             "labels" : [ {
               "key" : "message_id",
@@ -16,7 +17,8 @@
             "startTimeUnixNano" : "OBFUSCATED",
             "timeUnixNano" : "OBFUSCATED",
             "value" : "100"
-          } ]
+          } ],
+          "isMonotonic" : true
         },
         "name" : "my_int_sum",
         "unit" : "unit"

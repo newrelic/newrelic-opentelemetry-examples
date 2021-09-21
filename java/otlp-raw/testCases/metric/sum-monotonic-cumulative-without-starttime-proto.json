@@ -9,6 +9,7 @@
         "description" : "description",
         "name" : "my_sum",
         "sum" : {
+          "aggregationTemporality" : "AGGREGATION_TEMPORALITY_CUMULATIVE",
           "dataPoints" : [ {
             "asDouble" : 1.0,
             "attributes" : [ {
@@ -38,7 +39,8 @@
               }
             } ],
             "timeUnixNano" : "OBFUSCATED"
-          } ]
+          } ],
+          "isMonotonic" : true
         },
         "unit" : "unit"
       } ]

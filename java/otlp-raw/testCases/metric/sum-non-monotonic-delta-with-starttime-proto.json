@@ -9,6 +9,7 @@
         "description" : "description",
         "name" : "my_sum",
         "sum" : {
+          "aggregationTemporality" : "AGGREGATION_TEMPORALITY_DELTA",
           "dataPoints" : [ {
             "asDouble" : 1.0,
             "attributes" : [ {

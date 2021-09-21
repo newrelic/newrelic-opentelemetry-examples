@@ -8,6 +8,7 @@
       "metrics" : [ {
         "description" : "description",
         "intHistogram" : {
+          "aggregationTemporality" : "AGGREGATION_TEMPORALITY_CUMULATIVE",
           "dataPoints" : [ {
             "bucketCounts" : [ "5", "4", "1", "1" ],
             "count" : "11",

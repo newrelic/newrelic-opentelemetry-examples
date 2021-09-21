@@ -88,6 +88,7 @@ class Traces implements TestCaseProvider<ExportTraceServiceRequest> {
   }
 
   private static ExportTraceServiceRequest traceRequest(String id) {
+    var now = Instant.now();
     return ExportTraceServiceRequest.newBuilder()
         .addResourceSpans(
             ResourceSpans.newBuilder()
@@ -104,8 +105,8 @@ class Traces implements TestCaseProvider<ExportTraceServiceRequest> {
                                 .setParentSpanId(spanIdByteString())
                                 .setName("my-span")
                                 .setKind(Span.SpanKind.SPAN_KIND_INTERNAL)
-                                .setStartTimeUnixNano(toEpochNano(Instant.now()))
-                                .setEndTimeUnixNano(toEpochNano(Instant.now().plusSeconds(10)))
+                                .setStartTimeUnixNano(toEpochNano(now))
+                                .setEndTimeUnixNano(toEpochNano(now.plusSeconds(10)))
                                 .addAttributes(idAttribute(id))
                                 .addAllAttributes(allTheAttributes("span_"))
                                 .setDroppedAttributesCount(1)

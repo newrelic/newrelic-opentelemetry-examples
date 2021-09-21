@@ -8,6 +8,7 @@
       "metrics" : [ {
         "description" : "description",
         "intSum" : {
+          "aggregationTemporality" : "AGGREGATION_TEMPORALITY_DELTA",
           "dataPoints" : [ {
             "labels" : [ {
               "key" : "message_id",
