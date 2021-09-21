@@ -74,7 +74,7 @@ class Logs implements TestCaseProvider<ExportLogsServiceRequest> {
     return ExportLogsServiceRequest.newBuilder()
         .addResourceLogs(
             ResourceLogs.newBuilder()
-                .setResource(Common.resource())
+                .setResource(Common.resource().addAllAttributes(allTheAttributes("resource_")))
                 .addInstrumentationLibraryLogs(
                     InstrumentationLibraryLogs.newBuilder()
                         .setInstrumentationLibrary(Common.instrumentationLibrary())
@@ -103,7 +103,7 @@ class Logs implements TestCaseProvider<ExportLogsServiceRequest> {
         .addResourceLogs(
             ResourceLogs.newBuilder()
                 .setResource(
-                    Common.resource().toBuilder()
+                    Common.resource()
                         .addAttributes(
                             KeyValue.newBuilder()
                                 .setKey(duplicateKey)

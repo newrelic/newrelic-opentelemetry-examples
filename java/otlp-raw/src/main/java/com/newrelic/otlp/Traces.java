@@ -96,7 +96,7 @@ class Traces implements TestCaseProvider<ExportTraceServiceRequest> {
     return ExportTraceServiceRequest.newBuilder()
         .addResourceSpans(
             ResourceSpans.newBuilder()
-                .setResource(Common.resource())
+                .setResource(Common.resource().addAllAttributes(allTheAttributes("resource_")))
                 .setSchemaUrl("schema url")
                 .addInstrumentationLibrarySpans(
                     InstrumentationLibrarySpans.newBuilder()
@@ -152,7 +152,7 @@ class Traces implements TestCaseProvider<ExportTraceServiceRequest> {
         .addResourceSpans(
             ResourceSpans.newBuilder()
                 .setResource(
-                    Common.resource().toBuilder()
+                    Common.resource()
                         .addAttributes(
                             KeyValue.newBuilder()
                                 .setKey(duplicateKey)

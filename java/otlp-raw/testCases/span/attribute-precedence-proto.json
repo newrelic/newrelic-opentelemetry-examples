@@ -42,26 +42,6 @@
           "stringValue" : "opentelemetry"
         }
       }, {
-        "key" : "resource_skey",
-        "value" : {
-          "stringValue" : "value"
-        }
-      }, {
-        "key" : "resource_ikey",
-        "value" : {
-          "intValue" : "1"
-        }
-      }, {
-        "key" : "resource_bkey",
-        "value" : {
-          "boolValue" : true
-        }
-      }, {
-        "key" : "resource_dkey",
-        "value" : {
-          "doubleValue" : 1.0
-        }
-      }, {
         "key" : "duplicate-key",
         "value" : {
           "stringValue" : "resource-value"

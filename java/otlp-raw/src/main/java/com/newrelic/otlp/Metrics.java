@@ -488,7 +488,7 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
     return ExportMetricsServiceRequest.newBuilder()
         .addResourceMetrics(
             ResourceMetrics.newBuilder()
-                .setResource(Common.resource())
+                .setResource(Common.resource().addAllAttributes(allTheAttributes("resource_")))
                 .setSchemaUrl("schema url")
                 .addInstrumentationLibraryMetrics(
                     InstrumentationLibraryMetrics.newBuilder()
@@ -505,7 +505,7 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
         .addResourceMetrics(
             ResourceMetrics.newBuilder()
                 .setResource(
-                    Common.resource().toBuilder()
+                    Common.resource()
                         .addAttributes(
                             KeyValue.newBuilder()
                                 .setKey(duplicateKey)

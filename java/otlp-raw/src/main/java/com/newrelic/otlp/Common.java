@@ -177,7 +177,7 @@ public class Common {
         .collect(toList());
   }
 
-  static Resource resource() {
+  static Resource.Builder resource() {
     return Resource.newBuilder()
         .addAttributes(
             KeyValue.newBuilder()
@@ -193,9 +193,7 @@ public class Common {
             KeyValue.newBuilder()
                 .setKey("instrumentation.provider")
                 .setValue(AnyValue.newBuilder().setStringValue("opentelemetry").build())
-                .build())
-        .addAllAttributes(allTheAttributes("resource_"))
-        .build();
+                .build());
   }
 
   static InstrumentationLibrary instrumentationLibrary() {
