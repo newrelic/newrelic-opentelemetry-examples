@@ -35,4 +35,4 @@ The application exposes a simple endpoint at `http://localhost:8080/ping`.
 
 Invoke it via: `curl http://localhost:8080/ping` to generate trace and metric data.
 
-Check your collector logs to confirm data is flowing.
+Check your backend to confirm data is flowing.

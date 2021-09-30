@@ -15,18 +15,15 @@ Each application contains a simple `GET /ping` route, and a route to call the ot
 Distributed trace context is propagated via [W3C Trace Context](https://www.w3.org/TR/trace-context/) headers in both directions.
 
 ## Run
+Set the following environment variables:
+* `NEW_RELIC_LICENSE_KEY=<your_license_key>`
+  * Replace `<your_license_key>` with your [Account License Key](https://one.newrelic.com/launcher/api-keys-ui.launcher).
+* Optional `OTLP_HOST=http://your-collector:4317`
+  * The OpenTelemetry application is [configured](../shared-utils/src/main/java/com/newrelic/shared/OpenTelemetryConfig.java) to export to New Relic via OTLP by default. Optionally change it by setting this environment variable.
 
-The OpenTelemetry application is configured to export data via OTLP to a collector running at `http://localhost:4317`. This can be changed by specifying an alternative via `OTLP_HOST` environment variable:
-```shell
-export OTLP_HOST=http://my-collector-host:4317
-```
-
-For a real working example, you should run a collector instance locally via docker by following the [nr-otlp-export](../../collector/nr-otlp-export/README.md) example.
-
-After running the collector, run both applications from a shell in the [java root](../) as follows. NOTE: you'll need to export your New Relic account license key as an environment variable for the New Relic application to run.
+Run both applications from a shell in the [java root](../) as follows. NOTE, you'll need to set the `NEW_RELIC_LICENSE_KEY` environment variable in both shells. 
 ```shell
 # Run the New Relic app in one shell
-export NEW_RELIC_LICENSE_KEY=<INSERT_LICENSE_KEY_HERE>
 ./gradlew otel-nr-dt:nr-app:bootRun
 
 # Run the OpenTelemetry app in a separate shell
