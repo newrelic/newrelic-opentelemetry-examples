@@ -15,18 +15,20 @@ processors:
 exporters:
   logging:
     logLevel: $LOG_EXPORTER_LOG_LEVEL
-  newrelic:
-    apikey: $NEW_RELIC_API_KEY
+  otlp:
+    endpoint: https://otlp.nr-data.net:4317
+    headers:
+      "api-key": $NEW_RELIC_API_KEY
 service:
   extensions: [health_check]
   pipelines:
     metrics:
       receivers: [otlp]
-      exporters: [logging, newrelic]
+      exporters: [logging, otlp]
     traces:
       receivers: [otlp]
-      exporters: [logging, newrelic]
+      exporters: [logging, otlp]
     logs:
       receivers: [fluentforward]
       processors: [resource]
-      exporters: [logging, newrelic]
+      exporters: [logging, otlp]
