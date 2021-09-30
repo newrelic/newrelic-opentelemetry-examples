@@ -3,7 +3,7 @@ package com.newrelic.otel.initializer;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_INSTANCE_ID;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.autoconfigure.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.UUID;

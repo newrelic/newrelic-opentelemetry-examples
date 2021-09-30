@@ -2,6 +2,7 @@ package com.newrelic.shared;
 
 import static com.newrelic.shared.EnvUtils.getEnvOrDefault;
 import static io.opentelemetry.sdk.metrics.common.InstrumentType.COUNTER;
+import static io.opentelemetry.sdk.metrics.common.InstrumentType.HISTOGRAM;
 import static io.opentelemetry.sdk.metrics.common.InstrumentType.OBSERVABLE_SUM;
 import static io.opentelemetry.sdk.metrics.common.InstrumentType.OBSERVABLE_UP_DOWN_SUM;
 import static io.opentelemetry.sdk.metrics.common.InstrumentType.UP_DOWN_COUNTER;
@@ -18,11 +19,10 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
-import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
@@ -76,11 +76,20 @@ public class OpenTelemetryConfig {
 
     // Configure metrics
     var meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
-    // Override default cumulative sum aggregator with delta sum aggregator
-    setDeltaSumAggregatorFactory(meterProviderBuilder, COUNTER);
-    setDeltaSumAggregatorFactory(meterProviderBuilder, UP_DOWN_COUNTER);
-    setDeltaSumAggregatorFactory(meterProviderBuilder, OBSERVABLE_SUM);
-    setDeltaSumAggregatorFactory(meterProviderBuilder, OBSERVABLE_UP_DOWN_SUM);
+    // Override default cumulative aggregators with delta
+    setAggregation(meterProviderBuilder, COUNTER, Aggregation.sum(AggregationTemporality.DELTA));
+    setAggregation(
+        meterProviderBuilder, UP_DOWN_COUNTER, Aggregation.sum(AggregationTemporality.DELTA));
+    setAggregation(
+        meterProviderBuilder, OBSERVABLE_SUM, Aggregation.sum(AggregationTemporality.DELTA));
+    setAggregation(
+        meterProviderBuilder,
+        OBSERVABLE_UP_DOWN_SUM,
+        Aggregation.sum(AggregationTemporality.DELTA));
+    setAggregation(
+        meterProviderBuilder,
+        HISTOGRAM,
+        Aggregation.explictBucketHistogram(AggregationTemporality.DELTA));
     SdkMeterProvider sdkMeterProvider = meterProviderBuilder.build();
     GlobalMeterProvider.set(sdkMeterProvider);
     IntervalMetricReader.builder()
@@ -101,14 +110,13 @@ public class OpenTelemetryConfig {
     }
   }
 
-  private static void setDeltaSumAggregatorFactory(
-      SdkMeterProviderBuilder meterProviderBuilder, InstrumentType instrumentType) {
+  private static void setAggregation(
+      SdkMeterProviderBuilder meterProviderBuilder,
+      InstrumentType instrumentType,
+      Aggregation aggregation) {
     meterProviderBuilder.registerView(
         InstrumentSelector.builder().setInstrumentType(instrumentType).build(),
-        View.builder()
-            .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.DELTA))
-            .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
-            .build());
+        View.builder().setAggregation(aggregation).build());
   }
 
   private static String newRelicApiOrLicenseKey() {
