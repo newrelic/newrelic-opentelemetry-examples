@@ -6,14 +6,13 @@ This project demonstrates a simple Java application with custom OpenTelemetry in
 
 ## Run
 
-The application is configured to export data via OTLP to a collector running at `http://localhost:4317`. This can be changed by specifying an alternative via `OTLP_HOST` environment variable:
-```shell
-export OTLP_HOST=http://my-collector-host:4317
-```
+Set the following environment variables:
+* `NEW_RELIC_LICENSE_KEY=<your_license_key>`
+  * Replace `<your_license_key>` with your [Account License Key](https://one.newrelic.com/launcher/api-keys-ui.launcher).
+* Optional `OTLP_HOST=http://your-collector:4317`
+  * The application is [configured](../shared-utils/src/main/java/com/newrelic/shared/OpenTelemetryConfig.java) to export to New Relic via OTLP by default. Optionally change it by setting this environment variable.
 
-You can adjust where data is exported to, or you can run a collector instance locally via docker by following the [nr-otlp-export](../../collector/nr-otlp-export/README.md) example.
-
-After running the collector, run the application from a shell in the [java root](../) via:
+Run the application from a shell in the [java root](../) via:
 ```
 ./gradlew sdk-nr-config:bootRun
 ```
@@ -22,4 +21,4 @@ The application exposes a simple endpoint at `http://localhost:8080/ping`.
 
 Invoke it via: `curl http://localhost:8080/ping` to generate trace and metric data.
 
-Check your collector logs to confirm data is flowing.
+Check your backend to confirm data is flowing.

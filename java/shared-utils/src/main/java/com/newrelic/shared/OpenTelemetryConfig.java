@@ -36,9 +36,11 @@ import java.util.function.Supplier;
 public class OpenTelemetryConfig {
 
   private static final Supplier<String> OTLP_HOST_SUPPLIER =
-      getEnvOrDefault("OTLP_HOST", Function.identity(), "http://localhost:4317");
+      getEnvOrDefault("OTLP_HOST", Function.identity(), "https://otlp.nr-data.net:4317");
   private static final Supplier<String> NEW_RELIC_API_KEY_SUPPLIER =
       getEnvOrDefault("NEW_RELIC_API_KEY", Function.identity(), "");
+  private static final Supplier<String> NEW_RELIC_LICENSE_KEY_SUPPLIER =
+      getEnvOrDefault("NEW_RELIC_LICENSE_KEY", Function.identity(), "");
   private static final Supplier<Boolean> LOG_EXPORTER_ENABLED =
       getEnvOrDefault("LOG_EXPORTER_ENABLED", Boolean::valueOf, true);
 
@@ -60,7 +62,7 @@ public class OpenTelemetryConfig {
                         OtlpGrpcSpanExporter.builder()
                             .setChannel(
                                 OtlpUtil.managedChannel(
-                                    OTLP_HOST_SUPPLIER.get(), NEW_RELIC_API_KEY_SUPPLIER.get()))
+                                    OTLP_HOST_SUPPLIER.get(), newRelicApiOrLicenseKey()))
                             .build())
                     .build());
     if (LOG_EXPORTER_ENABLED.get()) {
@@ -85,8 +87,7 @@ public class OpenTelemetryConfig {
         .setMetricExporter(
             OtlpGrpcMetricExporter.builder()
                 .setChannel(
-                    OtlpUtil.managedChannel(
-                        OTLP_HOST_SUPPLIER.get(), NEW_RELIC_API_KEY_SUPPLIER.get()))
+                    OtlpUtil.managedChannel(OTLP_HOST_SUPPLIER.get(), newRelicApiOrLicenseKey()))
                 .build())
         .setExportIntervalMillis(5000)
         .setMetricProducers(List.of(sdkMeterProvider))
@@ -108,6 +109,14 @@ public class OpenTelemetryConfig {
             .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.DELTA))
             .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
             .build());
+  }
+
+  private static String newRelicApiOrLicenseKey() {
+    var apiKey = NEW_RELIC_API_KEY_SUPPLIER.get();
+    if (!apiKey.isEmpty()) {
+      return apiKey;
+    }
+    return NEW_RELIC_LICENSE_KEY_SUPPLIER.get();
   }
 
   private OpenTelemetryConfig() {}

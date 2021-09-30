@@ -23,14 +23,6 @@ bootRun {
             // Use the otel-initializer shadowJar to configure the agent via SPI
             "-Dotel.javaagent.experimental.initializer.jar=${initializerPath}"
     ]
-
-    // Additional configuration using standard autoconfiguration environment variables defined at:
-    // https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure
-    environment([
-            "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
-            "OTEL_EXPORTER_OTLP_HEADERS": "header-name=header-value",
-            "OTEL_RESOURCE_ATTRIBUTES": "service.name=my-test-service",
-    ])
 }
 
 // Download the opentelemetry java agent and put it in the build directory
