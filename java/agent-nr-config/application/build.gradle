@@ -23,6 +23,13 @@ bootRun {
             // Use the otel-initializer shadowJar to configure the agent via SPI
             "-Dotel.javaagent.experimental.initializer.jar=${initializerPath}"
     ]
+
+    // Additional configuration using standard autoconfiguration environment variables defined at:
+    // https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure
+    environment([
+        "OTEL_METRICS_EXPORTER": "otlp",    // By default, metrics exporter is none
+        "OTEL_IMR_EXPORT_INTERVAL": "5000", // Report metrics every 5s instead of every 60s
+    ])
 }
 
 // Download the opentelemetry java agent and put it in the build directory
