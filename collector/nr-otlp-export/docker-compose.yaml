@@ -9,7 +9,6 @@ services:
     environment:
       LOG_EXPORTER_LOG_LEVEL: "DEBUG"
       NEW_RELIC_API_KEY: "${NEW_RELIC_API_KEY}"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "${OTEL_EXPORTER_OTLP_ENDPOINT}"
     ports:
       - "4317:4317"     # grpc
       - "13133:13133"   # health

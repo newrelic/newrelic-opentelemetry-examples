@@ -36,11 +36,15 @@ When running the application using the provided [docker-compose.yaml](./docker-c
 
 ## Run
 
-The application runs with Docker, and the [docker-compose.yaml](./docker-compose.yaml) is configured to use the [Fluentd logging driver](https://docs.docker.com/config/containers/logging/fluentd/) to forward logs to an [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) running as an agent next to the service configured to receive Fluentd logs and forward them to New Relic.
+The application runs with Docker, and the [docker-compose.yaml](./docker-compose.yaml) is configured to use the [Fluentd logging driver](https://docs.docker.com/config/containers/logging/fluentd/) to forward logs to an [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) running as an agent next to the service configured to receive Fluentd logs and forward them to New Relic via OTLP.
 
 Similar example using FluentBit:
 
 ![](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/img/app-to-file-logs-fb.png?raw=true)
+
+Set the following environment variables:
+* `NEW_RELIC_API_KEY=<your_license_key>`
+    * Replace `<your_license_key>` with your [Account License Key](https://one.newrelic.com/launcher/api-keys-ui.launcher).
 
 Run the application with docker compose:
 

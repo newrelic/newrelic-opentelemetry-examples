@@ -2,17 +2,13 @@
 
 ## Introduction
 
-This example demonstrates how to run the OpenTelemetry Collector configured to export to New Relic with the [OTLP gRPC exporter](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/otlpexporter) via docker.
-
-New Relic OTLP Ingest is currently in pre-release, and requires that you [sign up](https://docs.google.com/forms/d/e/1FAIpQLSdIJVEAYaP7TXe9LmQA64yIObGvt-nOiz5kXYsjxLBbvut_1A/viewform) before use. 
+This example demonstrates how to run the OpenTelemetry Collector configured to export to New Relic with the [OTLP gRPC exporter](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/otlpexporter) via docker. See [documentation](https://docs.newrelic.com/docs/integrations/open-source-telemetry-integrations/opentelemetry/introduction-opentelemetry-new-relic/#how-it-works) for more information about New Relic OTLP support.
 
 The `docker-compose.yaml` file configures the collector via `otel-config.yaml`.
 
 ## Run
 
 Set the following environment variables:
-* `OTEL_EXPORTER_OTLP_ENDPOINT=<newrelic_otlp_endpoint>`
-    * Replace `<newrelic_otlp_endpoint>` with the endpoint you received upon signing up for the pre-release.
 * `NEW_RELIC_API_KEY=<your_license_key>`
     * Replace `<your_license_key>` with your [Account License Key](https://one.newrelic.com/launcher/api-keys-ui.launcher).
 

@@ -31,8 +31,10 @@ data:
     exporters:
       logging:
         logLevel: DEBUG
-      newrelic:
-        apikey: $NEW_RELIC_API_KEY
+      otlp:
+        endpoint: https://otlp.nr-data.net:4317
+        headers:
+          "api-key": $NEW_RELIC_API_KEY
     extensions:
       health_check: {}
     service:
@@ -41,7 +43,7 @@ data:
         traces:
           receivers: [otlp]
           processors: [tail_sampling]
-          exporters: [logging, newrelic]
+          exporters: [logging, otlp]
 ---
 apiVersion: v1
 kind: Service
