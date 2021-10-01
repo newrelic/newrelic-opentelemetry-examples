@@ -195,7 +195,8 @@ public class Application {
               "span.id",
               "messageId",
               "entity.guids",
-              "endTimestamp"));
+              "endTimestamp",
+              "newrelic.logPattern"));
     } catch (JsonProcessingException e) {
       throw new IllegalStateException("Error obfuscating NRDB json.", e);
     }
