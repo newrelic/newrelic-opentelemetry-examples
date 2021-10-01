@@ -1,0 +1,30 @@
+[ {
+  "description" : "description",
+  "endTimestamp" : 0,
+  "entity.guid" : "OBFUSCATED",
+  "entity.name" : "native-otlp-test",
+  "entity.type" : "SERVICE",
+  "instrumentation.provider" : "opentelemetry",
+  "message_id" : "OBFUSCATED",
+  "metricName" : "my_int_histogram",
+  "my_int_histogram" : {
+    "buckets" : 320,
+    "count" : 11,
+    "max" : 3.0,
+    "min" : 1.0,
+    "sum" : 100.0,
+    "type" : "distribution"
+  },
+  "newrelic.source" : "api.metrics.otlp",
+  "otel.library.name" : "my-instrumentation-library",
+  "otel.library.version" : "foo",
+  "resource_bkey" : true,
+  "resource_dkey" : 1.0,
+  "resource_ikey" : 1,
+  "resource_skey" : "value",
+  "service.name" : "native-otlp-test",
+  "skey" : "value",
+  "telemetry.sdk.name" : "opentelemetry",
+  "timestamp" : 0,
+  "unit" : "unit"
+} ]

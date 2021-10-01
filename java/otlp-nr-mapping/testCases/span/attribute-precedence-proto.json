@@ -1,0 +1,53 @@
+{
+  "resourceSpans" : [ {
+    "instrumentationLibrarySpans" : [ {
+      "instrumentationLibrary" : {
+        "name" : "my-instrumentation-library",
+        "version" : "foo"
+      },
+      "spans" : [ {
+        "attributes" : [ {
+          "key" : "message_id",
+          "value" : {
+            "stringValue" : "OBFUSCATED"
+          }
+        }, {
+          "key" : "duplicate-key",
+          "value" : {
+            "stringValue" : "span-value"
+          }
+        } ],
+        "endTimeUnixNano" : "OBFUSCATED",
+        "kind" : "SPAN_KIND_INTERNAL",
+        "name" : "my-span",
+        "spanId" : "OBFUSCATED",
+        "startTimeUnixNano" : "OBFUSCATED",
+        "traceId" : "OBFUSCATED"
+      } ]
+    } ],
+    "resource" : {
+      "attributes" : [ {
+        "key" : "service.name",
+        "value" : {
+          "stringValue" : "native-otlp-test"
+        }
+      }, {
+        "key" : "telemetry.sdk.name",
+        "value" : {
+          "stringValue" : "opentelemetry"
+        }
+      }, {
+        "key" : "instrumentation.provider",
+        "value" : {
+          "stringValue" : "opentelemetry"
+        }
+      }, {
+        "key" : "duplicate-key",
+        "value" : {
+          "stringValue" : "resource-value"
+        }
+      } ]
+    },
+    "schemaUrl" : "schema url"
+  } ]
+}

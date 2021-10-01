@@ -1,0 +1,50 @@
+{
+  "resourceLogs" : [ {
+    "instrumentationLibraryLogs" : [ {
+      "instrumentationLibrary" : {
+        "name" : "my-instrumentation-library",
+        "version" : "foo"
+      },
+      "logs" : [ {
+        "attributes" : [ {
+          "key" : "message_id",
+          "value" : {
+            "stringValue" : "OBFUSCATED"
+          }
+        }, {
+          "key" : "duplicate-key",
+          "value" : {
+            "stringValue" : "log-record-value"
+          }
+        } ],
+        "body" : {
+          "stringValue" : "body"
+        },
+        "timeUnixNano" : "OBFUSCATED"
+      } ]
+    } ],
+    "resource" : {
+      "attributes" : [ {
+        "key" : "service.name",
+        "value" : {
+          "stringValue" : "native-otlp-test"
+        }
+      }, {
+        "key" : "telemetry.sdk.name",
+        "value" : {
+          "stringValue" : "opentelemetry"
+        }
+      }, {
+        "key" : "instrumentation.provider",
+        "value" : {
+          "stringValue" : "opentelemetry"
+        }
+      }, {
+        "key" : "duplicate-key",
+        "value" : {
+          "stringValue" : "resource-value"
+        }
+      } ]
+    }
+  } ]
+}

@@ -1,0 +1,122 @@
+{
+  "resourceSpans" : [ {
+    "instrumentationLibrarySpans" : [ {
+      "instrumentationLibrary" : {
+        "name" : "my-instrumentation-library",
+        "version" : "foo"
+      },
+      "spans" : [ {
+        "attributes" : [ {
+          "key" : "message_id",
+          "value" : {
+            "stringValue" : "OBFUSCATED"
+          }
+        }, {
+          "key" : "span_skey",
+          "value" : {
+            "stringValue" : "value"
+          }
+        }, {
+          "key" : "span_ikey",
+          "value" : {
+            "intValue" : "1"
+          }
+        }, {
+          "key" : "span_bkey",
+          "value" : {
+            "boolValue" : true
+          }
+        }, {
+          "key" : "span_dkey",
+          "value" : {
+            "doubleValue" : 1.0
+          }
+        } ],
+        "droppedAttributesCount" : 1,
+        "droppedEventsCount" : 1,
+        "droppedLinksCount" : 1,
+        "endTimeUnixNano" : "OBFUSCATED",
+        "events" : [ {
+          "attributes" : [ {
+            "key" : "span_event_skey",
+            "value" : {
+              "stringValue" : "value"
+            }
+          }, {
+            "key" : "span_event_ikey",
+            "value" : {
+              "intValue" : "1"
+            }
+          }, {
+            "key" : "span_event_bkey",
+            "value" : {
+              "boolValue" : true
+            }
+          }, {
+            "key" : "span_event_dkey",
+            "value" : {
+              "doubleValue" : 1.0
+            }
+          } ],
+          "droppedAttributesCount" : 1,
+          "name" : "event-name",
+          "timeUnixNano" : "OBFUSCATED"
+        } ],
+        "kind" : "SPAN_KIND_INTERNAL",
+        "links" : [ {
+          "spanId" : "OBFUSCATED",
+          "traceId" : "OBFUSCATED"
+        } ],
+        "name" : "my-span",
+        "parentSpanId" : "OBFUSCATED",
+        "spanId" : "OBFUSCATED",
+        "startTimeUnixNano" : "OBFUSCATED",
+        "status" : {
+          "code" : "STATUS_CODE_OK",
+          "message" : "status message!"
+        },
+        "traceId" : "OBFUSCATED",
+        "traceState" : "foo"
+      } ]
+    } ],
+    "resource" : {
+      "attributes" : [ {
+        "key" : "service.name",
+        "value" : {
+          "stringValue" : "native-otlp-test"
+        }
+      }, {
+        "key" : "telemetry.sdk.name",
+        "value" : {
+          "stringValue" : "opentelemetry"
+        }
+      }, {
+        "key" : "instrumentation.provider",
+        "value" : {
+          "stringValue" : "opentelemetry"
+        }
+      }, {
+        "key" : "resource_skey",
+        "value" : {
+          "stringValue" : "value"
+        }
+      }, {
+        "key" : "resource_ikey",
+        "value" : {
+          "intValue" : "1"
+        }
+      }, {
+        "key" : "resource_bkey",
+        "value" : {
+          "boolValue" : true
+        }
+      }, {
+        "key" : "resource_dkey",
+        "value" : {
+          "doubleValue" : 1.0
+        }
+      } ]
+    },
+    "schemaUrl" : "schema url"
+  } ]
+}

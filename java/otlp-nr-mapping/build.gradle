@@ -1,0 +1,25 @@
+plugins {
+    id 'application'
+}
+
+mainClassName = 'com.newrelic.otlp.Application'
+
+run {
+  systemProperties['OUTPUT_DIR'] = project(":otlp-nr-mapping").buildDir.parent + "/testCases"
+}
+
+dependencies {
+  implementation project(':shared-utils')
+
+  implementation platform("com.squareup.okhttp3:okhttp-bom:${project['okhttp.version']}")
+  implementation 'com.squareup.okhttp3:okhttp'
+
+  implementation "org.apache.commons:commons-text:${project['apache-commons-text.version']}"
+
+  implementation "com.fasterxml.jackson.core:jackson-databind:${project['jackson.version']}"
+  implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${project['jackson.version']}"
+  implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${project['jackson.version']}"
+
+  implementation "io.grpc:grpc-protobuf:${project['grpc.version']}"
+  implementation "com.google.protobuf:protobuf-java-util:${project['protobuf-java-util.version']}"
+}

@@ -1,0 +1,90 @@
+{
+  "resourceMetrics" : [ {
+    "instrumentationLibraryMetrics" : [ {
+      "instrumentationLibrary" : {
+        "name" : "my-instrumentation-library",
+        "version" : "foo"
+      },
+      "metrics" : [ {
+        "description" : "description",
+        "histogram" : {
+          "aggregationTemporality" : "AGGREGATION_TEMPORALITY_DELTA",
+          "dataPoints" : [ {
+            "attributes" : [ {
+              "key" : "message_id",
+              "value" : {
+                "stringValue" : "OBFUSCATED"
+              }
+            }, {
+              "key" : "my_histogram_skey",
+              "value" : {
+                "stringValue" : "value"
+              }
+            }, {
+              "key" : "my_histogram_ikey",
+              "value" : {
+                "intValue" : "1"
+              }
+            }, {
+              "key" : "my_histogram_bkey",
+              "value" : {
+                "boolValue" : true
+              }
+            }, {
+              "key" : "my_histogram_dkey",
+              "value" : {
+                "doubleValue" : 1.0
+              }
+            } ],
+            "bucketCounts" : [ "5", "4", "1", "1" ],
+            "count" : "11",
+            "explicitBounds" : [ 1.0, 2.0, 3.0 ],
+            "sum" : 100.0,
+            "timeUnixNano" : "OBFUSCATED"
+          } ]
+        },
+        "name" : "my_histogram",
+        "unit" : "unit"
+      } ]
+    } ],
+    "resource" : {
+      "attributes" : [ {
+        "key" : "service.name",
+        "value" : {
+          "stringValue" : "native-otlp-test"
+        }
+      }, {
+        "key" : "telemetry.sdk.name",
+        "value" : {
+          "stringValue" : "opentelemetry"
+        }
+      }, {
+        "key" : "instrumentation.provider",
+        "value" : {
+          "stringValue" : "opentelemetry"
+        }
+      }, {
+        "key" : "resource_skey",
+        "value" : {
+          "stringValue" : "value"
+        }
+      }, {
+        "key" : "resource_ikey",
+        "value" : {
+          "intValue" : "1"
+        }
+      }, {
+        "key" : "resource_bkey",
+        "value" : {
+          "boolValue" : true
+        }
+      }, {
+        "key" : "resource_dkey",
+        "value" : {
+          "doubleValue" : 1.0
+        }
+      } ]
+    },
+    "schemaUrl" : "schema url"
+  } ]
+}
