@@ -14,7 +14,7 @@
   "name" : "name",
   "newrelic.logPattern" : "body",
   "newrelic.logs.batchIndex" : 1,
-  "newrelic.source" : "otelLogAPI",
+  "newrelic.source" : "api.logs.otlp",
   "otel.dropped_attributes_count" : 1,
   "otel.library.name" : "my-instrumentation-library",
   "otel.library.version" : "foo",

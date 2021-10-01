@@ -15,7 +15,7 @@
   "my_sum_dkey" : 1.0,
   "my_sum_ikey" : 1,
   "my_sum_skey" : "value",
-  "newrelic.source" : "otlpAPI",
+  "newrelic.source" : "api.metrics.otlp",
   "otel.library.name" : "my-instrumentation-library",
   "otel.library.version" : "foo",
   "resource_bkey" : true,

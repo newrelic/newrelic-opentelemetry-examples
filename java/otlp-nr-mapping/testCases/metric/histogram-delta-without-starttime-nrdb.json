@@ -18,7 +18,7 @@
   "my_histogram_dkey" : 1.0,
   "my_histogram_ikey" : 1,
   "my_histogram_skey" : "value",
-  "newrelic.source" : "otlpAPI",
+  "newrelic.source" : "api.metrics.otlp",
   "otel.library.name" : "my-instrumentation-library",
   "otel.library.version" : "foo",
   "resource_bkey" : true,

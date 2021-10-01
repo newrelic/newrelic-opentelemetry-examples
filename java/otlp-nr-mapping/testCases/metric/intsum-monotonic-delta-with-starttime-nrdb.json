@@ -11,7 +11,7 @@
     "count" : 100.0,
     "type" : "count"
   },
-  "newrelic.source" : "otlpAPI",
+  "newrelic.source" : "api.metrics.otlp",
   "otel.library.name" : "my-instrumentation-library",
   "otel.library.version" : "foo",
   "resource_bkey" : true,

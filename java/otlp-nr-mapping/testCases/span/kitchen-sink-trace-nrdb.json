@@ -10,6 +10,7 @@
   "message_id" : "OBFUSCATED",
   "name" : "my-span",
   "newRelic.ingestPoint" : "api.traces",
+  "newrelic.source" : "api.traces.otlp",
   "nr.isPrimaryEntityData" : true,
   "nr.spanEventCount" : 1,
   "otel.dropped_attributes_count" : 1,
