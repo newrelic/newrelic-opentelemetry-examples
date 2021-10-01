@@ -30,6 +30,5 @@ jobs:
         run: ./gradlew :otlp-nr-mapping:run
       - name: Detect changes
         run: |
-          # Check if any diff was generated. If yes,
-          git diff-index --quiet HEAD && echo "Success! No changes detected." || (echo "Failure. Changes detected:" && git diff && exit 1)
+          git diff-index --quiet HEAD && echo "Success! No changes detected." || (echo "Failure. Changes detected:"; git diff; exit 1)
 
