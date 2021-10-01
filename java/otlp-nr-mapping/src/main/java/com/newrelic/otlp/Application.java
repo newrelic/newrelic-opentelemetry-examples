@@ -42,8 +42,7 @@ public class Application {
           Function.identity(),
           "https://staging-api.newrelic.com/graphql");
   private static final Supplier<String> NEW_RELIC_OTLP_ENDPOINT =
-      getEnvOrDefault(
-          "OTEL_HOST", Function.identity(), "https://staging-otlp.nr-data.net:4317");
+      getEnvOrDefault("OTEL_HOST", Function.identity(), "https://staging-otlp.nr-data.net:4317");
   private static final Supplier<Boolean> OBFUSCATE_OUTPUT =
       getEnvOrDefault("OBFUSCATE_OUTPUT", Boolean::parseBoolean, true);
   private static final Supplier<Integer> INGEST_WAIT_SECONDS =
@@ -245,8 +244,7 @@ public class Application {
     }
     var metadata = new Metadata();
     metadata.put(
-        Metadata.Key.of("api-key", Metadata.ASCII_STRING_MARSHALLER),
-        NEW_RELIC_LICENSE_KEY.get());
+        Metadata.Key.of("api-key", Metadata.ASCII_STRING_MARSHALLER), NEW_RELIC_LICENSE_KEY.get());
     managedChannelBuilder.intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
     return managedChannelBuilder.build();
   }

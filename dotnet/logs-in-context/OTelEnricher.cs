@@ -12,8 +12,8 @@ namespace logs_in_context
 
             if (activity != null)
             {
-                logEvent.AddOrUpdateProperty(propertyFactory.CreateProperty("trace.id", activity.SpanId));
-                logEvent.AddOrUpdateProperty(propertyFactory.CreateProperty("span.id", activity.TraceId));
+                logEvent.AddOrUpdateProperty(propertyFactory.CreateProperty("trace.id", activity.TraceId));
+                logEvent.AddOrUpdateProperty(propertyFactory.CreateProperty("span.id", activity.SpanId));
             }
         }
     }

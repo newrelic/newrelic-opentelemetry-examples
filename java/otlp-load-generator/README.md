@@ -11,10 +11,11 @@ It currently generates the following data in line with the OpenTelemetry specifi
 
 ## Run
 
-The application is configured to export data via OTLP to a collector running at `http://localhost:4317`. This can be changed by specifying an alternative via `OTLP_HOST` environment variable:
-```shell
-export OTLP_HOST=http://my-collector-host:4317
-```
+Set the following environment variables:
+* `NEW_RELIC_LICENSE_KEY=<your_license_key>`
+  * Replace `<your_license_key>` with your [Account License Key](https://one.newrelic.com/launcher/api-keys-ui.launcher).
+* Optional `OTLP_HOST=http://your-collector:4317`
+  * The application is [configured](../shared-utils/src/main/java/com/newrelic/shared/OpenTelemetryConfig.java) to export to New Relic via OTLP by default. Optionally change it by setting this environment variable. 
 
 To run from a shell, execute the following from a shell in the [java root](../):
 ```shell
@@ -28,4 +29,4 @@ docker build -t otlp-load-generator:latest ./otlp-load-generator
 docker run otlp-load-generator:latest
 ```
 
-Check your collector logs to confirm data is flowing.
+Check your backend to confirm data is flowing.

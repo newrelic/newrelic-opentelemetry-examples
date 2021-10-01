@@ -6,13 +6,11 @@ application with
 
 ## Prerequisites
 * Install the [.NET SDK](https://dotnet.microsoft.com/download)
-* Sign up for [New Relic's OTLP Ingest Pre-Release](https://docs.google.com/forms/d/e/1FAIpQLSdIJVEAYaP7TXe9LmQA64yIObGvt-nOiz5kXYsjxLBbvut_1A/viewform)
 
 ## Run the application
 
 Set the following environment variables:
-* `OTEL_EXPORTER_OTLP_ENDPOINT=<newrelic_otlp_endpoint>`
-  * Replace `<newrelic_otlp_endpoint>` with the endpoint you received upon signing up for the pre-release.
+* `OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317`
 * `OTEL_EXPORTER_OTLP_HEADERS="api-key=<your_license_key>"`
   * Replace `<your_license_key>` with your [Account License Key](https://one.newrelic.com/launcher/api-keys-ui.launcher).
 

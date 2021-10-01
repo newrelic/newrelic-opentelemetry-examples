@@ -31,8 +31,10 @@ data:
     exporters:
       logging:
         logLevel: DEBUG
-      newrelic:
-        apikey: $NEW_RELIC_API_KEY
+      otlp:
+        endpoint: https://otlp.nr-data.net:4317
+        headers:
+          "api-key": $NEW_RELIC_API_KEY
     extensions:
       health_check: {}
     service:
@@ -41,7 +43,7 @@ data:
         traces:
           receivers: [otlp]
           processors: [tail_sampling]
-          exporters: [logging, newrelic]
+          exporters: [logging, otlp]
 ---
 apiVersion: v1
 kind: Service
@@ -85,7 +87,7 @@ spec:
         - command:
             - "/otelcontribcol"
             - "--config=/conf/otel-collector-config.yaml"
-          image: otel/opentelemetry-collector-contrib:latest
+          image: otel/opentelemetry-collector-contrib:0.33.0
           name: otel-collector
           env:
           # Add a New Relic API Key here. The API Key should be placed in a secret management tool in a production environment.

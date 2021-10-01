@@ -10,4 +10,12 @@ ignore:
     - '*':
         reason: No fix available.
         expires: 2022-08-02T00:00:00.000Z
+  SNYK-JAVA-IONETTY-1584063:
+    - '*':
+        reason: No fix available.
+        expires: 2022-09-15T00:00:00.000Z
+  SNYK-JAVA-IONETTY-1584064:
+    - '*':
+        reason: No fix available.
+        expires: 2022-09-15T00:00:00.000Z
 patch: {}
