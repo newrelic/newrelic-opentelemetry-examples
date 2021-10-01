@@ -26,6 +26,7 @@ jobs:
           NEW_RELIC_USER_API_KEY: ${{ secrets.NEW_RELIC_USER_API_KEY }}
           NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
           NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+          INGEST_WAIT_SECONDS: 60
         run: ./gradlew :otlp-nr-mapping:run
       - name: Detect changes
         run: |
