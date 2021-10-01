@@ -236,7 +236,7 @@ public class Application {
 
   private ManagedChannel managedChannel() {
     var url = HttpUrl.parse(NEW_RELIC_OTLP_ENDPOINT.get());
-    var managedChannelBuilder = ManagedChannelBuilder.forAddress(url.host(), url.port());
+    var managedChannelBuilder = ManagedChannelBuilder.forTarget(url.uri().getAuthority());
     if (url.scheme().equals("https")) {
       managedChannelBuilder.useTransportSecurity();
     } else {
