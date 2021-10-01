@@ -9,16 +9,16 @@ run {
 }
 
 dependencies {
-    implementation project(':shared-utils')
+  implementation project(':shared-utils')
 
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.11.4"
-    implementation"com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.11.4"
-    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.11.4"
+  implementation platform("com.squareup.okhttp3:okhttp-bom:${project['okhttp.version']}")
+  implementation 'com.squareup.okhttp3:okhttp'
 
-    implementation("org.apache.commons:commons-text:${project['apache-commons-text.version']}")
+  implementation "org.apache.commons:commons-text:${project['apache-commons-text.version']}"
 
-    implementation(platform('com.squareup.okhttp3:okhttp-bom:4.9.0'))
-    implementation 'com.squareup.okhttp3:okhttp'
+  implementation "com.fasterxml.jackson.core:jackson-databind:${project['jackson.version']}"
+  implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${project['jackson.version']}"
+  implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${project['jackson.version']}"
 
-    implementation 'com.google.protobuf:protobuf-java-util:3.17.3'
+  implementation "com.google.protobuf:protobuf-java-util:${project['protobuf-java-util.version']}"
 }
