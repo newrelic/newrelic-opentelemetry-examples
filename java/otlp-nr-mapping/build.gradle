@@ -5,7 +5,7 @@ plugins {
 mainClassName = 'com.newrelic.otlp.Application'
 
 run {
-  systemProperties['OUTPUT_DIR'] = project(":otlp-raw").buildDir.parent + "/testCases"
+  systemProperties['OUTPUT_DIR'] = project(":otlp-nr-mapping").buildDir.parent + "/testCases"
 }
 
 dependencies {

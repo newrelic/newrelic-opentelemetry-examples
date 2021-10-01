@@ -31,8 +31,8 @@ public class Application {
 
   private static final Supplier<String> NEW_RELIC_USER_API_KEY =
       getOrThrow("NEW_RELIC_USER_API_KEY", Function.identity());
-  private static final Supplier<String> NEW_RELIC_INSIGHTS_API_KEY =
-      getOrThrow("NEW_RELIC_INSIGHTS_API_KEY", Function.identity());
+  private static final Supplier<String> NEW_RELIC_LICENSE_KEY =
+      getOrThrow("NEW_RELIC_LICENSE_KEY", Function.identity());
   private static final Supplier<String> NEW_RELIC_ACCOUNT_ID =
       getOrThrow("NEW_RELIC_ACCOUNT_ID", Function.identity());
   private static final Supplier<String> OUTPUT_DIR = getOrThrow("OUTPUT_DIR", Function.identity());
@@ -43,7 +43,7 @@ public class Application {
           "https://staging-api.newrelic.com/graphql");
   private static final Supplier<String> NEW_RELIC_OTLP_ENDPOINT =
       getEnvOrDefault(
-          "NEW_RELIC_OTLP_ENDPOINT", Function.identity(), "https://staging-otlp.nr-data.net:4317");
+          "OTEL_HOST", Function.identity(), "https://staging-otlp.nr-data.net:4317");
   private static final Supplier<Boolean> OBFUSCATE_OUTPUT =
       getEnvOrDefault("OBFUSCATE_OUTPUT", Boolean::parseBoolean, true);
   private static final Supplier<Integer> INGEST_WAIT_SECONDS =
@@ -246,7 +246,7 @@ public class Application {
     var metadata = new Metadata();
     metadata.put(
         Metadata.Key.of("api-key", Metadata.ASCII_STRING_MARSHALLER),
-        NEW_RELIC_INSIGHTS_API_KEY.get());
+        NEW_RELIC_LICENSE_KEY.get());
     managedChannelBuilder.intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
     return managedChannelBuilder.build();
   }

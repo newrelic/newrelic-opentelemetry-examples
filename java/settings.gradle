@@ -5,7 +5,7 @@ include 'logs-in-context-log4j2'
 include 'otel-nr-dt:nr-app'
 include 'otel-nr-dt:otel-app'
 include 'otlp-load-generator'
+include 'otlp-nr-mapping'
 include 'sdk-nr-config'
 include 'shared-utils'
-include 'otlp-raw'
 
