@@ -8,7 +8,7 @@
   "message" : "body",
   "messageId" : "OBFUSCATED",
   "message_id" : "OBFUSCATED",
-  "newrelic.logPattern" : "body",
+  "newrelic.logPattern" : "OBFUSCATED",
   "newrelic.logs.batchIndex" : 1,
   "newrelic.source" : "api.logs.otlp",
   "otel.library.name" : "my-instrumentation-library",
