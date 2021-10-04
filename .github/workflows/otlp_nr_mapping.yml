@@ -5,8 +5,8 @@ name: OTLP NewRelic Mapping
 
 on:
   schedule:
-    # Run every hour at the 10th minute
-    - cron:  '10 * * * *'
+    # Run every day at 15:00 UTC (10:00 am CST)
+    - cron:  '0 15 * * *'
 
 jobs:
   run-otlp-nr-mapping:
