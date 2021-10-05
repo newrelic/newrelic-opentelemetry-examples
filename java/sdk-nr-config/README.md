@@ -4,6 +4,8 @@
 
 This project demonstrates a simple Java application with custom OpenTelemetry instrumentation configured to write data to New Relic. New Relic expects metric data to delta aggregation temporality, whereas the default for OpenTelemetry is cumulative.
 
+It also uses several pieces of [standalone library instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/docs/standalone-library-instrumentation.md) ([Runtime Metrics](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/runtime-metrics/library) and [Spring WebMVC](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/spring/spring-webmvc-3.1/library)) published by the [opentelemetry-java-instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation) project. These artifacts allow projects to add zero or low configuration instrumentation for common libraries without using the OpenTelemetry Java Agent. 
+
 ## Run
 
 Set the following environment variables:

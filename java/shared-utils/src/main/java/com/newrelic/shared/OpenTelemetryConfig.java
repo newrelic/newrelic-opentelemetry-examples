@@ -45,13 +45,15 @@ public class OpenTelemetryConfig {
       getEnvOrDefault("LOG_EXPORTER_ENABLED", Boolean::valueOf, true);
 
   public static void configureGlobal(String defaultServiceName) {
+    var serviceName =
+        getEnvOrDefault("SERVICE_NAME", Function.identity(), defaultServiceName).get();
     var resource =
-        Resource.builder()
-            .put(
-                SERVICE_NAME,
-                getEnvOrDefault("SERVICE_NAME", Function.identity(), defaultServiceName).get())
-            .put(SERVICE_INSTANCE_ID, UUID.randomUUID().toString())
-            .build();
+        Resource.getDefault()
+            .merge(
+                Resource.builder()
+                    .put(SERVICE_NAME, serviceName)
+                    .put(SERVICE_INSTANCE_ID, UUID.randomUUID().toString())
+                    .build());
 
     // Configure traces
     var sdkTracerProviderBuilder =
