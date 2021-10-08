@@ -40,10 +40,7 @@ namespace AspNetCoreWebApi
                     .SetResourceBuilder(
                         ResourceBuilder
                             .CreateDefault()
-                            .AddService("aspnetcore-webapi")
-                            .AddAttributes(new Dictionary<string, object> {
-                                { "telemetry.sdk.name", "opentelemetry" }
-                            }))
+                            .AddService("aspnetcore-webapi"))
                     .AddAspNetCoreInstrumentation()
                     .AddRedisInstrumentation(redis.ConnectionMultiplexer)
                     .AddOtlpExporter(options => {
