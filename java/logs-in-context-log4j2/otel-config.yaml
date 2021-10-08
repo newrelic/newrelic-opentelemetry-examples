@@ -6,12 +6,6 @@ receivers:
       grpc:
   fluentforward:
     endpoint: 0.0.0.0:8006
-processors:
-  resource:
-    attributes:
-      - key: service.name
-        value: $SERVICE_NAME
-        action: insert
 exporters:
   logging:
     logLevel: $LOG_EXPORTER_LOG_LEVEL
