@@ -38,16 +38,6 @@
           "stringValue" : "native-otlp-test"
         }
       }, {
-        "key" : "telemetry.sdk.name",
-        "value" : {
-          "stringValue" : "opentelemetry"
-        }
-      }, {
-        "key" : "instrumentation.provider",
-        "value" : {
-          "stringValue" : "opentelemetry"
-        }
-      }, {
         "key" : "duplicate-key",
         "value" : {
           "stringValue" : "resource-value"

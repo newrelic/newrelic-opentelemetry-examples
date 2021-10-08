@@ -17,7 +17,6 @@
   "otel.library.version" : "foo",
   "service.name" : "native-otlp-test",
   "span.kind" : "internal",
-  "telemetry.sdk.name" : "opentelemetry",
   "timestamp" : 0,
   "trace.id" : "OBFUSCATED",
   "traceId" : "OBFUSCATED"

@@ -4,7 +4,6 @@
   "entity.guid" : "OBFUSCATED",
   "entity.name" : "native-otlp-test",
   "entity.type" : "SERVICE",
-  "instrumentation.provider" : "opentelemetry",
   "message_id" : "OBFUSCATED",
   "metricName" : "my_int_sum",
   "my_int_sum" : {
@@ -23,7 +22,6 @@
   "resource_ikey" : 1,
   "resource_skey" : "value",
   "service.name" : "native-otlp-test",
-  "telemetry.sdk.name" : "opentelemetry",
   "timestamp" : 0,
   "unit" : "unit"
 } ]

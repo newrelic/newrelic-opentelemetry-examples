@@ -26,7 +26,6 @@
   "severity.number" : 5,
   "severity.text" : "DEBUG",
   "span.id" : "OBFUSCATED",
-  "telemetry.sdk.name" : "opentelemetry",
   "timestamp" : 0,
   "trace.id" : "OBFUSCATED",
   "w3c.flags" : 1
