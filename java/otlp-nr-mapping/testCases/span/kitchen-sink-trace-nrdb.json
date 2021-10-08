@@ -31,7 +31,6 @@
   "span_dkey" : 1.0,
   "span_ikey" : 1,
   "span_skey" : "value",
-  "telemetry.sdk.name" : "opentelemetry",
   "timestamp" : 0,
   "trace.id" : "OBFUSCATED",
   "traceId" : "OBFUSCATED",

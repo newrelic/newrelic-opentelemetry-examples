@@ -183,16 +183,6 @@ public class Common {
             KeyValue.newBuilder()
                 .setKey("service.name")
                 .setValue(AnyValue.newBuilder().setStringValue("native-otlp-test").build())
-                .build())
-        .addAttributes(
-            KeyValue.newBuilder()
-                .setKey("telemetry.sdk.name")
-                .setValue(AnyValue.newBuilder().setStringValue("opentelemetry").build())
-                .build())
-        .addAttributes(
-            KeyValue.newBuilder()
-                .setKey("instrumentation.provider")
-                .setValue(AnyValue.newBuilder().setStringValue("opentelemetry").build())
                 .build());
   }
 
