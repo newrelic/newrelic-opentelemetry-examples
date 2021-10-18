@@ -24,5 +24,4 @@ service:
       exporters: [logging, otlp]
     logs:
       receivers: [fluentforward]
-      processors: [resource]
       exporters: [logging, otlp]
