@@ -3,6 +3,7 @@
   "entity.guid" : "OBFUSCATED",
   "entity.name" : "native-otlp-test",
   "entity.type" : "SERVICE",
+  "instrumentation.provider" : "opentelemetry",
   "message_id" : "OBFUSCATED",
   "metricName" : "my_summary",
   "my_summary" : {
