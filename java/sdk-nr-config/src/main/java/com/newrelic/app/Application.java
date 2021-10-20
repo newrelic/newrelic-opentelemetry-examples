@@ -4,7 +4,8 @@ import com.newrelic.shared.OpenTelemetryConfig;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.instrumentation.runtimemetrics.GarbageCollector;
 import io.opentelemetry.instrumentation.runtimemetrics.MemoryPools;
-import io.opentelemetry.instrumentation.spring.webmvc.WebMvcTracingFilter;
+import io.opentelemetry.instrumentation.spring.webmvc.SpringWebMvcTracing;
+import javax.servlet.Filter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -14,7 +15,7 @@ public class Application {
 
   public static void main(String[] args) {
     // Configure OpenTelemetry as early as possible
-    OpenTelemetryConfig.configureGlobal("sdk-nr-config-");
+    OpenTelemetryConfig.configureGlobal("sdk-nr-config");
 
     // Register runtime metrics instrumentation
     MemoryPools.registerObservers();
@@ -25,7 +26,7 @@ public class Application {
 
   /** Add Spring WebMVC instrumentation by registering tracing filter. */
   @Bean
-  public WebMvcTracingFilter webMvcTracingFilter() {
-    return new WebMvcTracingFilter(GlobalOpenTelemetry.get());
+  public Filter webMvcTracingFilter() {
+    return SpringWebMvcTracing.create(GlobalOpenTelemetry.get()).newServletFilter();
   }
 }

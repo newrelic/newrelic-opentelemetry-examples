@@ -21,14 +21,14 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import java.util.List;
+import java.time.Duration;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -91,25 +91,22 @@ public class OpenTelemetryConfig {
     setAggregation(
         meterProviderBuilder,
         HISTOGRAM,
-        Aggregation.explictBucketHistogram(AggregationTemporality.DELTA));
-    SdkMeterProvider sdkMeterProvider = meterProviderBuilder.build();
-    GlobalMeterProvider.set(sdkMeterProvider);
-    IntervalMetricReader.builder()
-        .setMetricExporter(
+        Aggregation.explicitBucketHistogram(AggregationTemporality.DELTA));
+
+    meterProviderBuilder.registerMetricReader(
+        PeriodicMetricReader.create(
             OtlpGrpcMetricExporter.builder()
                 .setChannel(
                     OtlpUtil.managedChannel(OTLP_HOST_SUPPLIER.get(), newRelicApiOrLicenseKey()))
-                .build())
-        .setExportIntervalMillis(5000)
-        .setMetricProducers(List.of(sdkMeterProvider))
-        .buildAndStart();
+                .build(),
+            Duration.ofSeconds(5)));
+
     if (LOG_EXPORTER_ENABLED.get()) {
-      IntervalMetricReader.builder()
-          .setMetricExporter(new LoggingMetricExporter())
-          .setExportIntervalMillis(5000)
-          .setMetricProducers(List.of(sdkMeterProvider))
-          .buildAndStart();
+      meterProviderBuilder.registerMetricReader(
+          PeriodicMetricReader.create(new LoggingMetricExporter(), Duration.ofSeconds(5)));
     }
+
+    GlobalMeterProvider.set(meterProviderBuilder.build());
   }
 
   private static void setAggregation(

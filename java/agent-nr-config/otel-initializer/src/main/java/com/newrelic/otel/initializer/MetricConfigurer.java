@@ -33,7 +33,7 @@ public class MetricConfigurer implements SdkMeterProviderConfigurer {
     setAggregation(builder, OBSERVABLE_SUM, Aggregation.sum(AggregationTemporality.DELTA));
     setAggregation(builder, OBSERVABLE_UP_DOWN_SUM, Aggregation.sum(AggregationTemporality.DELTA));
     setAggregation(
-        builder, HISTOGRAM, Aggregation.explictBucketHistogram(AggregationTemporality.DELTA));
+        builder, HISTOGRAM, Aggregation.explicitBucketHistogram(AggregationTemporality.DELTA));
   }
 
   private static void setAggregation(
