@@ -23,4 +23,4 @@ The application serves up a single endpoint accessible at https://localhost:5001
 
 ## View your data in New Relic
 
-The application produces trace data reporting to a service named `OpenTelemetry-Dotnet-Example`.
+The application produces trace and metric data reporting to a service named `OpenTelemetry-Dotnet-Example`.
