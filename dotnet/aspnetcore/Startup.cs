@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
@@ -21,30 +22,27 @@ namespace aspnetcore
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // Define an OpenTelemetry resource
+            // A resource represents a collection of attributes describing the
+            // service. This collection of attributes will be associated with all
+            // telemetry generated from this service (traces, metrics, logs).
+            var resourceBuilder = ResourceBuilder
+                .CreateDefault()
+                .AddService("OpenTelemetry-Dotnet-Example")
+                .AddAttributes(new Dictionary<string, object> {
+                    { "environment", "production" }
+                })
+                .AddTelemetrySdk();
+
             // Configure the OpenTelemetry SDK for tracing
-            services.AddOpenTelemetryTracing(builder =>
+            services.AddOpenTelemetryTracing(tracerProviderBuilder =>
             {
-                // Step 1. Define a resource
-                // A resource represents a collection of attributes describing the
-                // service. This collection of attributes is associated with all
-                // telemetry generated from this service.
-                var resourceBuilder = ResourceBuilder
-                    .CreateDefault()
-                    .AddService("OpenTelemetry-Dotnet-Example")
-                    .AddAttributes(new Dictionary<string, object> {
-                        { "environment", "production" }
-                    })
-                    .AddTelemetrySdk();
+                // Step 1. Declare the resource to be used by this tracer provider.
+                tracerProviderBuilder
+                    .SetResourceBuilder(resourceBuilder);
 
-                builder.SetResourceBuilder(resourceBuilder);
-
-                // Step 2. Set a sampler (optional)
-                // Defaults to ParentBasedSampler
-                // (i.e. for each span ask: if my parent was sampled then I am sampled)
-                builder.SetSampler(new AlwaysOnSampler());
-
-                // Step 3. Configure the SDK to listen to the following auto-instrumentation
-                builder
+                // Step 2. Configure the SDK to listen to the following auto-instrumentation
+                tracerProviderBuilder
                     .AddAspNetCoreInstrumentation(options =>
                     {
                         options.RecordException = true;
@@ -55,24 +53,50 @@ namespace aspnetcore
                     })
                     .AddHttpClientInstrumentation();
 
-                // Step 4. Configure the SDK to listen to my custom instrumentation
-                builder
+                // Step 3. Configure the SDK to listen to custom instrumentation.
+                tracerProviderBuilder
                     .AddSource("WeatherForecast");
 
-                // Step 5. Configure custom span processors (optional)
-                // Span processors enable you to further enrich or filter
-                // span data as it is generated.
-                builder
-                    .AddProcessor(new MySpanProcessor());
-
-                // Step 6. Configure the OTLP exporter to export to New Relic
-                //     The OTEL_EXPORTER_OTLP_ENDPOINT environment variable should be set to New Relic's OTLP endpoint
-                //     The OTEL_EXPORTER_OTLP_HEADERS environment variable should be set to: "api-key=<YOUR_API_KEY_HERE>"
-                builder
+                // Step 4. Configure the OTLP exporter to export to New Relic
+                //     The OTEL_EXPORTER_OTLP_ENDPOINT environment variable should be set to New Relic's OTLP endpoint:
+                //         OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317
+                //
+                //     The OTEL_EXPORTER_OTLP_HEADERS environment variable should be set to include your New Relic API key:
+                //         OTEL_EXPORTER_OTLP_HEADERS=api-key=<YOUR_API_KEY_HERE>
+                tracerProviderBuilder
                     .AddOtlpExporter(options =>
                     {
                         options.Endpoint = new Uri($"{Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT")}");
                         options.Headers = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_HEADERS");
+                    });
+            });
+
+            services.AddOpenTelemetryMetrics(meterProviderBuilder =>
+            {
+                // Step 1. Declare the resource to be used by this meter provider.
+                meterProviderBuilder
+                    .SetResourceBuilder(resourceBuilder);
+
+                // Step 2. Configure the SDK to listen to the following auto-instrumentation
+                meterProviderBuilder
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation();
+
+                // Step 3. Configure the OTLP exporter to export to New Relic
+                //     The OTEL_EXPORTER_OTLP_ENDPOINT environment variable should be set to New Relic's OTLP endpoint:
+                //         OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317
+                //
+                //     The OTEL_EXPORTER_OTLP_HEADERS environment variable should be set to include your New Relic API key:
+                //         OTEL_EXPORTER_OTLP_HEADERS=api-key=<YOUR_API_KEY_HERE>
+                meterProviderBuilder
+                    .AddOtlpExporter(options =>
+                    {
+                        options.Endpoint = new Uri($"{Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT")}");
+                        options.Headers = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_HEADERS");
+
+                        // New Relic requires the exporter to use delta aggregation temporality.
+                        // The OTLP exporter defaults to using cumulative aggregation temporatlity.
+                        options.AggregationTemporality = AggregationTemporality.Delta;
                     });
             });
 
