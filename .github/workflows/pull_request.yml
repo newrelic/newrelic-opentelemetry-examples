@@ -16,4 +16,7 @@ jobs:
       - name: Build with Gradle
         working-directory: java
         run: ./gradlew build
+      - name: Build java/spring-initializr with Gradle
+        working-directory: java/spring-initializr
+        run: ./gradlew build
 

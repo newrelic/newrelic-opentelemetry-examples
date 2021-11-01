@@ -23,6 +23,7 @@ This project contains examples illustrating usage of OpenTelemetry with New Reli
   * [OpenTelemetry SDK New Relic Config](./java/sdk-nr-config): A Java application with OpenTelemetry standalone library instrumentation as well as custom instrumentation, configured for New Relic via the SDK.
   * [OTLP New Relic Mapping](./java/otlp-nr-mapping): Contains a variety of test cases demonstrating how OTLP payloads are mapped to records in NRDB upon ingest.
   * [OTLP Load Generator](./java/otlp-load-generator): A Java application that generates OTLP span and metric data. 
+  * [Spring Initializr with OpenTelemetry](./java/spring-initializr): Add OpenTelemetry instrumentation to a Spring Initializr application. 
 
 ## Contribute
 
