@@ -32,13 +32,20 @@ namespace aspnetcore.Controllers
             await DoSomeWork();
 
             var rng = new Random();
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            var forecast = Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
                 Date = DateTime.Now.AddDays(index),
                 TemperatureC = rng.Next(-20, 55),
-                Summary = Summaries[rng.Next(Summaries.Length)]
+                Summary = Summaries[rng.Next(Summaries.Length)],
             })
             .ToArray();
+
+            _logger.LogInformation(
+                "WeatherForecasts generated {count}: {forecasts}",
+                forecast.Length,
+                forecast);
+
+            return forecast;
         }
 
         // An ActivitySource is .NET's term for an OpenTelemetry Tracer.
