@@ -217,6 +217,46 @@ public class Common {
         KeyValue.newBuilder()
             .setKey(prefix + "dkey")
             .setValue(AnyValue.newBuilder().setDoubleValue(1.0).build())
+            .build(),
+        KeyValue.newBuilder()
+            .setKey(prefix + "sarrkey")
+            .setValue(
+                AnyValue.newBuilder()
+                    .setArrayValue(
+                        ArrayValue.newBuilder()
+                            .addValues(AnyValue.newBuilder().setStringValue("value1").build())
+                            .addValues(AnyValue.newBuilder().setStringValue("value2").build())
+                            .build()))
+            .build(),
+        KeyValue.newBuilder()
+            .setKey(prefix + "iarrkey")
+            .setValue(
+                AnyValue.newBuilder()
+                    .setArrayValue(
+                        ArrayValue.newBuilder()
+                            .addValues(AnyValue.newBuilder().setIntValue(1).build())
+                            .addValues(AnyValue.newBuilder().setIntValue(2).build())
+                            .build()))
+            .build(),
+        KeyValue.newBuilder()
+            .setKey(prefix + "barrkey")
+            .setValue(
+                AnyValue.newBuilder()
+                    .setArrayValue(
+                        ArrayValue.newBuilder()
+                            .addValues(AnyValue.newBuilder().setBoolValue(true).build())
+                            .addValues(AnyValue.newBuilder().setBoolValue(false).build())
+                            .build()))
+            .build(),
+        KeyValue.newBuilder()
+            .setKey(prefix + "darrkey")
+            .setValue(
+                AnyValue.newBuilder()
+                    .setArrayValue(
+                        ArrayValue.newBuilder()
+                            .addValues(AnyValue.newBuilder().setDoubleValue(1.0).build())
+                            .addValues(AnyValue.newBuilder().setDoubleValue(2.0).build())
+                            .build()))
             .build());
   }
 

@@ -31,6 +31,50 @@
           "value" : {
             "doubleValue" : 1.0
           }
+        }, {
+          "key" : "span_sarrkey",
+          "value" : {
+            "arrayValue" : {
+              "values" : [ {
+                "stringValue" : "value1"
+              }, {
+                "stringValue" : "value2"
+              } ]
+            }
+          }
+        }, {
+          "key" : "span_iarrkey",
+          "value" : {
+            "arrayValue" : {
+              "values" : [ {
+                "intValue" : "1"
+              }, {
+                "intValue" : "2"
+              } ]
+            }
+          }
+        }, {
+          "key" : "span_barrkey",
+          "value" : {
+            "arrayValue" : {
+              "values" : [ {
+                "boolValue" : true
+              }, {
+                "boolValue" : false
+              } ]
+            }
+          }
+        }, {
+          "key" : "span_darrkey",
+          "value" : {
+            "arrayValue" : {
+              "values" : [ {
+                "doubleValue" : 1.0
+              }, {
+                "doubleValue" : 2.0
+              } ]
+            }
+          }
         } ],
         "droppedAttributesCount" : 1,
         "droppedEventsCount" : 1,
@@ -56,6 +100,50 @@
             "key" : "span_event_dkey",
             "value" : {
               "doubleValue" : 1.0
+            }
+          }, {
+            "key" : "span_event_sarrkey",
+            "value" : {
+              "arrayValue" : {
+                "values" : [ {
+                  "stringValue" : "value1"
+                }, {
+                  "stringValue" : "value2"
+                } ]
+              }
+            }
+          }, {
+            "key" : "span_event_iarrkey",
+            "value" : {
+              "arrayValue" : {
+                "values" : [ {
+                  "intValue" : "1"
+                }, {
+                  "intValue" : "2"
+                } ]
+              }
+            }
+          }, {
+            "key" : "span_event_barrkey",
+            "value" : {
+              "arrayValue" : {
+                "values" : [ {
+                  "boolValue" : true
+                }, {
+                  "boolValue" : false
+                } ]
+              }
+            }
+          }, {
+            "key" : "span_event_darrkey",
+            "value" : {
+              "arrayValue" : {
+                "values" : [ {
+                  "doubleValue" : 1.0
+                }, {
+                  "doubleValue" : 2.0
+                } ]
+              }
             }
           } ],
           "droppedAttributesCount" : 1,
@@ -104,6 +192,50 @@
         "key" : "resource_dkey",
         "value" : {
           "doubleValue" : 1.0
+        }
+      }, {
+        "key" : "resource_sarrkey",
+        "value" : {
+          "arrayValue" : {
+            "values" : [ {
+              "stringValue" : "value1"
+            }, {
+              "stringValue" : "value2"
+            } ]
+          }
+        }
+      }, {
+        "key" : "resource_iarrkey",
+        "value" : {
+          "arrayValue" : {
+            "values" : [ {
+              "intValue" : "1"
+            }, {
+              "intValue" : "2"
+            } ]
+          }
+        }
+      }, {
+        "key" : "resource_barrkey",
+        "value" : {
+          "arrayValue" : {
+            "values" : [ {
+              "boolValue" : true
+            }, {
+              "boolValue" : false
+            } ]
+          }
+        }
+      }, {
+        "key" : "resource_darrkey",
+        "value" : {
+          "arrayValue" : {
+            "values" : [ {
+              "doubleValue" : 1.0
+            }, {
+              "doubleValue" : 2.0
+            } ]
+          }
         }
       } ]
     },
