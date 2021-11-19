@@ -6,15 +6,11 @@ This is an example of auto-instrumenting a simple Node.js application with [Open
 
 Currently New Relic only supports [OTLP/gRPC](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/otlp.md#otlpgrpc) so you must use the [@opentelemetry/exporter-collector-grpc](https://www.npmjs.com/package/@opentelemetry/exporter-collector-grpc) package to send data to New Relic.
 
-<br>
-
 ## Prerequisites
 
 1. Sign up for a [free New Relic account](https://newrelic.com/signup).
 
 2. Copy your [account ingest license key](https://one.newrelic.com/launcher/api-keys-ui.launcher).
-
-<br>
 
 ## Run
 
@@ -43,8 +39,6 @@ Currently New Relic only supports [OTLP/gRPC](https://github.com/open-telemetry/
 The application exposes a simple endpoint at `http://localhost:8080/ping`.
 
 Invoke it via: `curl http://localhost:8080/ping` to generate trace data.
-
-<br>
 
 ## View your data in the New Relic UI
 
