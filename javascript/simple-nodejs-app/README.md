@@ -10,7 +10,7 @@ Currently New Relic only supports [OTLP/gRPC](https://github.com/open-telemetry/
 
 1. Sign up for a [free New Relic account](https://newrelic.com/signup).
 
-2. Copy your [account ingest license key](https://one.newrelic.com/launcher/api-keys-ui.launcher).
+2. Copy your New Relic [account ingest license key](https://one.newrelic.com/launcher/api-keys-ui.launcher).
 
 ## Run
 
