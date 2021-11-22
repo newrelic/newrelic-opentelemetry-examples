@@ -31,7 +31,7 @@ const collectorOptions = {
 //    The OTEL_EXPORTER_OTLP_HEADERS environment variable should be set to include your New Relic API ingest license key:
 //      OTEL_EXPORTER_OTLP_HEADERS=api-key=<YOUR_API_KEY_HERE>
 
-// Alternative to Step 2: Declare New Relic's OTLP endpoint and API ingest license key inside the CollectorOptions:
+// Alternative to Step 2: Declare New Relic's OTLP endpoint and API ingest license key inside the collectorOptions:
 //    Example:
 //      create a metadata object to be send with each request
 //      const metadata = new grpc.Metadata();
