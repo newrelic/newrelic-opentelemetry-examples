@@ -25,9 +25,6 @@ Currently New Relic only supports [OTLP/gRPC](https://github.com/open-telemetry/
    ```
    - Replace `<your_license_key_here>` with your New Relic account ingest license key.
 
-   - Alternatively you can set the endpoint and the api-key programmatically in the `collectorOptions` as mentioned in the [@opentelemetry/exporter-collector-grpc](https://www.npmjs.com/package/@opentelemetry/exporter-collector-grpc) package.
-     - The api-key would have to be set through the `metadata` object.
-
 3. Run the application:
 
    ```shell
