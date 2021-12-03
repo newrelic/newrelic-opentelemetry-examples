@@ -9,17 +9,15 @@ import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
+import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.opentelemetry.sdk.metrics.view.Aggregation;
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -40,15 +38,7 @@ public class OpenTelemetryConfig {
       getEnvOrDefault("LOG_EXPORTER_ENABLED", Boolean::valueOf, true);
 
   public static void configureGlobal(String defaultServiceName) {
-    var serviceName =
-        getEnvOrDefault("SERVICE_NAME", Function.identity(), defaultServiceName).get();
-    var resource =
-        Resource.getDefault()
-            .merge(
-                Resource.builder()
-                    .put(SERVICE_NAME, serviceName)
-                    .put(SERVICE_INSTANCE_ID, UUID.randomUUID().toString())
-                    .build());
+    var resource = configureResource(defaultServiceName);
 
     // Configure traces
     var sdkTracerProviderBuilder =
@@ -95,13 +85,28 @@ public class OpenTelemetryConfig {
     GlobalMeterProvider.set(meterProviderBuilder.build());
   }
 
-  private static void setAggregation(
-      SdkMeterProviderBuilder meterProviderBuilder,
-      InstrumentType instrumentType,
-      Aggregation aggregation) {
-    meterProviderBuilder.registerView(
-        InstrumentSelector.builder().setInstrumentType(instrumentType).build(),
-        View.builder().setAggregation(aggregation).build());
+  private static Resource configureResource(String defaultServiceName) {
+    return Resource.getDefault()
+        .merge(
+            Resource.builder()
+                .put(
+                    SERVICE_NAME,
+                    getEnvOrDefault("SERVICE_NAME", Function.identity(), defaultServiceName).get())
+                .put(SERVICE_INSTANCE_ID, UUID.randomUUID().toString())
+                .build());
+  }
+
+  public static SdkLogEmitterProvider configureLogSdk(String defaultServiceName) {
+    return SdkLogEmitterProvider.builder()
+        .setResource(configureResource(defaultServiceName))
+        .addLogProcessor(
+            BatchLogProcessor.builder(
+                    OtlpGrpcLogExporter.builder()
+                        .setEndpoint(OTLP_HOST_SUPPLIER.get())
+                        .addHeader("api-key", newRelicApiOrLicenseKey())
+                        .build())
+                .build())
+        .build();
   }
 
   private static String newRelicApiOrLicenseKey() {
