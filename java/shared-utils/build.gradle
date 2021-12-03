@@ -7,14 +7,16 @@ dependencies {
     api 'io.opentelemetry:opentelemetry-api'
     api 'io.opentelemetry:opentelemetry-api-metrics'
     api 'io.opentelemetry:opentelemetry-sdk'
+    api 'io.opentelemetry:opentelemetry-sdk-metrics'
     api 'io.opentelemetry:opentelemetry-exporter-logging'
     api 'io.opentelemetry:opentelemetry-exporter-otlp'
     api 'io.opentelemetry:opentelemetry-exporter-otlp-metrics'
+    api 'io.opentelemetry:opentelemetry-exporter-otlp-logs'
     api 'io.opentelemetry:opentelemetry-semconv'
-    api 'io.opentelemetry:opentelemetry-proto'
+    api "io.opentelemetry.proto:opentelemetry-proto:${project['otel-proto.version']}"
 
     implementation 'io.grpc:grpc-netty-shaded'
-    implementation("io.grpc:grpc-stub")
+    api 'io.grpc:grpc-stub'
 
     implementation "com.google.code.gson:gson:${project['gson.version']}"
 

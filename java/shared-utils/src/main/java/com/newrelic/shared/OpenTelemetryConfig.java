@@ -1,11 +1,6 @@
 package com.newrelic.shared;
 
 import static com.newrelic.shared.EnvUtils.getEnvOrDefault;
-import static io.opentelemetry.sdk.metrics.common.InstrumentType.COUNTER;
-import static io.opentelemetry.sdk.metrics.common.InstrumentType.HISTOGRAM;
-import static io.opentelemetry.sdk.metrics.common.InstrumentType.OBSERVABLE_SUM;
-import static io.opentelemetry.sdk.metrics.common.InstrumentType.OBSERVABLE_UP_DOWN_SUM;
-import static io.opentelemetry.sdk.metrics.common.InstrumentType.UP_DOWN_COUNTER;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_INSTANCE_ID;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_NAME;
 
@@ -78,32 +73,23 @@ public class OpenTelemetryConfig {
 
     // Configure metrics
     var meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
-    // Override default cumulative aggregators with delta
-    setAggregation(meterProviderBuilder, COUNTER, Aggregation.sum(AggregationTemporality.DELTA));
-    setAggregation(
-        meterProviderBuilder, UP_DOWN_COUNTER, Aggregation.sum(AggregationTemporality.DELTA));
-    setAggregation(
-        meterProviderBuilder, OBSERVABLE_SUM, Aggregation.sum(AggregationTemporality.DELTA));
-    setAggregation(
-        meterProviderBuilder,
-        OBSERVABLE_UP_DOWN_SUM,
-        Aggregation.sum(AggregationTemporality.DELTA));
-    setAggregation(
-        meterProviderBuilder,
-        HISTOGRAM,
-        Aggregation.explicitBucketHistogram(AggregationTemporality.DELTA));
 
     meterProviderBuilder.registerMetricReader(
-        PeriodicMetricReader.create(
-            OtlpGrpcMetricExporter.builder()
-                .setChannel(
-                    OtlpUtil.managedChannel(OTLP_HOST_SUPPLIER.get(), newRelicApiOrLicenseKey()))
-                .build(),
-            Duration.ofSeconds(5)));
+        PeriodicMetricReader.builder(
+                OtlpGrpcMetricExporter.builder()
+                    .setPreferredTemporality(AggregationTemporality.DELTA)
+                    .setChannel(
+                        OtlpUtil.managedChannel(
+                            OTLP_HOST_SUPPLIER.get(), newRelicApiOrLicenseKey()))
+                    .build())
+            .setInterval(Duration.ofSeconds(5))
+            .newMetricReaderFactory());
 
     if (LOG_EXPORTER_ENABLED.get()) {
       meterProviderBuilder.registerMetricReader(
-          PeriodicMetricReader.create(new LoggingMetricExporter(), Duration.ofSeconds(5)));
+          PeriodicMetricReader.builder(new LoggingMetricExporter())
+              .setInterval(Duration.ofSeconds(5))
+              .newMetricReaderFactory());
     }
 
     GlobalMeterProvider.set(meterProviderBuilder.build());

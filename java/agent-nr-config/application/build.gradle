@@ -29,12 +29,13 @@ bootRun {
     environment([
         "OTEL_METRICS_EXPORTER": "otlp",    // By default, metrics exporter is none
         "OTEL_IMR_EXPORT_INTERVAL": "5000", // Report metrics every 5s instead of every 60s
+        "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY": "DELTA" // Report metrics using delta aggregation temporality
     ])
 }
 
 // Download the opentelemetry java agent and put it in the build directory
 task downloadAgent(type: Download) {
-    src "https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${project['otel-agent.version']}/opentelemetry-javaagent-all.jar"
+    src "https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${project['otel-agent.version']}/opentelemetry-javaagent.jar"
     dest agentPath
     overwrite false
 }
