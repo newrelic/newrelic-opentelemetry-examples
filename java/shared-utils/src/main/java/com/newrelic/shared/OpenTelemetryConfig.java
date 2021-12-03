@@ -9,9 +9,14 @@ import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
+import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporter;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
+import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
@@ -41,17 +46,20 @@ public class OpenTelemetryConfig {
     var resource = configureResource(defaultServiceName);
 
     // Configure traces
+    var spanExporterBuilder =
+        OtlpGrpcSpanExporter.builder()
+            .setEndpoint(OTLP_HOST_SUPPLIER.get())
+            .addHeader("api-key", newRelicApiOrLicenseKey());
+
+    // Enable retry policy via unstable API
+    DefaultGrpcExporterBuilder.getDelegateBuilder(
+            OtlpGrpcSpanExporterBuilder.class, spanExporterBuilder)
+        .addRetryPolicy(RetryPolicy.getDefault());
+
     var sdkTracerProviderBuilder =
         SdkTracerProvider.builder()
             .setResource(resource)
-            .addSpanProcessor(
-                BatchSpanProcessor.builder(
-                        OtlpGrpcSpanExporter.builder()
-                            .setChannel(
-                                OtlpUtil.managedChannel(
-                                    OTLP_HOST_SUPPLIER.get(), newRelicApiOrLicenseKey()))
-                            .build())
-                    .build());
+            .addSpanProcessor(BatchSpanProcessor.builder(spanExporterBuilder.build()).build());
     if (LOG_EXPORTER_ENABLED.get()) {
       sdkTracerProviderBuilder.addSpanProcessor(
           BatchSpanProcessor.builder(new LoggingSpanExporter()).build());
@@ -64,14 +72,19 @@ public class OpenTelemetryConfig {
     // Configure metrics
     var meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
 
+    var metricExporterBuilder =
+        OtlpGrpcMetricExporter.builder()
+            .setPreferredTemporality(AggregationTemporality.DELTA)
+            .setEndpoint(OTLP_HOST_SUPPLIER.get())
+            .addHeader("api-key", newRelicApiOrLicenseKey());
+
+    // Enable retry policy via unstable API
+    DefaultGrpcExporterBuilder.getDelegateBuilder(
+            OtlpGrpcMetricExporterBuilder.class, metricExporterBuilder)
+        .addRetryPolicy(RetryPolicy.getDefault());
+
     meterProviderBuilder.registerMetricReader(
-        PeriodicMetricReader.builder(
-                OtlpGrpcMetricExporter.builder()
-                    .setPreferredTemporality(AggregationTemporality.DELTA)
-                    .setChannel(
-                        OtlpUtil.managedChannel(
-                            OTLP_HOST_SUPPLIER.get(), newRelicApiOrLicenseKey()))
-                    .build())
+        PeriodicMetricReader.builder(metricExporterBuilder.build())
             .setInterval(Duration.ofSeconds(5))
             .newMetricReaderFactory());
 
@@ -97,15 +110,19 @@ public class OpenTelemetryConfig {
   }
 
   public static SdkLogEmitterProvider configureLogSdk(String defaultServiceName) {
+    var logExporterBuilder =
+        OtlpGrpcLogExporter.builder()
+            .setEndpoint(OTLP_HOST_SUPPLIER.get())
+            .addHeader("api-key", newRelicApiOrLicenseKey());
+
+    // Enable retry policy via unstable API
+    DefaultGrpcExporterBuilder.getDelegateBuilder(
+            OtlpGrpcLogExporterBuilder.class, logExporterBuilder)
+        .addRetryPolicy(RetryPolicy.getDefault());
+
     return SdkLogEmitterProvider.builder()
         .setResource(configureResource(defaultServiceName))
-        .addLogProcessor(
-            BatchLogProcessor.builder(
-                    OtlpGrpcLogExporter.builder()
-                        .setEndpoint(OTLP_HOST_SUPPLIER.get())
-                        .addHeader("api-key", newRelicApiOrLicenseKey())
-                        .build())
-                .build())
+        .addLogProcessor(BatchLogProcessor.builder(logExporterBuilder.build()).build())
         .build();
   }
 
