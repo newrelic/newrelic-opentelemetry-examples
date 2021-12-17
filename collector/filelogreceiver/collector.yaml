@@ -1,0 +1,13 @@
+receivers:
+  filelog:
+    include: [ /logfile.txt ]
+
+exporters:
+  logging:
+    logLevel: debug
+
+service:
+  pipelines:
+    logs:
+      receivers: [filelog]
+      exporters: [logging]
