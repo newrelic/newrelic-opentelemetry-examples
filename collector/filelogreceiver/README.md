@@ -1,13 +1,8 @@
-In one shell window run:
+1. Run:
 ```shell
-docker build . -t logfilereceiver
-docker run -t logfilereceiver
+docker-compose up --build
 ```
 
-In another shell window run:
-```shell
-docker exec -it container_id bash
-echo "Some log message" >> logfile.txt
-```
+2. Write lines to logfile.txt.
 
-You should see a log get exported via the logging exporter.
+3. See lines exported via the logging exporter and OTLP exporter.

@@ -1,13 +1,17 @@
 receivers:
   filelog:
-    include: [ /logfile.txt ]
+    include: [ /logfiles/logfile.txt ]
 
 exporters:
   logging:
     logLevel: debug
+  otlp:
+    endpoint: $OTEL_EXPORTER_OTLP_ENDPOINT
+    headers:
+      api-key: $NEW_RELIC_API_KEY
 
 service:
   pipelines:
     logs:
       receivers: [filelog]
-      exporters: [logging]
+      exporters: [logging, otlp]

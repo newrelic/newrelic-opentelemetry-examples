@@ -1,0 +1,10 @@
+services:
+  otel-collector:
+    build: .
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
+      - NEW_RELIC_API_KEY=${NEW_RELIC_API_KEY}
+    ports:
+      - "4317:4317"
+    volumes:
+      - .:/logfiles
