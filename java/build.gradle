@@ -20,8 +20,6 @@ subprojects {
 
         repositories {
           mavenCentral()
-          // TODO: remove once log4j2 appender is published
-          maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
         }
 
         test {
