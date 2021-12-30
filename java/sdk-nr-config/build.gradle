@@ -1,6 +1,6 @@
 plugins {
   id 'java-library'
-  id 'org.springframework.boot' version '2.4.8'
+  id 'org.springframework.boot' version '2.5.8'
   id 'io.spring.dependency-management' version '1.0.10.RELEASE'
 }
 
@@ -12,7 +12,7 @@ configurations.all {
   exclude module: 'spring-boot-starter-logging'
 }
 // Force upgrade log4j2 to avoid vulnerability: https://spring.io/blog/2021/12/10/log4j2-vulnerability-and-spring-boot
-ext['log4j2.version'] = '2.17.0'
+ext['log4j2.version'] = '2.17.1'
 
 dependencies {
   implementation project(':shared-utils')
@@ -21,7 +21,7 @@ dependencies {
 
   implementation 'io.opentelemetry.instrumentation:opentelemetry-runtime-metrics'
   implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-3.1'
-  // TODO: remove snapshot once log4j2 appender is published
-  implementation 'io.opentelemetry.instrumentation:opentelemetry-log4j-appender-2.16:1.10.0-alpha-SNAPSHOT'
-  implementation 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-sdk-appender:1.10.0-alpha-SNAPSHOT'
+  // TODO: uncomment once log4j2 appender is published
+  // implementation 'io.opentelemetry.instrumentation:opentelemetry-log4j-appender-2.16:1.10.0-alpha'
+  // implementation 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-sdk-appender:1.10.0-alpha'
 }

@@ -2,10 +2,8 @@ package com.newrelic.app;
 
 import com.newrelic.shared.OpenTelemetryConfig;
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.instrumentation.api.appender.GlobalLogEmitterProvider;
 import io.opentelemetry.instrumentation.runtimemetrics.GarbageCollector;
 import io.opentelemetry.instrumentation.runtimemetrics.MemoryPools;
-import io.opentelemetry.instrumentation.sdk.appender.DelegatingLogEmitterProvider;
 import io.opentelemetry.instrumentation.spring.webmvc.SpringWebMvcTracing;
 import javax.servlet.Filter;
 import org.springframework.boot.SpringApplication;
@@ -22,8 +20,9 @@ public class Application {
     OpenTelemetryConfig.configureGlobal(defaultServiceName);
 
     // Initialize Log4j2 appender
-    var logEmitterProvider = OpenTelemetryConfig.configureLogSdk(defaultServiceName);
-    GlobalLogEmitterProvider.set(DelegatingLogEmitterProvider.from(logEmitterProvider));
+    // TODO: uncomment when log4j appender is released
+    // var logEmitterProvider = OpenTelemetryConfig.configureLogSdk(defaultServiceName);
+    // GlobalLogEmitterProvider.set(DelegatingLogEmitterProvider.from(logEmitterProvider));
 
     // Register runtime metrics instrumentation
     MemoryPools.registerObservers();
