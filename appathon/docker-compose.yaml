@@ -1,6 +1,13 @@
 version: '3'
 services:
-  app:
+  appathon-dotnet:
+    build: ./dotnet
+    ports:
+      - "8080:80"
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: https://otlp.nr-data.net:4317
+      OTEL_EXPORTER_OTLP_HEADERS: "api-key=${NEW_RELIC_API_KEY}"
+  appathon-java:
     build: ./java
     ports:
       - "8081:8080"
