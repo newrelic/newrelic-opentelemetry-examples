@@ -4,6 +4,7 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,12 +41,15 @@ public class Controller {
   private long fibonacci(long n) {
     var start = System.nanoTime();
     var span = TRACER.spanBuilder("fibonacci").startSpan();
+    span.setAttribute("n", n);
     try (var scope = span.makeCurrent()) {
       // Base cases
       if (n == 1) {
+        span.setAttribute("result", 1);
         return 1;
       }
       if (n == 2) {
+        span.setAttribute("result", 1);
         return 1;
       }
 
@@ -57,6 +61,7 @@ public class Controller {
         lastLast = last;
         last = cur;
       }
+      span.setAttribute("result", last);
       return last;
     } finally {
       fibonacciDuration.record(System.nanoTime() - start);
@@ -73,6 +78,7 @@ public class Controller {
             HttpRequestMethodNotSupportedException.class
     })
     public ResponseEntity<Object> handleException(Exception e) {
+      Span.current().recordException(e);
       return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
