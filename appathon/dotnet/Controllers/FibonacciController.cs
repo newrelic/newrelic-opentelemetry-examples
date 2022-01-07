@@ -7,29 +7,34 @@ namespace dotnet.Controllers;
 public class FibonacciController : ControllerBase
 {
     [HttpGet(Name = "GetFibonacci")]
-    public long Get(long n)
+    public object Get(long n)
     {
-        if (n < 1 || n > 1000)
+        if (n < 1 || n > 92)
         {
-            throw new ArgumentOutOfRangeException(nameof(n), n, "Must be between 1 and 1000");
+            throw new ArgumentOutOfRangeException(nameof(n), n, "Must be between 1 and 92");
         }
 
+        var result = 0L;
         if (n <= 2)
         {
-            return 1;
+            result = 1;
         }
-
-        var a = 0;
-        var b = 1;
-        var c = 0;
-
-        for (var i = 1; i < n; i++)
+        else
         {
-            c = checked(a + b);
-            a = b;
-            b = c;
+            var a = 0L;
+            var b = 1L;
+
+            for (var i = 1; i < n; i++)
+            {
+                result = checked(a + b);
+                a = b;
+                b = result;
+            }
         }
 
-        return c;
+        return new {
+            n = n,
+            result = result
+        };
     }
 }
