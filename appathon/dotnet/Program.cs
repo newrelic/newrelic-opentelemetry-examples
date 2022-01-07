@@ -1,4 +1,5 @@
-﻿using OpenTelemetry.Resources;
+﻿using dotnet.Controllers;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,10 +15,8 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
 {
     tracerProviderBuilder
         .SetResourceBuilder(resourceBuilder)
-        .AddAspNetCoreInstrumentation(options =>
-        {
-            options.RecordException = true;
-        })
+        .AddSource(FibonacciController.ActivitySourceName)
+        .AddAspNetCoreInstrumentation()
         .AddOtlpExporter();
 });
 

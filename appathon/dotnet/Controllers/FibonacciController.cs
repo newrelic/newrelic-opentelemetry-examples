@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using OpenTelemetry.Trace;
 
 namespace dotnet.Controllers;
 
@@ -6,12 +8,42 @@ namespace dotnet.Controllers;
 [Route("[controller]")]
 public class FibonacciController : ControllerBase
 {
+    public const string ActivitySourceName = "FibonacciService";
+    private ActivitySource activitySource = new ActivitySource(ActivitySourceName);
+
     [HttpGet(Name = "GetFibonacci")]
     public object Get(long n)
     {
-        if (n < 1 || n > 92)
+        long result;
+        try
         {
-            throw new ArgumentOutOfRangeException(nameof(n), n, "Must be between 1 and 92");
+            result = ComputeNthFibonocci(n);
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            return BadRequest(ex);
+        }
+
+        return new {
+            n = n,
+            result = result
+        };
+    }
+
+    private long ComputeNthFibonocci(long n)
+    {
+        using var activity = activitySource.StartActivity(nameof(ComputeNthFibonocci));
+        activity?.SetTag("n", n);
+
+        if (n < 1 || n > 90)
+        {
+            var message = $"Parameter '{nameof(n)}' must be between 1 and 90";
+            var exception = new ArgumentOutOfRangeException(nameof(n), n, "Must be between 1 and 90");
+
+            activity?.SetStatus(ActivityStatusCode.Error, $"Parameter '{nameof(n)}' must be between 1 and 90");
+            activity?.RecordException(exception);
+
+            throw exception;
         }
 
         var result = 0L;
@@ -32,9 +64,7 @@ public class FibonacciController : ControllerBase
             }
         }
 
-        return new {
-            n = n,
-            result = result
-        };
+        activity?.SetTag("result", result);
+        return result;
     }
 }
