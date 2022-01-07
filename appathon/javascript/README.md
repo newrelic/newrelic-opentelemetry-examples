@@ -10,7 +10,7 @@ Replace <your_license_key> with your New Relic license key.
 
   ```
   docker build -t appathon-javascript . \
-    --env OTEL_EXPORTER_OTLP_ENDPOINT=grpc://staging-otlp.nr-data.net:4317 \
+    --env OTEL_EXPORTER_OTLP_ENDPOINT=grpc://otlp.nr-data.net:4317 \
     --env OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key_here> \
     appathon-javascript
   ```
