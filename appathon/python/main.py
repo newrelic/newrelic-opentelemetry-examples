@@ -1,4 +1,5 @@
 import flask
+from flask import request, jsonify
 # import uuid
 
 from opentelemetry import trace
@@ -13,7 +14,7 @@ trace.set_tracer_provider(
     TracerProvider(
         resource=Resource.create({
             "service.name": "appathon-python",
-            # "service.instance.id": uuid.uuid4(),
+            "service.instance.id": "2193801",
             "telemetry.sdk.name": "opentelemetry",
             "telemetry.sdk.language": "python",
             "telemetry.sdk.version": "0.13.dev0"
@@ -33,9 +34,12 @@ RequestsInstrumentor().instrument()
 
 tracer = trace.get_tracer(__name__)
 
-@app.route("/fibonacci/<int:n>")
-def fib(n):
-    return str(calcfib(n))
+@app.route("/fibonacci")
+def fib():
+    n = int(request.args.get('n'))
+    return jsonify(
+        n=n,
+        result=calcfib(n))
 
 def calcfib(x):
     if x == 0:
@@ -46,8 +50,6 @@ def calcfib(x):
     return a
 
 if __name__ == '__main__':
-    with tracer.start_as_current_span("fibonacci"):
-        app.run()
+    app.run()
 
 app.run(debug=True, port=5000)
-
