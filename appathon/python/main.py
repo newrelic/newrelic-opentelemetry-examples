@@ -2,6 +2,7 @@ import flask
 from flask import request, jsonify
 # import uuid
 
+from grpc import Compression
 from opentelemetry import trace
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
@@ -24,7 +25,7 @@ trace.set_tracer_provider(
 
 trace.get_tracer_provider().add_span_processor(
     BatchSpanProcessor(OTLPSpanExporter(
-        endpoint="https://otlp.nr-data.net:4317")
+        compression=Compression.Gzip)
     )
 )
 
@@ -42,12 +43,15 @@ def fib():
         result=calcfib(n))
 
 def calcfib(x):
-    if x == 0:
-        return 0
-    b, a = 0, 1             # b, a initialized as F(0), F(1)
-    for i in range(1,x) :
-        b, a = a, a+b       # b, a always store F(i-1), F(i) 
-    return a
+    with tracer.start_as_current_span("fibonacci") as span:
+        span.set_attribute("oteldemo.n", x)
+        if x == 0:
+            return 0
+        b, a = 0, 1             # b, a initialized as F(0), F(1)
+        for i in range(1,x) :
+            b, a = a, a+b       # b, a always store F(i-1), F(i) 
+        span.set_attribute("oteldemo.result", a)
+        return a
 
 if __name__ == '__main__':
     app.run()
