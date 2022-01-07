@@ -25,3 +25,11 @@ services:
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: grpc://otlp.nr-data.net:4317
       OTEL_EXPORTER_OTLP_HEADERS: "api-key=${NEW_RELIC_API_KEY}"
+  appathon-go:
+    build: ./go
+    ports:
+      - "8083:8080"
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: https://otlp.nr-data.net:4317
+      OTEL_EXPORTER_OTLP_HEADERS: "api-key=${NEW_RELIC_API_KEY}"
+      OTEL_EXPORTER_OTLP_COMPRESSION: gzip
