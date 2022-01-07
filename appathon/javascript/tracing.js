@@ -9,9 +9,6 @@ const { Resource } = require("@opentelemetry/resources");
 const { SemanticResourceAttributes } = require("@opentelemetry/semantic-conventions");
 const { OTLPTraceExporter } =  require('@opentelemetry/exporter-trace-otlp-grpc');
 
-// temp - for debuggging
-const api = require("@opentelemetry/api");
-
 const resource = new Resource({
   [SemanticResourceAttributes.SERVICE_NAME]: "appathon-javascript",
   [SemanticResourceAttributes.SERVICE_INSTANCE_ID]: uuidv4(),
@@ -32,12 +29,6 @@ const sdk = new opentelemetry.NodeSDK({
   traceExporter,
   instrumentations,
 });
-
-// temp - for debugging
-api.diag.setLogger(
-  new api.DiagConsoleLogger(),
-  api.DiagLogLevel.DEBUG,
-);
 
 sdk
   .start()

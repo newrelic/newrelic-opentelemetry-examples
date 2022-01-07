@@ -18,3 +18,10 @@ services:
       OTEL_EXPORTER_OTLP_HEADERS: "api-key=${NEW_RELIC_API_KEY}"
       OTEL_EXPORTER_OTLP_COMPRESSION: gzip
       OTEL_SPAN_ATTRIBUTE_VALUE_LENGTH_LIMIT: 1000
+  appathon-javascript:
+    build: ./javascript
+    ports:
+      - "8082:8080"
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: grpc://otlp.nr-data.net:4317
+      OTEL_EXPORTER_OTLP_HEADERS: "api-key=${NEW_RELIC_API_KEY}"

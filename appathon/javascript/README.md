@@ -9,7 +9,10 @@ No dependencies needed besides docker.
 Replace <your_license_key> with your New Relic license key.
 
   ```
-  add docker commands here
+  docker build -t appathon-javascript . \
+    --env OTEL_EXPORTER_OTLP_ENDPOINT=grpc://staging-otlp.nr-data.net:4317 \
+    --env OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key_here> \
+    appathon-javascript
   ```
 
 ## Run locally
@@ -17,7 +20,6 @@ Replace <your_license_key> with your New Relic license key.
 1. Run `npm install`
 
 2. Set the following environment variables:
-
 
     ```
     export OTEL_EXPORTER_OTLP_ENDPOINT=grpc://otlp.nr-data.net:4317
