@@ -14,7 +14,6 @@ public class FibonacciController : ControllerBase
     [HttpGet(Name = "GetFibonacci")]
     public object Get(long n)
     {
-<<<<<<< HEAD
         long result;
         try
         {
@@ -45,11 +44,6 @@ public class FibonacciController : ControllerBase
             activity?.RecordException(exception);
 
             throw exception;
-=======
-        if (n < 1 || n > 90)
-        {
-            throw new ArgumentOutOfRangeException(nameof(n), n, "Must be between 1 and 90");
->>>>>>> ec82c90e4fb5afe628da4eca050b9261c6a9a0bb
         }
 
         var result = 0L;
