@@ -1,0 +1,14 @@
+Flask==1.1.2
+opentelemetry-api==1.7.1
+opentelemetry-exporter-otlp==1.7.1
+opentelemetry-exporter-otlp-proto-grpc==1.7.1
+opentelemetry-exporter-otlp-proto-http==1.7.1
+opentelemetry-instrumentation==0.26b1
+opentelemetry-propagator-b3==1.7.1
+opentelemetry-proto==1.7.1
+opentelemetry-sdk==1.7.1
+opentelemetry-semantic-conventions==0.26b1
+protobuf==3.19.1
+opentelemetry-instrumentation-flask==0.26b1
+opentelemetry-exporter-zipkin-json==1.7.1
+opentelemetry-exporter-zipkin-proto-http==1.7.1
