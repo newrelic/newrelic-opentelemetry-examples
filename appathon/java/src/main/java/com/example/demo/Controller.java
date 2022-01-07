@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
@@ -20,6 +21,8 @@ import java.util.Map;
 public class Controller {
 
   private static final Tracer TRACER = GlobalOpenTelemetry.getTracer(Controller.class.getName());
+  private static final AttributeKey<Long> ATTR_N = AttributeKey.longKey("oteldemo.n");
+  private static final AttributeKey<Long> ATTR_RESULT = AttributeKey.longKey("oteldemo.result");
 
   @GetMapping(value = "/fibonacci")
   public Map<String, Object> ping(@RequestParam(required = true, name = "n") long n) {
@@ -33,7 +36,7 @@ public class Controller {
    */
   private long fibonacci(long n) {
     var span = TRACER.spanBuilder("fibonacci").startSpan();
-    span.setAttribute("n", n);
+    span.setAttribute(ATTR_N, n);
     try (var scope = span.makeCurrent()) {
       if (n < 1 || n > 90) {
         throw new IllegalArgumentException("n must be 1 <= n <= 90.");
@@ -41,11 +44,11 @@ public class Controller {
 
       // Base cases
       if (n == 1) {
-        span.setAttribute("result", 1);
+        span.setAttribute(ATTR_RESULT, 1);
         return 1;
       }
       if (n == 2) {
-        span.setAttribute("result", 1);
+        span.setAttribute(ATTR_RESULT, 1);
         return 1;
       }
 
@@ -56,7 +59,7 @@ public class Controller {
         lastLast = last;
         last = cur;
       }
-      span.setAttribute("result", last);
+      span.setAttribute(ATTR_RESULT, last);
       return last;
     } catch (IllegalArgumentException e) {
       span.setStatus(StatusCode.ERROR, e.getMessage());
