@@ -13,7 +13,9 @@ import (
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	stdout "go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -34,9 +36,10 @@ var tracer trace.Tracer
 
 func initTracer() *sdktrace.TracerProvider {
 
-	exporter, err := stdout.New(stdout.WithPrettyPrint())
+	client := otlptracegrpc.NewClient()
+	exporter, err := otlptrace.New(context.Background(), client)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("creating OTLP trace exporter: %v", err)
 	}
 
 	tp := sdktrace.NewTracerProvider(
@@ -63,7 +66,10 @@ func fibonacci(n int, ctx context.Context) (int64, error) {
 	defer span.End()
 
 	if n < 1 || n > 90 {
-		return 0, fmt.Errorf("%d must be >= 1 and <= 90", n)
+		err := fmt.Errorf("%d must be >= 1 and <= 90", n)
+		span.SetStatus(codes.Error, err.Error())
+		span.RecordError(err)
+		return 0, err
 	}
 
 	var n2, n1 int64 = 0, 1
