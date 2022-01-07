@@ -23,9 +23,7 @@ trace.set_tracer_provider(
 )
 
 trace.get_tracer_provider().add_span_processor(
-    BatchSpanProcessor(OTLPSpanExporter(
-        endpoint="https://otlp.nr-data.net:4317")
-    )
+    BatchSpanProcessor(OTLPSpanExporter())
 )
 
 app = flask.Flask(__name__)
@@ -50,6 +48,4 @@ def calcfib(x):
     return a
 
 if __name__ == '__main__':
-    app.run()
-
-app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)

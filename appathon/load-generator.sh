@@ -18,5 +18,9 @@ do
   ./call-app.sh http://localhost:8083 || true
   echo
 
+    echo "Calling appathon-python"
+    ./call-app.sh http://localhost:8084 || true
+    echo
+
   sleep 2
 done
