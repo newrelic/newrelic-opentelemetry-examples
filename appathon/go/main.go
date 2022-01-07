@@ -59,7 +59,7 @@ func sendErrorResponse(errorMessage string, w http.ResponseWriter) {
 }
 
 func fibonacci(n int, ctx context.Context) (int64, error) {
-	_, span := tracer.Start(ctx, "fibonacci", trace.WithAttributes(attribute.Int("n", n)))
+	_, span := tracer.Start(ctx, "fibonacci", trace.WithSpanKind(trace.SpanKindInternal), trace.WithAttributes(attribute.Int("n", n)))
 	defer span.End()
 
 	if n < 1 || n > 10000 {
