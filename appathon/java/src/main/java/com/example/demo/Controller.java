@@ -27,8 +27,8 @@ public class Controller {
 
   @GetMapping(value = "/fibonacci")
   public Map<String, Object> ping(@RequestParam(required = true, name = "n") long n) {
-    if (n < 1 || n > 1000) {
-      throw new IllegalArgumentException("n must be 1 <= n <= 1000.");
+    if (n < 1 || n > 90) {
+      throw new IllegalArgumentException("n must be 1 <= n <= 90.");
     }
     return Map.of("n", n, "result", fibonacci(n));
   }
@@ -36,7 +36,7 @@ public class Controller {
   /**
    * Compute the fibonacci number for {@code n}.
    *
-   * @param n must be >=1 and <= 1000.
+   * @param n must be >=1 and <= 90.
    */
   private long fibonacci(long n) {
     var start = System.nanoTime();
@@ -52,7 +52,6 @@ public class Controller {
         span.setAttribute("result", 1);
         return 1;
       }
-
 
       long lastLast = 1;
       long last = 2;

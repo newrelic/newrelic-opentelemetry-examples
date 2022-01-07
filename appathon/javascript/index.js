@@ -7,8 +7,8 @@ const PORT = process.env.PORT || 8080;
 app.get("/fibonacci", (req, res) => {
   let n = Number(req.query.n);
   
-  if (!n || n < 1 || n > 1000) {
-    res.status(400).send({"message": "n must be >= 1 and <= 1000"});
+  if (!n || n < 1 || n > 90) {
+    res.status(400).send({"message": "n must be >= 1 and <= 90"});
   } else {
     let fib = fibonacci(n);
   

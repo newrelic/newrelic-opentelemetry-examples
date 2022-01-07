@@ -62,8 +62,8 @@ func fibonacci(n int, ctx context.Context) (int64, error) {
 	_, span := tracer.Start(ctx, "fibonacci", trace.WithSpanKind(trace.SpanKindInternal), trace.WithAttributes(attribute.Int("n", n)))
 	defer span.End()
 
-	if n < 1 || n > 10000 {
-		return 0, fmt.Errorf("%d must be >= 1 and <= 10000", n)
+	if n < 1 || n > 90 {
+		return 0, fmt.Errorf("%d must be >= 1 and <= 90", n)
 	}
 
 	var n2, n1 int64 = 0, 1

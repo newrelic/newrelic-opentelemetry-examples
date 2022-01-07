@@ -9,9 +9,9 @@ public class FibonacciController : ControllerBase
     [HttpGet(Name = "GetFibonacci")]
     public object Get(long n)
     {
-        if (n < 1 || n > 92)
+        if (n < 1 || n > 90)
         {
-            throw new ArgumentOutOfRangeException(nameof(n), n, "Must be between 1 and 92");
+            throw new ArgumentOutOfRangeException(nameof(n), n, "Must be between 1 and 90");
         }
 
         var result = 0L;
