@@ -23,7 +23,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-type fibResponse struct {
+type fibonacciResponse struct {
 	N      int   `json:"n"`
 	Result int64 `json:"result"`
 }
@@ -91,7 +91,7 @@ func main() {
 		}
 	}()
 
-	fibHandler := func(w http.ResponseWriter, req *http.Request) {
+	fibonacciHandler := func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		rawN := req.URL.Query().Get("n")
 		if len(rawN) <= 0 {
@@ -111,15 +111,15 @@ func main() {
 			return
 		}
 
-		encodedResponse, _ := json.Marshal(&fibResponse{N: n, Result: result})
+		encodedResponse, _ := json.Marshal(&fibonacciResponse{N: n, Result: result})
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(encodedResponse)
 	}
 
-	otelHandler := otelhttp.NewHandler(http.HandlerFunc(fibHandler), "fib")
+	otelHandler := otelhttp.NewHandler(http.HandlerFunc(fibonacciHandler), "fib")
 
-	http.Handle("/fib", otelHandler)
+	http.Handle("/fibonacci", otelHandler)
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		panic(err)
