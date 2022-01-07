@@ -13,7 +13,7 @@ const { OTLPTraceExporter } =  require('@opentelemetry/exporter-trace-otlp-grpc'
 const api = require("@opentelemetry/api");
 
 const resource = new Resource({
-  [SemanticResourceAttributes.SERVICE_NAME]: "Appathon-JavaScript",
+  [SemanticResourceAttributes.SERVICE_NAME]: "appathon-javascript",
   [SemanticResourceAttributes.SERVICE_INSTANCE_ID]: uuidv4(),
 });
 
