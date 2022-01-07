@@ -24,7 +24,7 @@ function fibonacci(input) {
   
   let tracer = trace.getTracer("fibonacci");
   let span = tracer.startSpan("fibonacci", undefined, ctx);
-  span.setAttribute("n", input);
+  span.setAttribute("oteldemo.n", input);
 
   try {
     if (!input || input < 1|| input > 90) {
@@ -39,7 +39,8 @@ function fibonacci(input) {
       let result = sequence[input];
 
       span.setStatus({ code: SpanStatusCode.OK });
-      span.setAttribute("result", result);
+      span.setAttribute("oteldemo.result", result);
+      return result;
     }
   } catch(error) {
     span.setStatus({
