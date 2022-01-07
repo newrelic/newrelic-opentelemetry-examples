@@ -1,13 +1,12 @@
 package com.example.demo;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.instrumentation.runtimemetrics.GarbageCollector;
-import io.opentelemetry.instrumentation.runtimemetrics.MemoryPools;
 import io.opentelemetry.instrumentation.spring.webmvc.SpringWebMvcTracing;
 import io.opentelemetry.sdk.autoconfigure.OpenTelemetrySdkAutoConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+
 import javax.servlet.Filter;
 
 @SpringBootApplication
