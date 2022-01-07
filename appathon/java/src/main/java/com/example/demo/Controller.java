@@ -1,10 +1,8 @@
 package com.example.demo;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
-import io.opentelemetry.api.metrics.LongHistogram;
-import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,27 +20,25 @@ import java.util.Map;
 public class Controller {
 
   private static final Tracer TRACER = GlobalOpenTelemetry.getTracer(Controller.class.getName());
-  private static final Meter METER = GlobalMeterProvider.get().get(Controller.class.getName());
-  private static final LongHistogram fibonacciDuration = METER.histogramBuilder("fibonacci").ofLongs().build();
 
   @GetMapping(value = "/fibonacci")
   public Map<String, Object> ping(@RequestParam(required = true, name = "n") long n) {
-    if (n < 1 || n > 1000) {
-      throw new IllegalArgumentException("n must be 1 <= n <= 1000.");
-    }
     return Map.of("n", n, "result", fibonacci(n));
   }
 
   /**
    * Compute the fibonacci number for {@code n}.
    *
-   * @param n must be >=1 and <= 1000.
+   * @param n must be >=1 and <= 90.
    */
   private long fibonacci(long n) {
-    var start = System.nanoTime();
     var span = TRACER.spanBuilder("fibonacci").startSpan();
     span.setAttribute("n", n);
     try (var scope = span.makeCurrent()) {
+      if (n < 1 || n > 90) {
+        throw new IllegalArgumentException("n must be 1 <= n <= 90.");
+      }
+
       // Base cases
       if (n == 1) {
         span.setAttribute("result", 1);
@@ -53,7 +49,6 @@ public class Controller {
         return 1;
       }
 
-
       long lastLast = 1;
       long last = 2;
       for (long i = 4; i <= n; i++) {
@@ -63,8 +58,10 @@ public class Controller {
       }
       span.setAttribute("result", last);
       return last;
+    } catch (IllegalArgumentException e) {
+      span.setStatus(StatusCode.ERROR, e.getMessage());
+      throw e;
     } finally {
-      fibonacciDuration.record(System.nanoTime() - start);
       span.end();
     }
   }

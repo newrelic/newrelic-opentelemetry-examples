@@ -28,9 +28,7 @@ dependencies {
     implementation 'io.opentelemetry:opentelemetry-sdk'
     implementation 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure'
     implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
-    implementation 'io.opentelemetry:opentelemetry-exporter-otlp-metrics'
 
     implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.9.1-alpha')
-    implementation 'io.opentelemetry.instrumentation:opentelemetry-runtime-metrics'
     implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-3.1'
 }

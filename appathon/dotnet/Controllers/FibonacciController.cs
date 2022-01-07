@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using OpenTelemetry.Trace;
 
 namespace dotnet.Controllers;
 
@@ -6,30 +8,63 @@ namespace dotnet.Controllers;
 [Route("[controller]")]
 public class FibonacciController : ControllerBase
 {
+    public const string ActivitySourceName = "FibonacciService";
+    private ActivitySource activitySource = new ActivitySource(ActivitySourceName);
+
     [HttpGet(Name = "GetFibonacci")]
-    public long Get(long n)
+    public object Get(long n)
     {
-        if (n < 1 || n > 1000)
+        long result;
+        try
         {
-            throw new ArgumentOutOfRangeException(nameof(n), n, "Must be between 1 and 1000");
+            result = ComputeNthFibonocci(n);
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            return BadRequest(ex);
         }
 
+        return new {
+            n = n,
+            result = result
+        };
+    }
+
+    private long ComputeNthFibonocci(long n)
+    {
+        using var activity = activitySource.StartActivity(nameof(ComputeNthFibonocci));
+        activity?.SetTag("n", n);
+
+        if (n < 1 || n > 90)
+        {
+            var message = $"Parameter '{nameof(n)}' must be between 1 and 90";
+            var exception = new ArgumentOutOfRangeException(nameof(n), n, "Must be between 1 and 90");
+
+            activity?.SetStatus(ActivityStatusCode.Error, $"Parameter '{nameof(n)}' must be between 1 and 90");
+            activity?.RecordException(exception);
+
+            throw exception;
+        }
+
+        var result = 0L;
         if (n <= 2)
         {
-            return 1;
+            result = 1;
         }
-
-        var a = 0;
-        var b = 1;
-        var c = 0;
-
-        for (var i = 1; i < n; i++)
+        else
         {
-            c = checked(a + b);
-            a = b;
-            b = c;
+            var a = 0L;
+            var b = 1L;
+
+            for (var i = 1; i < n; i++)
+            {
+                result = checked(a + b);
+                a = b;
+                b = result;
+            }
         }
 
-        return c;
+        activity?.SetTag("result", result);
+        return result;
     }
 }
