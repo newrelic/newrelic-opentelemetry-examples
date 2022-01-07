@@ -13,7 +13,8 @@ import (
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	stdout "go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -34,9 +35,10 @@ var tracer trace.Tracer
 
 func initTracer() *sdktrace.TracerProvider {
 
-	exporter, err := stdout.New(stdout.WithPrettyPrint())
+	client := otlptracegrpc.NewClient()
+	exporter, err := otlptrace.New(context.Background(), client)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("creating OTLP trace exporter: %v", err)
 	}
 
 	tp := sdktrace.NewTracerProvider(
