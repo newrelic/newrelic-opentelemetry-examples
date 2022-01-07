@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 8080;
 app.get("/fibonacci", (req, res) => {
   let n = Number(req.query.n);
   
-  if (!n || n > 90) {
+  if (!n || n < 1|| n > 90) {
     try {
       throw new Error("n must be 1 <= n <= 90");
     } catch (error) {
