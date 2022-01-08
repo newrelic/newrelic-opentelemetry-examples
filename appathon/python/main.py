@@ -37,7 +37,7 @@ tracer = trace.get_tracer(__name__)
 
 @app.errorhandler(ValueError)
 def handle_value_exception(error):
-    response = jsonify(message="Number has to be between 1 and 90")
+    response = jsonify(message=str(error))
     response.status_code = 400
     return response
 
