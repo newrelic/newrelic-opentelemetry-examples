@@ -1,7 +1,7 @@
 import flask
-from flask import request, jsonify
-# import uuid
+from flask import request, jsonify, abort
 
+from opentelemetry.trace.status import Status, StatusCode
 from grpc import Compression
 from opentelemetry import trace
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
@@ -24,13 +24,9 @@ trace.set_tracer_provider(
 )
 
 trace.get_tracer_provider().add_span_processor(
-<<<<<<< HEAD
     BatchSpanProcessor(OTLPSpanExporter(
         compression=Compression.Gzip)
     )
-=======
-    BatchSpanProcessor(OTLPSpanExporter())
->>>>>>> ad880278cb939e54135ed84e3320bcce93207ca1
 )
 
 app = flask.Flask(__name__)
@@ -38,6 +34,12 @@ FlaskInstrumentor().instrument_app(app)
 RequestsInstrumentor().instrument()
 
 tracer = trace.get_tracer(__name__)
+
+@app.errorhandler(ValueError)
+def handle_value_exception(error):
+    response = jsonify(message="Number has to be between 1 and 90")
+    response.status_code = 400
+    return response
 
 @app.route("/fibonacci")
 def fib():
@@ -49,6 +51,12 @@ def fib():
 def calcfib(x):
     with tracer.start_as_current_span("fibonacci") as span:
         span.set_attribute("oteldemo.n", x)
+        if ((x < 1) or (x > 90)):
+            span.set_status(Status(
+                StatusCode.ERROR,
+                "Number outside of accepted range."
+            ))
+            raise ValueError("Number must be between 1 and 90")
         if x == 0:
             return 0
         b, a = 0, 1             # b, a initialized as F(0), F(1)
@@ -59,3 +67,5 @@ def calcfib(x):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
+
