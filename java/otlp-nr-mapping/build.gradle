@@ -11,6 +11,8 @@ run {
 dependencies {
   implementation project(':shared-utils')
 
+  implementation "io.opentelemetry.proto:opentelemetry-proto:${project['otel-proto.version']}"
+
   implementation platform("com.squareup.okhttp3:okhttp-bom:${project['okhttp.version']}")
   implementation 'com.squareup.okhttp3:okhttp'
 
