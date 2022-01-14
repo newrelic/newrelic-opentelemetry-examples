@@ -62,8 +62,8 @@ public class Controller {
       span.setAttribute(ATTR_RESULT, last);
       return last;
     } catch (IllegalArgumentException e) {
-      span.recordException(e);
-      span.setStatus(StatusCode.ERROR, e.getMessage());
+      span.recordException(e)
+          .setStatus(StatusCode.ERROR, e.getMessage());
       throw e;
     } finally {
       span.end();
@@ -79,7 +79,7 @@ public class Controller {
             HttpRequestMethodNotSupportedException.class
     })
     public ResponseEntity<Object> handleException(Exception e) {
-      Span.current().recordException(e);
+      Span.current().setStatus(StatusCode.ERROR, e.getMessage());
       return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
