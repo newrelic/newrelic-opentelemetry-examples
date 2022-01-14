@@ -11,39 +11,36 @@ public class FibonacciController : ControllerBase
     public const string ActivitySourceName = "FibonacciService";
     private ActivitySource activitySource = new ActivitySource(ActivitySourceName);
 
-    [HttpGet(Name = "GetFibonacci")]
-    public object Get(long n)
+    [HttpGet]
+    public IActionResult Get(long n)
     {
-        long result;
         try
         {
-            result = ComputeNthFibonocci(n);
+            return Ok(new {
+                n = n,
+                result = Fibonacci(n)
+            });
         }
         catch (ArgumentOutOfRangeException ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
-
-        return new {
-            n = n,
-            result = result
-        };
     }
 
-    private long ComputeNthFibonocci(long n)
+    private long Fibonacci(long n)
     {
-        using var activity = activitySource.StartActivity(nameof(ComputeNthFibonocci));
-        activity?.SetTag("n", n);
+        using var activity = activitySource.StartActivity(nameof(Fibonacci));
+        activity?.SetTag("fibonacci.n", n);
 
-        if (n < 1 || n > 90)
+        try
         {
-            var message = $"Parameter '{nameof(n)}' must be between 1 and 90";
-            var exception = new ArgumentOutOfRangeException(nameof(n), n, "Must be between 1 and 90");
-
-            activity?.SetStatus(ActivityStatusCode.Error, $"Parameter '{nameof(n)}' must be between 1 and 90");
-            activity?.RecordException(exception);
-
-            throw exception;
+            ThrowIfOutOfRange(n);
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            activity?.SetStatus(Status.Error.WithDescription(ex.Message));
+            activity?.RecordException(ex);
+            throw;
         }
 
         var result = 0L;
@@ -64,7 +61,15 @@ public class FibonacciController : ControllerBase
             }
         }
 
-        activity?.SetTag("result", result);
+        activity?.SetTag("fibonacci.result", result);
         return result;
+    }
+
+    private void ThrowIfOutOfRange(long n)
+    {
+        if (n < 1 || n > 90)
+        {
+            throw new ArgumentOutOfRangeException(nameof(n), n, "Must be between 1 and 90");
+        }
     }
 }
