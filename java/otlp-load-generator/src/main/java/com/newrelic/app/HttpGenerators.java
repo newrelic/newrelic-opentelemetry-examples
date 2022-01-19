@@ -7,7 +7,6 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.SpanKind;
@@ -43,7 +42,7 @@ public class HttpGenerators {
     ServerGenerator(List<Runnable> outboundGenerators) {
       this.outboundGenerators = outboundGenerators;
       this.tracer = GlobalOpenTelemetry.getTracer(HttpGenerators.class.getName());
-      Meter meter = GlobalMeterProvider.get().get(HttpGenerators.class.getName());
+      Meter meter = GlobalOpenTelemetry.getMeter(HttpGenerators.class.getName());
       this.durationRecorder = meter.histogramBuilder("http.server.duration").ofLongs().build();
     }
 

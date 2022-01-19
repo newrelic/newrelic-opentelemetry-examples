@@ -4,13 +4,12 @@ import static com.newrelic.shared.EnvUtils.getEnvOrDefault;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_INSTANCE_ID;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_NAME;
 
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
-import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
@@ -54,7 +53,7 @@ public class OpenTelemetryConfig {
     // Enable retry policy via unstable API
     DefaultGrpcExporterBuilder.getDelegateBuilder(
             OtlpGrpcSpanExporterBuilder.class, spanExporterBuilder)
-        .addRetryPolicy(RetryPolicy.getDefault());
+        .setRetryPolicy(RetryPolicy.getDefault());
 
     var sdkTracerProviderBuilder =
         SdkTracerProvider.builder()
@@ -62,12 +61,8 @@ public class OpenTelemetryConfig {
             .addSpanProcessor(BatchSpanProcessor.builder(spanExporterBuilder.build()).build());
     if (LOG_EXPORTER_ENABLED.get()) {
       sdkTracerProviderBuilder.addSpanProcessor(
-          BatchSpanProcessor.builder(new LoggingSpanExporter()).build());
+          BatchSpanProcessor.builder(LoggingSpanExporter.create()).build());
     }
-    OpenTelemetrySdk.builder()
-        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-        .setTracerProvider(sdkTracerProviderBuilder.build())
-        .buildAndRegisterGlobal();
 
     // Configure metrics
     var meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
@@ -81,7 +76,7 @@ public class OpenTelemetryConfig {
     // Enable retry policy via unstable API
     DefaultGrpcExporterBuilder.getDelegateBuilder(
             OtlpGrpcMetricExporterBuilder.class, metricExporterBuilder)
-        .addRetryPolicy(RetryPolicy.getDefault());
+        .setRetryPolicy(RetryPolicy.getDefault());
 
     meterProviderBuilder.registerMetricReader(
         PeriodicMetricReader.builder(metricExporterBuilder.build())
@@ -90,12 +85,16 @@ public class OpenTelemetryConfig {
 
     if (LOG_EXPORTER_ENABLED.get()) {
       meterProviderBuilder.registerMetricReader(
-          PeriodicMetricReader.builder(new LoggingMetricExporter())
+          PeriodicMetricReader.builder(LoggingMetricExporter.create())
               .setInterval(Duration.ofSeconds(5))
               .newMetricReaderFactory());
     }
 
-    GlobalMeterProvider.set(meterProviderBuilder.build());
+    OpenTelemetrySdk.builder()
+        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+        .setTracerProvider(sdkTracerProviderBuilder.build())
+        .setMeterProvider(meterProviderBuilder.build())
+        .buildAndRegisterGlobal();
   }
 
   private static Resource configureResource(String defaultServiceName) {
@@ -118,7 +117,7 @@ public class OpenTelemetryConfig {
     // Enable retry policy via unstable API
     DefaultGrpcExporterBuilder.getDelegateBuilder(
             OtlpGrpcLogExporterBuilder.class, logExporterBuilder)
-        .addRetryPolicy(RetryPolicy.getDefault());
+        .setRetryPolicy(RetryPolicy.getDefault());
 
     return SdkLogEmitterProvider.builder()
         .setResource(configureResource(defaultServiceName))

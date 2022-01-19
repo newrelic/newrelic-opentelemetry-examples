@@ -6,7 +6,6 @@ import static com.newrelic.app.Utils.safeSleep;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.SpanKind;
@@ -48,7 +47,7 @@ public class GrpcGenerators {
     ServerGenerator(List<Runnable> outboundGenerators) {
       this.outboundGenerators = outboundGenerators;
       this.tracer = GlobalOpenTelemetry.getTracer(GrpcGenerators.class.getName());
-      Meter meter = GlobalMeterProvider.get().get(GrpcGenerators.class.getName());
+      Meter meter = GlobalOpenTelemetry.getMeter(GrpcGenerators.class.getName());
       this.duration = meter.histogramBuilder("rpc.server.duration").ofLongs().build();
       this.requestSizeRecorder =
           meter.histogramBuilder("rpc.server.request.size").ofLongs().build();
@@ -114,7 +113,7 @@ public class GrpcGenerators {
 
     ClientGenerator() {
       this.tracer = GlobalOpenTelemetry.getTracer(GrpcGenerators.class.getName());
-      Meter meter = GlobalMeterProvider.get().get(GrpcGenerators.class.getName());
+      Meter meter = GlobalOpenTelemetry.getMeter(GrpcGenerators.class.getName());
       this.durationRecorder = meter.histogramBuilder("rpc.client.duration").ofLongs().build();
       this.requestSizeRecorder =
           meter.histogramBuilder("rpc.client.request.size").ofLongs().build();
