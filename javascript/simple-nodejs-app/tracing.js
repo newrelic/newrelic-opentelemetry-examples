@@ -7,7 +7,7 @@ const opentelemetry = require("@opentelemetry/sdk-node");
 const { getNodeAutoInstrumentations } = require("@opentelemetry/auto-instrumentations-node");
 const { Resource } = require("@opentelemetry/resources");
 const { SemanticResourceAttributes } = require("@opentelemetry/semantic-conventions");
-const { OTLPTraceExporter } =  require('@opentelemetry/exporter-trace-otlp-grpc');
+const { OTLPTraceExporter } =  require("@opentelemetry/exporter-trace-otlp-grpc");
 
 // Step 1. Declare the resource to be used.
 //    A resource represents a collection of attributes describing the
