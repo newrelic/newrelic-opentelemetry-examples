@@ -13,7 +13,7 @@ Set the following environment variables:
   * Configure the application to export over OTLP to New Relic's OTLP endpoint.
 * `OTEL_METRICS_EXPORTER=otlp`
   * Configure the application to export metrics over OTLP. Metric export is disabled by default.
-* `OTEL_IMR_EXPORT_INTERVAL=1000`
+* `OTEL_METRIC_EXPORT_INTERVAL=1000`
   * Configure the application to export metrics every second (1000ms) instead of the default 60 seconds.
 * `OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>`
   * Configure the application to include a New Relic license key on export requests. Replace `<your_license_key>` with your [Account License Key](https://one.newrelic.com/launcher/api-keys-ui.launcher).

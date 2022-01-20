@@ -16,6 +16,4 @@ dependencies {
 
     implementation 'io.grpc:grpc-netty-shaded'
     api 'io.grpc:grpc-stub'
-
-    implementation "com.google.code.gson:gson:${project['gson.version']}"
 }
