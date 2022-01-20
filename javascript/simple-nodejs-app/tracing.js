@@ -7,7 +7,7 @@ const opentelemetry = require("@opentelemetry/sdk-node");
 const { getNodeAutoInstrumentations } = require("@opentelemetry/auto-instrumentations-node");
 const { Resource } = require("@opentelemetry/resources");
 const { SemanticResourceAttributes } = require("@opentelemetry/semantic-conventions");
-const { CollectorTraceExporter } = require("@opentelemetry/exporter-collector-grpc");
+const { OTLPTraceExporter } =  require('@opentelemetry/exporter-trace-otlp-grpc');
 
 // Step 1. Declare the resource to be used.
 //    A resource represents a collection of attributes describing the
@@ -32,7 +32,7 @@ const collectorOptions = {
   credentials,
 };
 
-const traceExporter = new CollectorTraceExporter(collectorOptions);
+const traceExporter = new OTLPTraceExporter(collectorOptions);
 
 // If you haven't set the OTEL_EXPORTER_OTLP_ENDPOINT and OTEL_EXPORTER_OLTP_HEADERS
 // environment variables, you can configure the OTLP exporter programmatically by
@@ -41,7 +41,7 @@ const traceExporter = new CollectorTraceExporter(collectorOptions);
 // const metadata = new grpc.Metadata();
 // metadata.set("api-key", "<YOUR_API_KEY_HERE>");
 
-// const url = "grpc://otlp.nr-data.net:4317";
+// const url = "otlp.nr-data.net:4317";
 
 // const credentials = grpc.credentials.createSsl();
 
@@ -51,7 +51,7 @@ const traceExporter = new CollectorTraceExporter(collectorOptions);
 //   credentials,
 // };
 
-// const traceExporter = new CollectorTraceExporter(collectorOptions);
+// const traceExporter = new OTLPTraceExporter(collectorOptions);
 
 // Step 4: Configure the OpenTelemetry NodeSDK to export traces.
 const sdk = new opentelemetry.NodeSDK({

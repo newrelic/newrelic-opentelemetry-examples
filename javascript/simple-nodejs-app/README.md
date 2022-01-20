@@ -2,9 +2,9 @@
 
 ## Introduction
 
-This is an example of auto-instrumenting a simple Node.js application with [OpenTelemetry-JS](https://github.com/open-telemetry/opentelemetry-js#instantiate-tracing) and exporting traces to New Relic.
+This is an example of auto-instrumenting a simple express application with [OpenTelemetry-JS](https://github.com/open-telemetry/opentelemetry-js#instantiate-tracing) and exporting traces to New Relic.
 
-Currently New Relic only supports [OTLP/gRPC](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/otlp.md#otlpgrpc) so you must use the [@opentelemetry/exporter-collector-grpc](https://www.npmjs.com/package/@opentelemetry/exporter-collector-grpc) package to send data to New Relic.
+Currently New Relic only supports [OTLP/gRPC](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/otlp.md#otlpgrpc) so you must use the [@opentelemetry/exporter-trace-otlp-grpc](https://www.npmjs.com/package/@opentelemetry/exporter-trace-otlp-grpc) package to send data to New Relic.
 
 ## Prerequisites
 
@@ -19,7 +19,7 @@ Currently New Relic only supports [OTLP/gRPC](https://github.com/open-telemetry/
 2. Set the following environment variables:
 
    ```shell
-   export OTEL_EXPORTER_OTLP_ENDPOINT=grpc://otlp.nr-data.net:4317
+   export OTEL_EXPORTER_OTLP_ENDPOINT=otlp.nr-data.net:4317
 
    export OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key_here>
    ```
