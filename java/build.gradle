@@ -30,7 +30,6 @@ subprojects {
             implementation platform("io.opentelemetry:opentelemetry-bom:${project['otel.version']}")
             implementation platform("io.opentelemetry:opentelemetry-bom-alpha:${project['otel-alpha.version']}")
             implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${project['otel-instrumentation.version']}")
-            implementation platform("io.grpc:grpc-bom:${project['grpc.version']}")
             implementation platform("com.linecorp.armeria:armeria-bom:${project['armeria-bom.version']}")
 
             testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'

@@ -8,14 +8,11 @@ import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
-import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporter;
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
@@ -61,9 +58,7 @@ public class OpenTelemetryConfig {
             .addHeader("api-key", newRelicApiOrLicenseKey());
 
     // Enable retry policy via unstable API
-    DefaultGrpcExporterBuilder.getDelegateBuilder(
-            OtlpGrpcSpanExporterBuilder.class, spanExporterBuilder)
-        .setRetryPolicy(RetryPolicy.getDefault());
+    RetryUtil.setRetryPolicyOnDelegate(spanExporterBuilder, RetryPolicy.getDefault());
 
     var sdkTracerProviderBuilder =
         SdkTracerProvider.builder()
@@ -84,9 +79,7 @@ public class OpenTelemetryConfig {
             .addHeader("api-key", newRelicApiOrLicenseKey());
 
     // Enable retry policy via unstable API
-    DefaultGrpcExporterBuilder.getDelegateBuilder(
-            OtlpGrpcMetricExporterBuilder.class, metricExporterBuilder)
-        .setRetryPolicy(RetryPolicy.getDefault());
+    RetryUtil.setRetryPolicyOnDelegate(metricExporterBuilder, RetryPolicy.getDefault());
 
     meterProviderBuilder.registerMetricReader(
         PeriodicMetricReader.builder(metricExporterBuilder.build())
@@ -107,9 +100,7 @@ public class OpenTelemetryConfig {
             .addHeader("api-key", newRelicApiOrLicenseKey());
 
     // Enable retry policy via unstable API
-    DefaultGrpcExporterBuilder.getDelegateBuilder(
-            OtlpGrpcLogExporterBuilder.class, logExporterBuilder)
-        .setRetryPolicy(RetryPolicy.getDefault());
+    RetryUtil.setRetryPolicyOnDelegate(logExporterBuilder, RetryPolicy.getDefault());
 
     var logEmitterProvider =
         SdkLogEmitterProvider.builder()

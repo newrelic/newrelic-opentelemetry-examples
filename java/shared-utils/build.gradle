@@ -13,7 +13,4 @@ dependencies {
     api 'io.opentelemetry:opentelemetry-exporter-otlp-metrics'
     api 'io.opentelemetry:opentelemetry-exporter-otlp-logs'
     api 'io.opentelemetry:opentelemetry-semconv'
-
-    implementation 'io.grpc:grpc-netty-shaded'
-    api 'io.grpc:grpc-stub'
 }
