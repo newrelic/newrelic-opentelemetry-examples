@@ -32,7 +32,7 @@ bootRun {
         // By default, metrics exporter is none
         "OTEL_METRICS_EXPORTER": "otlp",
         // Report metrics every 5s instead of every 60s
-        "OTEL_IMR_EXPORT_INTERVAL": "5000",
+        "OTEL_METRIC_EXPORT_INTERVAL": "5000",
         // Report metrics using delta aggregation temporality
         "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY": "DELTA",
         // By default, logs exporter is none
