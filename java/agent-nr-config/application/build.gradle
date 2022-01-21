@@ -27,14 +27,20 @@ bootRun {
     // Additional configuration using standard autoconfiguration environment variables defined at:
     // https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure
     environment([
+        // Disable the process resource provider, which includes the process.command_line resource attribute that may contain sensitive information
+        "OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS": "io.opentelemetry.sdk.extension.resources.ProcessResourceProvider",
         // By default, metrics exporter is none
         "OTEL_METRICS_EXPORTER": "otlp",
         // Report metrics every 5s instead of every 60s
-        "OTEL_IMR_EXPORT_INTERVAL": "5000",
+        "OTEL_METRIC_EXPORT_INTERVAL": "5000",
         // Report metrics using delta aggregation temporality
         "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY": "DELTA",
-        // Disable the process resource provider, which includes the process.command_line resource attribute that may contain sensitive information
-        "OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS": "io.opentelemetry.sdk.extension.resources.ProcessResourceProvider"
+        // By default, logs exporter is none
+        "OTEL_LOGS_EXPORTER": "otlp",
+        // Enable experimental retry support because the internet is unreliable
+        // TODO: uncomment once agent 1.10.1 is released
+        // "OTEL_EXPERIMENTAL_EXPORTER_OTLP_RETRY_ENABLED": "true"
+        // TODO: configure service.instance.id via environment variables and get rid of otel-initializer
     ])
 }
 
@@ -55,5 +61,4 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-log4j2'
     implementation 'io.opentelemetry:opentelemetry-api'
-    implementation 'io.opentelemetry:opentelemetry-api-metrics'
 }

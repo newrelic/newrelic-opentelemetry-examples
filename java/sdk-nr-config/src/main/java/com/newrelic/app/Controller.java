@@ -3,7 +3,6 @@ package com.newrelic.app;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Tracer;
@@ -18,7 +17,8 @@ public class Controller {
 
   private static final Tracer TRACER =
       GlobalOpenTelemetry.getTracerProvider().get(Application.class.getName());
-  private static final Meter METER = GlobalMeterProvider.get().get(Application.class.getName());
+  private static final Meter METER =
+      GlobalOpenTelemetry.getMeterProvider().get(Application.class.getName());
   private final LongCounter MY_COUNTER =
       METER.counterBuilder("my-custom-counter").setDescription("A counter to count things").build();
   private static final Logger LOGGER = LogManager.getLogger(Controller.class);

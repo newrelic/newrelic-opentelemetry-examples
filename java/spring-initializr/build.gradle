@@ -18,8 +18,8 @@ dependencies {
 
   // Step 2: Add required dependencies
   // The OpenTelemetry BOM (bill of materials) coordinates artifact versions
-  implementation platform('io.opentelemetry:opentelemetry-bom:1.7.0')
-  implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.7.0-alpha')
+  implementation platform('io.opentelemetry:opentelemetry-bom:1.10.1')
+  implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.10.1-alpha')
   // The OpenTelemetry API provides APIs for instrumenting applications
   implementation 'io.opentelemetry:opentelemetry-api'
   // The OpenTelemetry SDK provides APIs configuring what happens with telemetry data
@@ -30,12 +30,8 @@ dependencies {
   implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
   implementation 'io.opentelemetry:opentelemetry-exporter-otlp-metrics'
 
-  // gRPC is the transport used for OTLP export
-  implementation platform('io.grpc:grpc-bom:1.41.0')
-  implementation 'io.grpc:grpc-netty-shaded'
-
   // The OpenTelemetry Instrumentation BOM coordinates artifact versions for instrumentation code
-  implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.7.0-alpha')
+  implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.10.0-alpha')
   // OpenTelemetry runtime metrics provides instrumentation for JVM memory usage and garbage collection
   implementation 'io.opentelemetry.instrumentation:opentelemetry-runtime-metrics'
   // OpenTelemetry Spring WebMVC provides a servlet filter for instrumenting Spring WebMVC applications

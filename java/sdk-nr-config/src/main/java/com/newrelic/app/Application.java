@@ -2,6 +2,7 @@ package com.newrelic.app;
 
 import com.newrelic.shared.OpenTelemetryConfig;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.instrumentation.log4j.appender.v2_16.OpenTelemetryAppender;
 import io.opentelemetry.instrumentation.runtimemetrics.GarbageCollector;
 import io.opentelemetry.instrumentation.runtimemetrics.MemoryPools;
 import io.opentelemetry.instrumentation.spring.webmvc.SpringWebMvcTracing;
@@ -14,15 +15,12 @@ import org.springframework.context.annotation.Bean;
 public class Application {
 
   public static void main(String[] args) {
-    var defaultServiceName = "sdk-nr-config";
-
     // Configure OpenTelemetry as early as possible
-    OpenTelemetryConfig.configureGlobal(defaultServiceName);
+    var defaultServiceName = "sdk-nr-config";
+    var openTelemetrySdk = OpenTelemetryConfig.configureGlobal(defaultServiceName);
 
     // Initialize Log4j2 appender
-    // TODO: uncomment when log4j appender is released
-    // var logEmitterProvider = OpenTelemetryConfig.configureLogSdk(defaultServiceName);
-    // GlobalLogEmitterProvider.set(DelegatingLogEmitterProvider.from(logEmitterProvider));
+    OpenTelemetryAppender.setSdkLogEmitterProvider(openTelemetrySdk.getSdkLogEmitterProvider());
 
     // Register runtime metrics instrumentation
     MemoryPools.registerObservers();

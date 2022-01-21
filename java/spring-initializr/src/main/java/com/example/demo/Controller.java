@@ -2,7 +2,6 @@ package com.example.demo;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Tracer;
@@ -14,7 +13,7 @@ import java.util.Random;
 public class Controller {
 
   private static final Tracer TRACER = GlobalOpenTelemetry.getTracer(Controller.class.getName());
-  private static final Meter METER = GlobalMeterProvider.get().get(Controller.class.getName());
+  private static final Meter METER = GlobalOpenTelemetry.getMeter(Controller.class.getName());
   private static final LongHistogram histogram = METER.histogramBuilder("my-histogram").ofLongs().build();
   private static final Random RANDOM = new Random();
 

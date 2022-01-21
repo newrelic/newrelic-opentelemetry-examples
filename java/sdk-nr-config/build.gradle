@@ -21,7 +21,5 @@ dependencies {
 
   implementation 'io.opentelemetry.instrumentation:opentelemetry-runtime-metrics'
   implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-3.1'
-  // TODO: uncomment once log4j2 appender is published
-  // implementation 'io.opentelemetry.instrumentation:opentelemetry-log4j-appender-2.16:1.10.0-alpha'
-  // implementation 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-sdk-appender:1.10.0-alpha'
+  implementation 'io.opentelemetry.instrumentation:opentelemetry-log4j-appender-2.16'
 }

@@ -23,6 +23,8 @@ dependencies {
   implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${project['jackson.version']}"
 
   implementation "io.grpc:grpc-protobuf:${project['grpc.version']}"
+  implementation "io.grpc:grpc-stub:${project['grpc.version']}"
+  implementation "io.grpc:grpc-netty-shaded:${project['grpc.version']}"
   implementation "com.google.protobuf:protobuf-java-util:${project['protobuf-java-util.version']}"
   constraints {
     implementation "com.google.code.gson:gson:${project['gson.version']}"

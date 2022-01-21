@@ -4,19 +4,15 @@ import static com.newrelic.shared.EnvUtils.getEnvOrDefault;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_INSTANCE_ID;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_NAME;
 
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
-import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
-import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporter;
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
@@ -42,8 +38,18 @@ public class OpenTelemetryConfig {
   private static final Supplier<Boolean> LOG_EXPORTER_ENABLED =
       getEnvOrDefault("LOG_EXPORTER_ENABLED", Boolean::valueOf, true);
 
-  public static void configureGlobal(String defaultServiceName) {
-    var resource = configureResource(defaultServiceName);
+  public static OpenTelemetrySdk configureGlobal(String defaultServiceName) {
+    // Configure resource
+    var resource =
+        Resource.getDefault()
+            .merge(
+                Resource.builder()
+                    .put(
+                        SERVICE_NAME,
+                        getEnvOrDefault("SERVICE_NAME", Function.identity(), defaultServiceName)
+                            .get())
+                    .put(SERVICE_INSTANCE_ID, UUID.randomUUID().toString())
+                    .build());
 
     // Configure traces
     var spanExporterBuilder =
@@ -52,9 +58,7 @@ public class OpenTelemetryConfig {
             .addHeader("api-key", newRelicApiOrLicenseKey());
 
     // Enable retry policy via unstable API
-    DefaultGrpcExporterBuilder.getDelegateBuilder(
-            OtlpGrpcSpanExporterBuilder.class, spanExporterBuilder)
-        .addRetryPolicy(RetryPolicy.getDefault());
+    RetryUtil.setRetryPolicyOnDelegate(spanExporterBuilder, RetryPolicy.getDefault());
 
     var sdkTracerProviderBuilder =
         SdkTracerProvider.builder()
@@ -62,12 +66,8 @@ public class OpenTelemetryConfig {
             .addSpanProcessor(BatchSpanProcessor.builder(spanExporterBuilder.build()).build());
     if (LOG_EXPORTER_ENABLED.get()) {
       sdkTracerProviderBuilder.addSpanProcessor(
-          BatchSpanProcessor.builder(new LoggingSpanExporter()).build());
+          BatchSpanProcessor.builder(LoggingSpanExporter.create()).build());
     }
-    OpenTelemetrySdk.builder()
-        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-        .setTracerProvider(sdkTracerProviderBuilder.build())
-        .buildAndRegisterGlobal();
 
     // Configure metrics
     var meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
@@ -79,9 +79,7 @@ public class OpenTelemetryConfig {
             .addHeader("api-key", newRelicApiOrLicenseKey());
 
     // Enable retry policy via unstable API
-    DefaultGrpcExporterBuilder.getDelegateBuilder(
-            OtlpGrpcMetricExporterBuilder.class, metricExporterBuilder)
-        .addRetryPolicy(RetryPolicy.getDefault());
+    RetryUtil.setRetryPolicyOnDelegate(metricExporterBuilder, RetryPolicy.getDefault());
 
     meterProviderBuilder.registerMetricReader(
         PeriodicMetricReader.builder(metricExporterBuilder.build())
@@ -90,40 +88,32 @@ public class OpenTelemetryConfig {
 
     if (LOG_EXPORTER_ENABLED.get()) {
       meterProviderBuilder.registerMetricReader(
-          PeriodicMetricReader.builder(new LoggingMetricExporter())
+          PeriodicMetricReader.builder(LoggingMetricExporter.create())
               .setInterval(Duration.ofSeconds(5))
               .newMetricReaderFactory());
     }
 
-    GlobalMeterProvider.set(meterProviderBuilder.build());
-  }
-
-  private static Resource configureResource(String defaultServiceName) {
-    return Resource.getDefault()
-        .merge(
-            Resource.builder()
-                .put(
-                    SERVICE_NAME,
-                    getEnvOrDefault("SERVICE_NAME", Function.identity(), defaultServiceName).get())
-                .put(SERVICE_INSTANCE_ID, UUID.randomUUID().toString())
-                .build());
-  }
-
-  public static SdkLogEmitterProvider configureLogSdk(String defaultServiceName) {
+    // Configure logs
     var logExporterBuilder =
         OtlpGrpcLogExporter.builder()
             .setEndpoint(OTLP_HOST_SUPPLIER.get())
             .addHeader("api-key", newRelicApiOrLicenseKey());
 
     // Enable retry policy via unstable API
-    DefaultGrpcExporterBuilder.getDelegateBuilder(
-            OtlpGrpcLogExporterBuilder.class, logExporterBuilder)
-        .addRetryPolicy(RetryPolicy.getDefault());
+    RetryUtil.setRetryPolicyOnDelegate(logExporterBuilder, RetryPolicy.getDefault());
 
-    return SdkLogEmitterProvider.builder()
-        .setResource(configureResource(defaultServiceName))
-        .addLogProcessor(BatchLogProcessor.builder(logExporterBuilder.build()).build())
-        .build();
+    var logEmitterProvider =
+        SdkLogEmitterProvider.builder()
+            .setResource(resource)
+            .addLogProcessor(BatchLogProcessor.builder(logExporterBuilder.build()).build())
+            .build();
+
+    return OpenTelemetrySdk.builder()
+        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+        .setTracerProvider(sdkTracerProviderBuilder.build())
+        .setMeterProvider(meterProviderBuilder.build())
+        .setLogEmitterProvider(logEmitterProvider)
+        .buildAndRegisterGlobal();
   }
 
   private static String newRelicApiOrLicenseKey() {
