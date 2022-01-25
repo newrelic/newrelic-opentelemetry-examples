@@ -9,9 +9,11 @@ app.get("/fibonacci", (req, res) => {
   let n = Number(req.query.n);
 
   try {
+    let resultOfFib = fibonacci(n);
+
     res.status(200).send({
       "n": n, 
-      "result": fibonacci(n)
+      "result": resultOfFib
     });
   } catch (error) {
     res.status(400).send({"message": error.message });
@@ -32,7 +34,7 @@ function fibonacci(input) {
     } else {
       let sequence = [0, 1];
 
-      for (i = 2; i <= input; i++) {
+      for (let i = 2; i <= input; i++) {
           sequence[i] = sequence[i - 2] + sequence[i - 1];
       }
 
