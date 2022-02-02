@@ -26,6 +26,8 @@ This project contains examples illustrating usage of OpenTelemetry with New Reli
   * [Spring Initializr with OpenTelemetry](./java/spring-initializr): Add OpenTelemetry instrumentation to a Spring Initializr application. 
 * JavaScript
   * [OpenTelemetry SDK New Relic Config](./javascript/simple-nodejs-app): An express application demonstrating OpenTelemetry auto-instrumentation, configured for New Relic via the SDK.
+* Python
+  * [OpenTelemetry SDK New Relic Config](./python): Two simple Python applications demonstrating OpenTelemetry instrumentation, one with Flask auto-instrumentation and one without Flask. Configured for New Relic via the SDK. 
 
 ## Contribute
 
