@@ -2,11 +2,11 @@
 
 ## Introduction
 
-This project demonstrates a simple Java application with custom OpenTelemetry instrumentation configured to write data to New Relic. New Relic expects metric data to delta aggregation temporality, whereas the default for OpenTelemetry is cumulative.
+This project demonstrates a simple Java application which manually configures the OpenTelemetry SDK to export trace, metric, and log data to New Relic.
 
 It uses several pieces of [standalone library instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/docs/standalone-library-instrumentation.md) ([Runtime Metrics](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/runtime-metrics/library) and [Spring WebMVC](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/spring/spring-webmvc-3.1/library)) published by the [opentelemetry-java-instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation) project. These artifacts allow projects to add zero or low configuration instrumentation for common libraries without using the OpenTelemetry Java Agent. 
 
-It uses the experimental [Log SDK](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk/logs) with the [Log4j2 OpenTelemetry Appender](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/log4j/log4j-2.13.2/library-autoconfigure#opentelemetry-appender). This sends logs collected by the Log4j2 API through the OpenTelemetry SDK and exports them to New Relic via OTLP.
+It uses the experimental [Log SDK](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk/logs) with the [Log4j2 OpenTelemetry Appender](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/log4j/log4j-appender-2.16/library). This sends logs collected by the Log4j2 API through the OpenTelemetry SDK and exports them to New Relic via OTLP.
 
 ## Run
 
@@ -25,4 +25,4 @@ The application exposes a simple endpoint at `http://localhost:8080/ping`.
 
 Invoke it via: `curl http://localhost:8080/ping` to generate trace and metric data.
 
-Check your backend to confirm data is flowing.
+Check New Relic to confirm data is flowing.
