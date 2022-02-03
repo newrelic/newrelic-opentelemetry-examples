@@ -1,6 +1,7 @@
 rootProject.name = "newrelic-opentelemetry-examples-java"
 include 'agent-nr-config:application'
 include 'agent-nr-config:otel-initializer'
+include 'autoconfigure-nr-config'
 include 'logs-in-context-log4j2'
 include 'otel-nr-dt:nr-app'
 include 'otel-nr-dt:otel-app'
