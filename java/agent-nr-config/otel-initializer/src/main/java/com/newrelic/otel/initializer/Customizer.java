@@ -7,14 +7,15 @@ import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvide
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.UUID;
 
+/**
+ * Note this class is wired into SPI via {@code
+ * resources/META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider}
+ */
 public class Customizer implements AutoConfigurationCustomizerProvider {
 
-  /**
-   * Add additional resource attributes programmatically. NOTE: This class is referenced in {@code
-   * /resources/META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider}.
-   */
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
+    // Add additional resource attributes programmatically
     autoConfiguration.addResourceCustomizer(
         (resource, configProperties) ->
             resource.merge(
