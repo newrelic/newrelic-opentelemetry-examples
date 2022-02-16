@@ -17,8 +17,12 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
+import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -70,7 +74,16 @@ public class OpenTelemetryConfig {
     }
 
     // Configure metrics
-    var meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
+    var meterProviderBuilder =
+        SdkMeterProvider.builder()
+            .setResource(resource)
+            // Aggregate OBSERVABLE_UP_DOWN_SUM as gauge instead of sum. This allows OBSERVABLE_UP_DOWN_SUM
+            // data to still be useful when aggregation temporality is set to DELTA.
+            .registerView(
+                InstrumentSelector.builder()
+                    .setInstrumentType(InstrumentType.OBSERVABLE_UP_DOWN_SUM)
+                    .build(),
+                View.builder().setAggregation(Aggregation.lastValue()).build());
 
     var metricExporterBuilder =
         OtlpGrpcMetricExporter.builder()
