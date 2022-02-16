@@ -7,7 +7,7 @@ This project demonstrates a simple Java application running with the OpenTelemet
 The project consists of two modules:
 
 1. [application](./application): Contains a simple Spring Boot application configured to run with OpenTelemetry.
-2. [otel-initializer](./otel-initializer): Contains SPI configuration code, which allows for optional additional configuration not available via environment variables. The contents are packaged as a shadow jar, which the `application` module is configured to use as an initializer jar.
+2. [config-extension](./config-extension): Contains SPI configuration code, which allows for optional additional configuration not available via environment variables. The contents are packaged as a shadow jar, which the `application` module is configured to use as an extension jar.
 
 ## Run
 
@@ -27,7 +27,7 @@ Run the application from a shell in the [java root](../) via:
 
 The `bootRun` command will:
 - Download the OpenTelemetry Java agent.
-- Build the `otel-initializer` shadow jar.
+- Build the `config-extension` shadow jar.
 - Build the application executable jar.
 - Run the application executable jar with jvmArgs that attach the OpenTelemetry Java agent. See the `bootRun` task config in [./application/build.gradle](./application/build.gradle) to see the jvmArg environment variable configuration.
 

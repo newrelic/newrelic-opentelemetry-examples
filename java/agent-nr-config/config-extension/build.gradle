@@ -1,0 +1,22 @@
+plugins {
+  id 'java-library'
+  id 'com.github.johnrengelman.shadow' version '6.1.0'
+}
+
+tasks {
+  assemble.dependsOn(shadowJar)
+}
+
+shadowJar {
+  archiveClassifier.set("")
+}
+
+jar {
+  // Disable standard jar
+  enabled = false
+}
+
+dependencies {
+  compileOnly 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure'
+  compileOnly 'io.opentelemetry:opentelemetry-semconv'
+}
