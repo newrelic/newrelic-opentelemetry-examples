@@ -1,4 +1,4 @@
-package com.newrelic.otel.initializer;
+package com.newrelic.otel.extension;
 
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_INSTANCE_ID;
 
