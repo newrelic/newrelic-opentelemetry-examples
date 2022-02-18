@@ -1,4 +1,4 @@
-const { trace, context, SpanStatusCode } = require('@opentelemetry/api');
+const { trace, SpanStatusCode } = require('@opentelemetry/api');
 
 const express = require("express");
 const app = express();
@@ -21,11 +21,8 @@ app.get("/fibonacci", (req, res) => {
 });
 
 function fibonacci(input) {
-  let currentSpan = trace.getSpan(context.active());
-  let ctx = trace.setSpan(context.active(), currentSpan);
-  
   let tracer = trace.getTracer("fibonacci");
-  let span = tracer.startSpan("fibonacci", undefined, ctx);
+  let span = tracer.startSpan("fibonacci");
   span.setAttribute("oteldemo.n", input);
 
   try {

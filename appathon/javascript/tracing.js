@@ -9,9 +9,6 @@ const { Resource } = require("@opentelemetry/resources");
 const { SemanticResourceAttributes } = require("@opentelemetry/semantic-conventions");
 const { OTLPTraceExporter } =  require('@opentelemetry/exporter-trace-otlp-grpc');
 
-const { CompressionAlgorithm
-} = require('@opentelemetry/exporter-trace-otlp-http');
-
 const resource = new Resource({
   [SemanticResourceAttributes.SERVICE_NAME]: "appathon-javascript",
   [SemanticResourceAttributes.SERVICE_INSTANCE_ID]: uuidv4(),
@@ -23,7 +20,6 @@ const credentials = grpc.credentials.createSsl();
 
 const collectorOptions = {
   credentials,
-  compression: CompressionAlgorithm.GZIP,
 };
 
 const traceExporter = new OTLPTraceExporter(collectorOptions);
