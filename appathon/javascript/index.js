@@ -23,6 +23,7 @@ app.get("/fibonacci", (req, res) => {
 function fibonacci(input) {
   let tracer = trace.getTracer("fibonacci");
   let span = tracer.startSpan("fibonacci");
+  
   span.setAttribute("oteldemo.n", input);
 
   try {
