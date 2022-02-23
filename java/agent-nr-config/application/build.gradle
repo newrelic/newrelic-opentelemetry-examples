@@ -10,18 +10,18 @@ def agentPath = project.buildDir.toString() + "/otel/opentelemetry-javaagent-all
 bootRun {
     mainClass.set 'com.newrelic.app.Application'
 
-    // Before running, build the otel-intializer shadow jar
-    dependsOn(":agent-nr-config:otel-initializer:shadowJar")
+    // Before running, build the config-extension shadow jar
+    dependsOn(":agent-nr-config:config-extension:shadowJar")
     // Before running, download the opentelemetry-java-instrumentation agent
     dependsOn("downloadAgent")
 
-    def initializerPath = project(":agent-nr-config:otel-initializer").buildDir.toString() + "/libs/otel-initializer.jar"
+    def extensionPath = project(":agent-nr-config:config-extension").buildDir.toString() + "/libs/config-extension.jar"
 
     jvmArgs = [
             // Set the opentelemetry-java-instrumentation agent as the javaagent
             "-javaagent:${agentPath}",
-            // Use the otel-initializer shadowJar to configure the agent via SPI
-            "-Dotel.javaagent.experimental.initializer.jar=${initializerPath}"
+            // Use the config-extension shadowJar to configure the agent via SPI
+            "-Dotel.javaagent.extensions=${extensionPath}"
     ]
 
     // Additional configuration using standard autoconfiguration environment variables defined at:
@@ -39,7 +39,7 @@ bootRun {
         "OTEL_LOGS_EXPORTER": "otlp",
         // Enable experimental retry support because the internet is unreliable
         "OTEL_EXPERIMENTAL_EXPORTER_OTLP_RETRY_ENABLED": "true"
-        // TODO: configure service.instance.id via environment variables and get rid of otel-initializer
+        // TODO: configure service.instance.id via environment variables and get rid of config-extension
     ])
 }
 

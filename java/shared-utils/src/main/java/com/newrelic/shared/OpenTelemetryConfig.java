@@ -6,10 +6,10 @@ import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SE
 
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.exporter.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
-import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
-import io.opentelemetry.exporter.otlp.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
@@ -17,8 +17,12 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
+import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -70,7 +74,17 @@ public class OpenTelemetryConfig {
     }
 
     // Configure metrics
-    var meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
+    var meterProviderBuilder =
+        SdkMeterProvider.builder()
+            .setResource(resource)
+            // Aggregate OBSERVABLE_UP_DOWN_COUNTER as gauge instead of sum. This allows
+            // OBSERVABLE_UP_DOWN_COUNTER
+            // data to still be useful when aggregation temporality is set to DELTA.
+            .registerView(
+                InstrumentSelector.builder()
+                    .setInstrumentType(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER)
+                    .build(),
+                View.builder().setAggregation(Aggregation.lastValue()).build());
 
     var metricExporterBuilder =
         OtlpGrpcMetricExporter.builder()
