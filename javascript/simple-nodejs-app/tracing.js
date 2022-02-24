@@ -8,6 +8,16 @@ const { getNodeAutoInstrumentations } = require("@opentelemetry/auto-instrumenta
 const { Resource } = require("@opentelemetry/resources");
 const { SemanticResourceAttributes } = require("@opentelemetry/semantic-conventions");
 const { OTLPTraceExporter } = require("@opentelemetry/exporter-trace-otlp-grpc");
+const api = require("@opentelemetry/api");
+
+// enable logging ONLY for developement
+// this is useful for debugging instrumentation issues
+// remove from production after issues (if any) are resolved
+// view more logging levels here: https://github.com/open-telemetry/opentelemetry-js-api/blob/main/src/diag/types.ts#L67
+api.diag.setLogger(
+  new api.DiagConsoleLogger(),
+  api.DiagLogLevel.DEBUG,
+);
 
 // Step 1. Declare the resource to be used.
 //    A resource represents a collection of attributes describing the

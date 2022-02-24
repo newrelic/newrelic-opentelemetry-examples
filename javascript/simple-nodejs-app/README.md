@@ -1,10 +1,8 @@
-# OpenTelemetry-JS SDK New Relic Config
+# OpenTelemetry-JS SDK New Relic Config - OTLP/gRPC Exporter
 
 ## Introduction
 
-This is an example of auto-instrumenting a simple express application with [OpenTelemetry-JS](https://github.com/open-telemetry/opentelemetry-js#instantiate-tracing) and exporting traces to New Relic.
-
-Currently New Relic only supports [OTLP/gRPC](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/otlp.md#otlpgrpc) so you must use the [@opentelemetry/exporter-trace-otlp-grpc](https://www.npmjs.com/package/@opentelemetry/exporter-trace-otlp-grpc) package to send data to New Relic.
+This is an example of auto-instrumenting a simple express application with [OpenTelemetry-JS](https://github.com/open-telemetry/opentelemetry-js#instantiate-tracing) and exporting traces to New Relic using OTLP/gRPC Trace Exporter.
 
 ## Prerequisites
 
