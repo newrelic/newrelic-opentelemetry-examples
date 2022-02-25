@@ -42,7 +42,7 @@ const traceExporter = new OTLPTraceExporter();
 
 // this endpoint contains a path since this exporter is signal specific (traces)
 // see more details here: https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/opentelemetry-quick-start/#note-endpoints
-// const url = "https://staging-otlp.nr-data.net:4317/v1/traces";
+// const url = "https://otlp.nr-data.net:4317/v1/traces";
 
 // const collectorOptions = {
 //   url,
