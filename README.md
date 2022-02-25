@@ -26,7 +26,8 @@ This project contains examples illustrating usage of OpenTelemetry with New Reli
   * [OTLP Load Generator](./java/otlp-load-generator): A Java application that generates OTLP span and metric data. 
   * [Spring Initializr with OpenTelemetry](./java/spring-initializr): Add OpenTelemetry instrumentation to a Spring Initializr application. 
 * JavaScript
-  * [OpenTelemetry SDK New Relic Config](./javascript/simple-nodejs-app): An express application demonstrating OpenTelemetry auto-instrumentation, configured for New Relic via the SDK.
+  * [OpenTelemetry SDK New Relic Config - OTLP/gRPC](./javascript/simple-nodejs-app): An express application demonstrating OpenTelemetry auto-instrumentation and exporting with OTLP/gRPC, configured for New Relic via the SDK.
+  * [OpenTelemetry SDK New Relic Config - OTLP/HTTP (PROTO)](./javascript/simple-nodejs-app-http-exp): An express application demonstrating OpenTelemetry auto-instrumentation and exporting with OTLP/HTTP (PROTO), configured for New Relic via the SDK.
 * Python
   * [OpenTelemetry SDK New Relic Config](./python): Two simple Python applications demonstrating OpenTelemetry instrumentation, one with Flask auto-instrumentation and one without Flask. Configured for New Relic via the SDK. 
 
