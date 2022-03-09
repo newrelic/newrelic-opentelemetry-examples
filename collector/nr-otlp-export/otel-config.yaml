@@ -23,5 +23,5 @@ service:
       receivers: [otlp]
       exporters: [logging, otlp]
     logs:
-      receivers: [fluentforward]
+      receivers: [otlp, fluentforward]
       exporters: [logging, otlp]

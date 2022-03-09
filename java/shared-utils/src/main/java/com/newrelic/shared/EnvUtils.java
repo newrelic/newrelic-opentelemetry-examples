@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 
 public class EnvUtils {
 
-  private static Predicate<String> NOT_EMPTY = s -> !s.isBlank() && !s.isEmpty();
+  private static final Predicate<String> NOT_EMPTY = s -> !s.isBlank() && !s.isEmpty();
 
   public static <T> Supplier<T> getEnvOrDefault(
       String key, Function<String, T> transformer, T defaultValue) {
