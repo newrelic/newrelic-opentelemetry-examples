@@ -38,7 +38,7 @@ const traceExporter = new OTLPTraceExporter();
 
 // If you haven't set the OTEL_EXPORTER_OTLP_ENDPOINT and OTEL_EXPORTER_OLTP_HEADERS
 // environment variables, you can configure the OTLP exporter programmatically by
-// uncommenting the following code
+// uncommenting the following code:
 
 // this endpoint contains a path since this exporter is signal specific (traces)
 // see more details here: https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/opentelemetry-quick-start/#note-endpoints
@@ -51,7 +51,7 @@ const traceExporter = new OTLPTraceExporter();
 //   }
 // }
 
-const traceExporter = new OTLPTraceExporter(collectorOptions);
+// const traceExporter = new OTLPTraceExporter(collectorOptions);
 
 // // Step 4: Configure the OpenTelemetry NodeSDK to export traces.
 const sdk = new opentelemetry.NodeSDK({
