@@ -1,6 +1,6 @@
 # Minimal API ASP.NET Core service instrumented with OpenTelemetry
 
-Demonstration of .NET 6 minimal APIs with New Relic's OpenTelemetry harvesting
+Demonstration of .NET 6 minimal APIs with New Relic's OpenTelemetry harvesting.
 
 ## Prerequisites
 
