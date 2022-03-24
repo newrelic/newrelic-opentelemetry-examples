@@ -7,19 +7,25 @@ Demonstration of .NET 6 minimal APIs with New Relic's OpenTelemetry harvesting
 - [.NET 6](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
 - [Docker](https://docs.docker.com/get-docker/)
 
-## Configuration
+## Run the application
 
-This program requires two environment variables to enable the OpenTelemetry libraries.
-  - OTEL_EXPORTER_OTLP_ENDPOINT
-    - Set this to `https://otlp.nr-data.net:4317`
-  - OTEL_EXPORTER_OTLP_HEADERS
-    - Set this to `api-key=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX` replacing `XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX` with a valid New Relic Ingest License key found [here](https://one.newrelic.com/admin-portal/api-keys/home).
+Set the following environment variables:
+* `OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317`
+* `OTEL_EXPORTER_OTLP_HEADERS="api-key=<your_license_key>"`
+  * Replace `<your_license_key>` with your [Account License Key](https://one.newrelic.com/launcher/api-keys-ui.launcher).
 
-You can also set these environment variables in the .env file locally and run via Docker Compose.
+Run:
+```shell
+dotnet run
+```
 
-## Running locally
-
-- If you set the environment variables on your local environment, you can run this program via `dotnet run` from a terminal instances in this directory.
-- If you set the environment variables in the [.env](.env) file then you can run this program via `docker compose --env-file .env up`
+OR
+```shell
+docker compose up
+```
 
 The application serves up a single endpoint accessible at http://localhost:8080/fruits and a Swagger experience accessible at http://localhost:8080/swagger.
+
+## View your data in New Relic
+
+The application produces trace and metric data reporting to a service named `minimal-api`.

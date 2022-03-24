@@ -1,6 +1,3 @@
-ARG OTEL_EXPORTER_OTLP_ENDPOINT
-ARG OTEL_EXPORTER_OTLP_HEADERS
-
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build-env
 WORKDIR /app
 
