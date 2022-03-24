@@ -2,11 +2,11 @@
 # workflow_dispatch to work properly
 name: Repolinter Action
 
-# NOTE: This workflow will ONLY check the default branch!
-# Currently there is no elegant way to specify the default
-# branch in the event filtering, so branches are instead
-# filtered in the "Test Default Branch" step.
-on: [push, workflow_dispatch]
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
 
 jobs:
   repolint:
