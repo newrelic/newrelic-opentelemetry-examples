@@ -29,3 +29,4 @@ jobs:
         with:
           config_url: https://raw.githubusercontent.com/newrelic/.github/main/repolinter-rulesets/example-code.yml
           output_type: issue
+
