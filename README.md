@@ -30,6 +30,9 @@ This project contains examples illustrating usage of OpenTelemetry with New Reli
   * [OpenTelemetry SDK New Relic Config - OTLP/HTTP (PROTO)](./javascript/simple-nodejs-app-http-exp): An express application demonstrating OpenTelemetry auto-instrumentation and exporting with OTLP/HTTP (PROTO), configured for New Relic via the SDK.
 * Python
   * [OpenTelemetry SDK New Relic Config](./python): Two simple Python applications demonstrating OpenTelemetry instrumentation, one with Flask auto-instrumentation and one without Flask. Configured for New Relic via the SDK. 
+* AWS Lambda
+  * [OpenTelemetry Lambda .NET New relic Config](./aws-lambda/dotnet): An example AWS .NET Lambda function instrumented with OpenTelemetry.
+  * [OpenTelemetry Lambda Java New relic Config](./aws-lambda/java): An example AWS Java Lambda function instrumented with OpenTelemetry.
 
 ## Contribute
 
