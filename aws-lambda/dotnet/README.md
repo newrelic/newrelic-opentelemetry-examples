@@ -1,6 +1,6 @@
 # OpenTelemetry Lambda .NET Example
 
-This repo contains a simple AWS Llambda .NET function instrumented with OpenTelemetry.
+This repo contains a simple AWS Lambda .NET function instrumented with OpenTelemetry.
 
 ## Prerequisites
 

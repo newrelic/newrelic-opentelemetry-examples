@@ -1,6 +1,6 @@
 # OpenTelemetry Lambda Java Example
 
-This repo contains a simple AWS Llambda Java function instrumented with OpenTelemetry.
+This repo contains a simple AWS Lambda Java function instrumented with OpenTelemetry.
 
 ## Prerequisites
 
