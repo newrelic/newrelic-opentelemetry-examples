@@ -17,12 +17,8 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.opentelemetry.sdk.metrics.view.Aggregation;
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -74,21 +70,11 @@ public class OpenTelemetryConfig {
     }
 
     // Configure metrics
-    var meterProviderBuilder =
-        SdkMeterProvider.builder()
-            .setResource(resource)
-            // Aggregate OBSERVABLE_UP_DOWN_COUNTER as gauge instead of sum. This allows
-            // OBSERVABLE_UP_DOWN_COUNTER
-            // data to still be useful when aggregation temporality is set to DELTA.
-            .registerView(
-                InstrumentSelector.builder()
-                    .setType(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER)
-                    .build(),
-                View.builder().setAggregation(Aggregation.lastValue()).build());
+    var meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
 
     var metricExporterBuilder =
         OtlpGrpcMetricExporter.builder()
-            .setPreferredTemporality(AggregationTemporality.DELTA)
+            .setAggregationTemporality(MetricExporter::deltaPreferred)
             .setEndpoint(OTLP_HOST_SUPPLIER.get())
             .addHeader("api-key", newRelicApiOrLicenseKey());
 
@@ -98,13 +84,13 @@ public class OpenTelemetryConfig {
     meterProviderBuilder.registerMetricReader(
         PeriodicMetricReader.builder(metricExporterBuilder.build())
             .setInterval(Duration.ofSeconds(5))
-            .newMetricReaderFactory());
+            .build());
 
     if (LOG_EXPORTER_ENABLED.get()) {
       meterProviderBuilder.registerMetricReader(
           PeriodicMetricReader.builder(LoggingMetricExporter.create())
               .setInterval(Duration.ofSeconds(5))
-              .newMetricReaderFactory());
+              .build());
     }
 
     // Configure logs
