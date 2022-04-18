@@ -89,14 +89,14 @@ namespace aspnetcore
                 //     The OTEL_EXPORTER_OTLP_HEADERS environment variable should be set to include your New Relic API key:
                 //         OTEL_EXPORTER_OTLP_HEADERS=api-key=<YOUR_API_KEY_HERE>
                 meterProviderBuilder
-                    .AddOtlpExporter(options =>
+                    .AddOtlpExporter((exporterOptions, metricReaderOptions) =>
                     {
-                        options.Endpoint = new Uri($"{Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT")}");
-                        options.Headers = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_HEADERS");
+                        exporterOptions.Endpoint = new Uri($"{Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT")}");
+                        exporterOptions.Headers = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_HEADERS");
 
                         // New Relic requires the exporter to use delta aggregation temporality.
                         // The OTLP exporter defaults to using cumulative aggregation temporatlity.
-                        options.AggregationTemporality = AggregationTemporality.Delta;
+                        metricReaderOptions.TemporalityPreference = MetricReaderTemporalityPreference.Delta;
                     });
             });
 
