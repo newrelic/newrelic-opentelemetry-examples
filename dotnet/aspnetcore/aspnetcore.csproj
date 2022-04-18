@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,12 +16,17 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc9.2" />
 
     <!-- OpenTelemetry OTLP exporter.
-         Note that logs support is currently in a separate package because the OTLP log data model is still deemed beta -->
+         Note that logs support is currently in a separate package because OTLP logs support considered beta.
+         https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/otlp.md#signals-maturity-level -->
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.2.0" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol.Logs" Version="1.0.0-rc9.2" />
 
     <!-- Misc .NET specific SDK extensions -->
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.0.0-rc9.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
   </ItemGroup>
 
 </Project>
