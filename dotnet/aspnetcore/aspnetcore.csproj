@@ -6,20 +6,20 @@
 
   <ItemGroup>
     <!-- OpenTelemetry API & SDK -->
-    <PackageReference Include="OpenTelemetry.Api" Version="1.2.0-beta1" />
-    <PackageReference Include="OpenTelemetry" Version="1.2.0-beta1" />
+    <PackageReference Include="OpenTelemetry.Api" Version="1.2.0" />
+    <PackageReference Include="OpenTelemetry" Version="1.2.0" />
 
     <!-- OpenTelemetry instrumentation packages -->
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.0.0-rc8" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc8" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.0.0-rc9.2" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc9.2" />
 
     <!-- OpenTelemetry OTLP exporter.
          Note that logs support is currently in a separate package because the OTLP log data model is still deemed beta -->
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.2.0-beta1" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol.Logs" Version="1.0.0-rc8" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.2.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol.Logs" Version="1.0.0-rc9.2" />
 
     <!-- Misc .NET specific SDK extensions -->
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.0.0-rc8" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.0.0-rc9.2" />
   </ItemGroup>
 
 </Project>
