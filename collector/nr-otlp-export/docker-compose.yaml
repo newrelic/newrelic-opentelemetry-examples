@@ -4,7 +4,7 @@ services:
     image: otel/opentelemetry-collector-contrib:0.48.0
     volumes:
     - ./otel-config.yaml:/otel-config.yaml
-    command: ["/otelcol-contrib", "--config=/otel-config.yaml"]
+    command: ["/otelcol-contrib", "--config=/otel-config.yaml", "${OTELCOL_ARGS}"]
     environment:
       LOG_EXPORTER_LOG_LEVEL: "DEBUG"
       NEW_RELIC_API_KEY: "${NEW_RELIC_API_KEY}"
