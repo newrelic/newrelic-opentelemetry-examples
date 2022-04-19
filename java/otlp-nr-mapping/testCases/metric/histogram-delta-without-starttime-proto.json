@@ -1,10 +1,79 @@
 {
   "resourceMetrics" : [ {
-    "instrumentationLibraryMetrics" : [ {
-      "instrumentationLibrary" : {
-        "name" : "my-instrumentation-library",
-        "version" : "foo"
-      },
+    "resource" : {
+      "attributes" : [ {
+        "key" : "service.name",
+        "value" : {
+          "stringValue" : "native-otlp-test"
+        }
+      }, {
+        "key" : "resource_skey",
+        "value" : {
+          "stringValue" : "value"
+        }
+      }, {
+        "key" : "resource_ikey",
+        "value" : {
+          "intValue" : "1"
+        }
+      }, {
+        "key" : "resource_bkey",
+        "value" : {
+          "boolValue" : true
+        }
+      }, {
+        "key" : "resource_dkey",
+        "value" : {
+          "doubleValue" : 1.0
+        }
+      }, {
+        "key" : "resource_sarrkey",
+        "value" : {
+          "arrayValue" : {
+            "values" : [ {
+              "stringValue" : "value1"
+            }, {
+              "stringValue" : "value2"
+            } ]
+          }
+        }
+      }, {
+        "key" : "resource_iarrkey",
+        "value" : {
+          "arrayValue" : {
+            "values" : [ {
+              "intValue" : "1"
+            }, {
+              "intValue" : "2"
+            } ]
+          }
+        }
+      }, {
+        "key" : "resource_barrkey",
+        "value" : {
+          "arrayValue" : {
+            "values" : [ {
+              "boolValue" : true
+            }, {
+              "boolValue" : false
+            } ]
+          }
+        }
+      }, {
+        "key" : "resource_darrkey",
+        "value" : {
+          "arrayValue" : {
+            "values" : [ {
+              "doubleValue" : 1.0
+            }, {
+              "doubleValue" : 2.0
+            } ]
+          }
+        }
+      } ]
+    },
+    "schemaUrl" : "schema url",
+    "scopeMetrics" : [ {
       "metrics" : [ {
         "description" : "description",
         "histogram" : {
@@ -89,80 +158,11 @@
         },
         "name" : "my_histogram",
         "unit" : "unit"
-      } ]
-    } ],
-    "resource" : {
-      "attributes" : [ {
-        "key" : "service.name",
-        "value" : {
-          "stringValue" : "native-otlp-test"
-        }
-      }, {
-        "key" : "resource_skey",
-        "value" : {
-          "stringValue" : "value"
-        }
-      }, {
-        "key" : "resource_ikey",
-        "value" : {
-          "intValue" : "1"
-        }
-      }, {
-        "key" : "resource_bkey",
-        "value" : {
-          "boolValue" : true
-        }
-      }, {
-        "key" : "resource_dkey",
-        "value" : {
-          "doubleValue" : 1.0
-        }
-      }, {
-        "key" : "resource_sarrkey",
-        "value" : {
-          "arrayValue" : {
-            "values" : [ {
-              "stringValue" : "value1"
-            }, {
-              "stringValue" : "value2"
-            } ]
-          }
-        }
-      }, {
-        "key" : "resource_iarrkey",
-        "value" : {
-          "arrayValue" : {
-            "values" : [ {
-              "intValue" : "1"
-            }, {
-              "intValue" : "2"
-            } ]
-          }
-        }
-      }, {
-        "key" : "resource_barrkey",
-        "value" : {
-          "arrayValue" : {
-            "values" : [ {
-              "boolValue" : true
-            }, {
-              "boolValue" : false
-            } ]
-          }
-        }
-      }, {
-        "key" : "resource_darrkey",
-        "value" : {
-          "arrayValue" : {
-            "values" : [ {
-              "doubleValue" : 1.0
-            }, {
-              "doubleValue" : 2.0
-            } ]
-          }
-        }
-      } ]
-    },
-    "schemaUrl" : "schema url"
+      } ],
+      "scope" : {
+        "name" : "my-instrumentation-library",
+        "version" : "foo"
+      }
+    } ]
   } ]
 }

@@ -1,10 +1,19 @@
 {
   "resourceMetrics" : [ {
-    "instrumentationLibraryMetrics" : [ {
-      "instrumentationLibrary" : {
-        "name" : "my-instrumentation-library",
-        "version" : "foo"
-      },
+    "resource" : {
+      "attributes" : [ {
+        "key" : "service.name",
+        "value" : {
+          "stringValue" : "native-otlp-test"
+        }
+      }, {
+        "key" : "duplicate-key",
+        "value" : {
+          "stringValue" : "resource-value"
+        }
+      } ]
+    },
+    "scopeMetrics" : [ {
       "metrics" : [ {
         "description" : "description",
         "name" : "my-sum",
@@ -29,20 +38,11 @@
           "isMonotonic" : true
         },
         "unit" : "unit"
-      } ]
-    } ],
-    "resource" : {
-      "attributes" : [ {
-        "key" : "service.name",
-        "value" : {
-          "stringValue" : "native-otlp-test"
-        }
-      }, {
-        "key" : "duplicate-key",
-        "value" : {
-          "stringValue" : "resource-value"
-        }
-      } ]
-    }
+      } ],
+      "scope" : {
+        "name" : "my-instrumentation-library",
+        "version" : "foo"
+      }
+    } ]
   } ]
 }

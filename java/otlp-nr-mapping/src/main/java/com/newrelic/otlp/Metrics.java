@@ -4,7 +4,6 @@ import static com.newrelic.otlp.Common.allTheAttributes;
 import static com.newrelic.otlp.Common.idAttribute;
 import static com.newrelic.otlp.Common.obfuscateKeyValues;
 import static com.newrelic.otlp.Common.obfuscateResource;
-import static com.newrelic.otlp.Common.obfuscateStringKeyValues;
 import static com.newrelic.otlp.Common.toEpochNano;
 import static com.newrelic.otlp.TestCase.of;
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_CUMULATIVE;
@@ -15,20 +14,14 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
-import io.opentelemetry.proto.common.v1.StringKeyValue;
 import io.opentelemetry.proto.metrics.v1.AggregationTemporality;
 import io.opentelemetry.proto.metrics.v1.Gauge;
 import io.opentelemetry.proto.metrics.v1.Histogram;
 import io.opentelemetry.proto.metrics.v1.HistogramDataPoint;
-import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
-import io.opentelemetry.proto.metrics.v1.IntDataPoint;
-import io.opentelemetry.proto.metrics.v1.IntGauge;
-import io.opentelemetry.proto.metrics.v1.IntHistogram;
-import io.opentelemetry.proto.metrics.v1.IntHistogramDataPoint;
-import io.opentelemetry.proto.metrics.v1.IntSum;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.NumberDataPoint;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
+import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
 import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.proto.metrics.v1.Summary;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
@@ -57,9 +50,6 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
     // gauge
     testCases.add(of("gauge with starttime", id -> gauge("my_gauge", id, true)));
     testCases.add(of("gauge without starttime", id -> gauge("my_gauge", id, false)));
-    // int gauge
-    testCases.add(of("intgauge with starttime", id -> intGauge("my_int_gauge", id, true)));
-    testCases.add(of("intgauge without starttime", id -> intGauge("my_int_gauge", id, false)));
 
     // summary
     testCases.add(of("summary with starttime", id -> summary("my_summary", id, true)));
@@ -98,39 +88,6 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
         of(
             "sum non monotonic delta without starttime",
             id -> sum("my_sum", id, false, AGGREGATION_TEMPORALITY_DELTA, false)));
-    // int sum
-    testCases.add(
-        of(
-            "intsum monotonic cumulative with starttime",
-            id -> intSum("my_int_sum", id, true, AGGREGATION_TEMPORALITY_CUMULATIVE, true)));
-    testCases.add(
-        of(
-            "intsum monotonic cumulative without starttime",
-            id -> intSum("my_int_sum", id, true, AGGREGATION_TEMPORALITY_CUMULATIVE, false)));
-    testCases.add(
-        of(
-            "intsum monotonic delta with starttime",
-            id -> intSum("my_int_sum", id, true, AGGREGATION_TEMPORALITY_DELTA, true)));
-    testCases.add(
-        of(
-            "intsum monotonic delta without starttime",
-            id -> intSum("my_int_sum", id, true, AGGREGATION_TEMPORALITY_DELTA, false)));
-    testCases.add(
-        of(
-            "intsum non monotonic cumulative with starttime",
-            id -> intSum("my_int_sum", id, false, AGGREGATION_TEMPORALITY_CUMULATIVE, true)));
-    testCases.add(
-        of(
-            "intsum non monotonic cumulative without starttime",
-            id -> intSum("my_int_sum", id, false, AGGREGATION_TEMPORALITY_CUMULATIVE, false)));
-    testCases.add(
-        of(
-            "intsum non monotonic delta with starttime",
-            id -> intSum("my_int_sum", id, false, AGGREGATION_TEMPORALITY_DELTA, true)));
-    testCases.add(
-        of(
-            "intsum non monotonic delta without starttime",
-            id -> intSum("my_int_sum", id, false, AGGREGATION_TEMPORALITY_DELTA, false)));
 
     // histogram
     testCases.add(
@@ -149,23 +106,6 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
         of(
             "histogram delta without starttime",
             id -> histogram("my_histogram", id, AGGREGATION_TEMPORALITY_DELTA, false)));
-    // int histogram
-    testCases.add(
-        of(
-            "inthistgoram cumulative with starttime",
-            id -> intHistogram("my_int_histogram", id, AGGREGATION_TEMPORALITY_CUMULATIVE, true)));
-    testCases.add(
-        of(
-            "inthistgoram cumulative without starttime",
-            id -> intHistogram("my_int_histogram", id, AGGREGATION_TEMPORALITY_CUMULATIVE, false)));
-    testCases.add(
-        of(
-            "inthistgoram delta with starttime",
-            id -> intHistogram("my_int_histogram", id, AGGREGATION_TEMPORALITY_DELTA, true)));
-    testCases.add(
-        of(
-            "inthistgoram delta without starttime",
-            id -> intHistogram("my_int_histogram", id, AGGREGATION_TEMPORALITY_DELTA, false)));
 
     // other test cases
     testCases.add(of("attribute precedence", Metrics::attributePrecedence));
@@ -185,11 +125,11 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
     for (var rMetric : request.getResourceMetricsList()) {
       var rMetricBuilder = rMetric.toBuilder();
       rMetricBuilder.setResource(obfuscateResource(rMetric.getResource(), attributeKeys));
-      rMetricBuilder.clearInstrumentationLibraryMetrics();
-      for (var ilMetric : rMetric.getInstrumentationLibraryMetricsList()) {
-        var ilMetricBuilder = ilMetric.toBuilder();
-        ilMetricBuilder.clearMetrics();
-        for (var metric : ilMetric.getMetricsList()) {
+      rMetricBuilder.clearScopeMetrics();
+      for (var isMetric : rMetric.getScopeMetricsList()) {
+        var isMetricBuilder = isMetric.toBuilder();
+        isMetricBuilder.clearMetrics();
+        for (var metric : isMetric.getMetricsList()) {
           var metricBuilder = metric.toBuilder();
           if (metricBuilder.hasGauge()) {
             metricBuilder.clearGauge();
@@ -204,20 +144,6 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
                       .build());
             }
             metricBuilder.setGauge(gaugeBuilder.build());
-          }
-          if (metricBuilder.hasIntGauge()) {
-            metricBuilder.clearIntGauge();
-            var intGaugeBuilder = metricBuilder.getIntGaugeBuilder();
-            intGaugeBuilder.clearDataPoints();
-            for (var datapoint : metric.getIntGauge().getDataPointsList()) {
-              intGaugeBuilder.addDataPoints(
-                  datapoint.toBuilder()
-                      .clearLabels()
-                      .addAllLabels(
-                          obfuscateStringKeyValues(datapoint.getLabelsList(), attributeKeys))
-                      .build());
-            }
-            metricBuilder.setIntGauge(intGaugeBuilder.build());
           }
           if (metricBuilder.hasSum()) {
             metricBuilder.clearSum();
@@ -235,22 +161,6 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
             }
             metricBuilder.setSum(sumBuilder.build());
           }
-          if (metricBuilder.hasIntSum()) {
-            metricBuilder.clearIntSum();
-            var intSumBuilder = metricBuilder.getIntSumBuilder();
-            intSumBuilder.setIsMonotonic(metric.getIntSum().getIsMonotonic());
-            intSumBuilder.setAggregationTemporality(metric.getIntSum().getAggregationTemporality());
-            intSumBuilder.clearDataPoints();
-            for (var datapoint : metric.getIntSum().getDataPointsList()) {
-              intSumBuilder.addDataPoints(
-                  datapoint.toBuilder()
-                      .clearLabels()
-                      .addAllLabels(
-                          obfuscateStringKeyValues(datapoint.getLabelsList(), attributeKeys))
-                      .build());
-            }
-            metricBuilder.setIntSum(intSumBuilder.build());
-          }
           if (metricBuilder.hasHistogram()) {
             metricBuilder.clearHistogram();
             var histogramBuilder = metricBuilder.getHistogramBuilder();
@@ -267,22 +177,6 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
             }
             metricBuilder.setHistogram(histogramBuilder.build());
           }
-          if (metricBuilder.hasIntHistogram()) {
-            metricBuilder.clearIntHistogram();
-            var intHistogramBuilder = metricBuilder.getIntHistogramBuilder();
-            intHistogramBuilder.setAggregationTemporality(
-                metric.getIntHistogram().getAggregationTemporality());
-            intHistogramBuilder.clearDataPoints();
-            for (var datapoint : metric.getIntHistogram().getDataPointsList()) {
-              intHistogramBuilder.addDataPoints(
-                  datapoint.toBuilder()
-                      .clearLabels()
-                      .addAllLabels(
-                          obfuscateStringKeyValues(datapoint.getLabelsList(), attributeKeys))
-                      .build());
-            }
-            metricBuilder.setIntHistogram(intHistogramBuilder.build());
-          }
           if (metricBuilder.hasSummary()) {
             metricBuilder.clearSummary();
             var summaryBuilder = metricBuilder.getSummaryBuilder();
@@ -293,16 +187,13 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
                       .clearAttributes()
                       .addAllAttributes(
                           obfuscateKeyValues(datapoint.getAttributesList(), attributeKeys))
-                      .clearLabels()
-                      .addAllLabels(
-                          obfuscateStringKeyValues(datapoint.getLabelsList(), attributeKeys))
                       .build());
             }
             metricBuilder.setSummary(summaryBuilder.build());
           }
-          ilMetricBuilder.addMetrics(metricBuilder.build());
+          isMetricBuilder.addMetrics(metricBuilder.build());
         }
-        rMetricBuilder.addInstrumentationLibraryMetrics(ilMetricBuilder.build());
+        rMetricBuilder.addScopeMetrics(isMetricBuilder.build());
       }
       requestBuilder.addResourceMetrics(rMetricBuilder.build());
     }
@@ -317,15 +208,6 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
                 Gauge.newBuilder()
                     .addDataPoints(numberDataPoint(name, id, includeStartTime))
                     .build())
-            .build());
-  }
-
-  private static ExportMetricsServiceRequest intGauge(
-      String name, String id, boolean includeStartTime) {
-    return metricsRequest(
-        metricBuilder(name)
-            .setIntGauge(
-                IntGauge.newBuilder().addDataPoints(intDataPoint(id, includeStartTime)).build())
             .build());
   }
 
@@ -373,22 +255,6 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
             .build());
   }
 
-  private static ExportMetricsServiceRequest intSum(
-      String name,
-      String id,
-      boolean isMonotonic,
-      AggregationTemporality aggregationTemporality,
-      boolean includeStartTime) {
-    return metricsRequest(
-        metricBuilder(name)
-            .setIntSum(
-                IntSum.newBuilder()
-                    .setIsMonotonic(isMonotonic)
-                    .setAggregationTemporality(aggregationTemporality)
-                    .addDataPoints(intDataPoint(id, includeStartTime)))
-            .build());
-  }
-
   private static ExportMetricsServiceRequest histogram(
       String name,
       String id,
@@ -416,43 +282,6 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
             .build());
   }
 
-  private static ExportMetricsServiceRequest intHistogram(
-      String name,
-      String id,
-      AggregationTemporality aggregationTemporality,
-      boolean includeStartTime) {
-    var intHistogramDataPointBuilder =
-        IntHistogramDataPoint.newBuilder()
-            .setTimeUnixNano(toEpochNano(Instant.now()))
-            .setCount(11)
-            .setSum(100)
-            .addAllExplicitBounds(List.of(1.0, 2.0, 3.0))
-            .addAllBucketCounts(List.of(5L, 4L, 1L, 1L))
-            .addLabels(idStringKeyValue(id))
-            .addAllLabels(
-                List.of(StringKeyValue.newBuilder().setKey("skey").setValue("value").build()));
-    if (includeStartTime) {
-      intHistogramDataPointBuilder.setStartTimeUnixNano(
-          toEpochNano(Instant.now().minusSeconds(10)));
-    }
-    return metricsRequest(
-        metricBuilder(name)
-            .setIntHistogram(
-                IntHistogram.newBuilder()
-                    .setAggregationTemporality(aggregationTemporality)
-                    .addDataPoints(intHistogramDataPointBuilder)
-                    .build())
-            .build());
-  }
-
-  private static StringKeyValue idStringKeyValue(String id) {
-    var idAttribute = idAttribute(id);
-    return StringKeyValue.newBuilder()
-        .setKey(idAttribute.getKey())
-        .setValue(idAttribute.getValue().getStringValue())
-        .build();
-  }
-
   private static NumberDataPoint numberDataPoint(
       String metricName, String id, boolean includeStartTime) {
     var numberDataPointBuilder =
@@ -467,19 +296,6 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
     return numberDataPointBuilder.build();
   }
 
-  private static IntDataPoint intDataPoint(String id, boolean includeStartTime) {
-    var intDataPointBuilder =
-        IntDataPoint.newBuilder()
-            .setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)))
-            .setTimeUnixNano(toEpochNano(Instant.now()))
-            .addLabels(idStringKeyValue(id))
-            .setValue(100);
-    if (includeStartTime) {
-      intDataPointBuilder.setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)));
-    }
-    return intDataPointBuilder.build();
-  }
-
   private static Metric.Builder metricBuilder(String name) {
     return Metric.newBuilder().setName(name).setDescription("description").setUnit("unit");
   }
@@ -490,9 +306,9 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
             ResourceMetrics.newBuilder()
                 .setResource(Common.resource().addAllAttributes(allTheAttributes("resource_")))
                 .setSchemaUrl("schema url")
-                .addInstrumentationLibraryMetrics(
-                    InstrumentationLibraryMetrics.newBuilder()
-                        .setInstrumentationLibrary(Common.instrumentationLibrary())
+                .addScopeMetrics(
+                    ScopeMetrics.newBuilder()
+                        .setScope(Common.instrumentationScope())
                         .addMetrics(metric)
                         .build())
                 .build())
@@ -512,9 +328,9 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
                                 .setValue(
                                     AnyValue.newBuilder().setStringValue("resource-value").build())
                                 .build()))
-                .addInstrumentationLibraryMetrics(
-                    InstrumentationLibraryMetrics.newBuilder()
-                        .setInstrumentationLibrary(Common.instrumentationLibrary())
+                .addScopeMetrics(
+                    ScopeMetrics.newBuilder()
+                        .setScope(Common.instrumentationScope())
                         .addMetrics(
                             metricBuilder("my-sum")
                                 .setSum(

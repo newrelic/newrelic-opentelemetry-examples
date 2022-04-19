@@ -2,7 +2,7 @@ package com.newrelic.otlp;
 
 import static com.newrelic.otlp.Common.allTheAttributes;
 import static com.newrelic.otlp.Common.idAttribute;
-import static com.newrelic.otlp.Common.instrumentationLibrary;
+import static com.newrelic.otlp.Common.instrumentationScope;
 import static com.newrelic.otlp.Common.obfuscateKeyValues;
 import static com.newrelic.otlp.Common.obfuscateResource;
 import static com.newrelic.otlp.Common.spanIdByteString;
@@ -17,8 +17,8 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
-import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
+import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.trace.IdGenerator;
@@ -58,11 +58,11 @@ class Traces implements TestCaseProvider<ExportTraceServiceRequest> {
     for (var rSpan : request.getResourceSpansList()) {
       var rSpanBuilder = rSpan.toBuilder();
       rSpanBuilder.setResource(obfuscateResource(rSpan.getResource(), attributeKeys));
-      rSpanBuilder.clearInstrumentationLibrarySpans();
-      for (var ilSpan : rSpan.getInstrumentationLibrarySpansList()) {
-        var ilSpanBuilder = ilSpan.toBuilder();
-        ilSpanBuilder.clearSpans();
-        for (var span : ilSpan.getSpansList()) {
+      rSpanBuilder.clearScopeSpans();
+      for (var isSpan : rSpan.getScopeSpansList()) {
+        var isSpanBuilder = isSpan.toBuilder();
+        isSpanBuilder.clearSpans();
+        for (var span : isSpan.getSpansList()) {
           var spanBuilder = span.toBuilder();
           spanBuilder.clearAttributes();
           spanBuilder.addAllAttributes(obfuscateKeyValues(span.getAttributesList(), attributeKeys));
@@ -82,9 +82,9 @@ class Traces implements TestCaseProvider<ExportTraceServiceRequest> {
                     .addAllAttributes(obfuscateKeyValues(link.getAttributesList(), attributeKeys))
                     .build());
           }
-          ilSpanBuilder.addSpans(spanBuilder.build());
+          isSpanBuilder.addSpans(spanBuilder.build());
         }
-        rSpanBuilder.addInstrumentationLibrarySpans(ilSpanBuilder.build());
+        rSpanBuilder.addScopeSpans(isSpanBuilder.build());
       }
       requestBuilder.addResourceSpans(rSpanBuilder.build());
     }
@@ -98,9 +98,9 @@ class Traces implements TestCaseProvider<ExportTraceServiceRequest> {
             ResourceSpans.newBuilder()
                 .setResource(Common.resource().addAllAttributes(allTheAttributes("resource_")))
                 .setSchemaUrl("schema url")
-                .addInstrumentationLibrarySpans(
-                    InstrumentationLibrarySpans.newBuilder()
-                        .setInstrumentationLibrary(instrumentationLibrary())
+                .addScopeSpans(
+                    ScopeSpans.newBuilder()
+                        .setScope(instrumentationScope())
                         .addSpans(
                             Span.newBuilder()
                                 .setTraceId(traceIdByteString())
@@ -160,9 +160,9 @@ class Traces implements TestCaseProvider<ExportTraceServiceRequest> {
                                     AnyValue.newBuilder().setStringValue("resource-value").build())
                                 .build()))
                 .setSchemaUrl("schema url")
-                .addInstrumentationLibrarySpans(
-                    InstrumentationLibrarySpans.newBuilder()
-                        .setInstrumentationLibrary(instrumentationLibrary())
+                .addScopeSpans(
+                    ScopeSpans.newBuilder()
+                        .setScope(instrumentationScope())
                         .addSpans(
                             Span.newBuilder()
                                 .setTraceId(traceIdByteString())

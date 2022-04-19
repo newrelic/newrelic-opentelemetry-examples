@@ -15,7 +15,6 @@
   "message" : "body",
   "messageId" : "OBFUSCATED",
   "message_id" : "OBFUSCATED",
-  "name" : "name",
   "newrelic.logPattern" : "OBFUSCATED",
   "newrelic.logs.batchIndex" : 1,
   "newrelic.source" : "api.logs.otlp",
