@@ -1,11 +1,20 @@
 {
   "resourceLogs" : [ {
-    "instrumentationLibraryLogs" : [ {
-      "instrumentationLibrary" : {
-        "name" : "my-instrumentation-library",
-        "version" : "foo"
-      },
-      "logs" : [ {
+    "resource" : {
+      "attributes" : [ {
+        "key" : "service.name",
+        "value" : {
+          "stringValue" : "native-otlp-test"
+        }
+      }, {
+        "key" : "duplicate-key",
+        "value" : {
+          "stringValue" : "resource-value"
+        }
+      } ]
+    },
+    "scopeLogs" : [ {
+      "logRecords" : [ {
         "attributes" : [ {
           "key" : "message_id",
           "value" : {
@@ -21,20 +30,11 @@
           "stringValue" : "body"
         },
         "timeUnixNano" : "OBFUSCATED"
-      } ]
-    } ],
-    "resource" : {
-      "attributes" : [ {
-        "key" : "service.name",
-        "value" : {
-          "stringValue" : "native-otlp-test"
-        }
-      }, {
-        "key" : "duplicate-key",
-        "value" : {
-          "stringValue" : "resource-value"
-        }
-      } ]
-    }
+      } ],
+      "scope" : {
+        "name" : "my-instrumentation-library",
+        "version" : "foo"
+      }
+    } ]
   } ]
 }

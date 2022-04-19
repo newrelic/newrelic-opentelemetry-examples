@@ -1,7 +1,21 @@
 {
   "resourceSpans" : [ {
-    "instrumentationLibrarySpans" : [ {
-      "instrumentationLibrary" : {
+    "resource" : {
+      "attributes" : [ {
+        "key" : "service.name",
+        "value" : {
+          "stringValue" : "native-otlp-test"
+        }
+      }, {
+        "key" : "duplicate-key",
+        "value" : {
+          "stringValue" : "resource-value"
+        }
+      } ]
+    },
+    "schemaUrl" : "schema url",
+    "scopeSpans" : [ {
+      "scope" : {
         "name" : "my-instrumentation-library",
         "version" : "foo"
       },
@@ -24,20 +38,6 @@
         "startTimeUnixNano" : "OBFUSCATED",
         "traceId" : "OBFUSCATED"
       } ]
-    } ],
-    "resource" : {
-      "attributes" : [ {
-        "key" : "service.name",
-        "value" : {
-          "stringValue" : "native-otlp-test"
-        }
-      }, {
-        "key" : "duplicate-key",
-        "value" : {
-          "stringValue" : "resource-value"
-        }
-      } ]
-    },
-    "schemaUrl" : "schema url"
+    } ]
   } ]
 }
