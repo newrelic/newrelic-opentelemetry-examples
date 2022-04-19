@@ -13,9 +13,9 @@ import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.LogsServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
-import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
 import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
+import io.opentelemetry.proto.logs.v1.ScopeLogs;
 import io.opentelemetry.proto.logs.v1.SeverityNumber;
 import java.time.Instant;
 import java.util.List;
@@ -53,17 +53,17 @@ class Logs implements TestCaseProvider<ExportLogsServiceRequest> {
     for (var rLog : request.getResourceLogsList()) {
       var rLogBuilder = rLog.toBuilder();
       rLogBuilder.setResource(obfuscateResource(rLog.getResource(), attributeKeys));
-      rLogBuilder.clearInstrumentationLibraryLogs();
-      for (var ilLog : rLog.getInstrumentationLibraryLogsList()) {
-        var ilLogBuilder = ilLog.toBuilder();
-        ilLogBuilder.clearLogs();
-        for (var log : ilLog.getLogsList()) {
+      rLogBuilder.clearScopeLogs();
+      for (var isLog : rLog.getScopeLogsList()) {
+        var isLogBuilder = isLog.toBuilder();
+        isLogBuilder.clearLogRecords();
+        for (var log : isLog.getLogRecordsList()) {
           var logBuilder = log.toBuilder();
           logBuilder.clearAttributes();
           logBuilder.addAllAttributes(obfuscateKeyValues(log.getAttributesList(), attributeKeys));
-          ilLogBuilder.addLogs(logBuilder.build());
+          isLogBuilder.addLogRecords(logBuilder.build());
         }
-        rLogBuilder.addInstrumentationLibraryLogs(ilLogBuilder.build());
+        rLogBuilder.addScopeLogs(isLogBuilder.build());
       }
       requestBuilder.addResourceLogs(rLogBuilder.build());
     }
@@ -75,15 +75,14 @@ class Logs implements TestCaseProvider<ExportLogsServiceRequest> {
         .addResourceLogs(
             ResourceLogs.newBuilder()
                 .setResource(Common.resource().addAllAttributes(allTheAttributes("resource_")))
-                .addInstrumentationLibraryLogs(
-                    InstrumentationLibraryLogs.newBuilder()
-                        .setInstrumentationLibrary(Common.instrumentationLibrary())
-                        .addLogs(
+                .addScopeLogs(
+                    ScopeLogs.newBuilder()
+                        .setScope(Common.instrumentationScope())
+                        .addLogRecords(
                             LogRecord.newBuilder()
                                 .setTimeUnixNano(toEpochNano(Instant.now()))
                                 .setSeverityNumber(SeverityNumber.SEVERITY_NUMBER_DEBUG)
                                 .setSeverityText("DEBUG")
-                                .setName("name")
                                 .setBody(AnyValue.newBuilder().setStringValue("body").build())
                                 .addAttributes(idAttribute(id))
                                 .addAllAttributes(allTheAttributes("log_"))
@@ -110,10 +109,10 @@ class Logs implements TestCaseProvider<ExportLogsServiceRequest> {
                                 .setValue(
                                     AnyValue.newBuilder().setStringValue("resource-value").build())
                                 .build()))
-                .addInstrumentationLibraryLogs(
-                    InstrumentationLibraryLogs.newBuilder()
-                        .setInstrumentationLibrary(Common.instrumentationLibrary())
-                        .addLogs(
+                .addScopeLogs(
+                    ScopeLogs.newBuilder()
+                        .setScope(Common.instrumentationScope())
+                        .addLogRecords(
                             LogRecord.newBuilder()
                                 .setTimeUnixNano(toEpochNano(Instant.now()))
                                 .setBody(AnyValue.newBuilder().setStringValue("body").build())

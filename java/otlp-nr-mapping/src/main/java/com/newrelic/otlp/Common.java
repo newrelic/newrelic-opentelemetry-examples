@@ -18,10 +18,9 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.ArrayValue;
-import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
+import io.opentelemetry.proto.common.v1.InstrumentationScope;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.common.v1.KeyValueList;
-import io.opentelemetry.proto.common.v1.StringKeyValue;
 import io.opentelemetry.proto.resource.v1.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import java.time.Instant;
@@ -118,20 +117,6 @@ public class Common {
         .build();
   }
 
-  static List<StringKeyValue> obfuscateStringKeyValues(
-      List<StringKeyValue> original, Set<String> attributeKeys) {
-    return original.stream()
-        .map(
-            keyValue -> {
-              var key = keyValue.getKey();
-              if (!attributeKeys.contains(key)) {
-                return keyValue;
-              }
-              return keyValue.toBuilder().setValue("OBFUSCATED").build();
-            })
-        .collect(toList());
-  }
-
   static List<KeyValue> obfuscateKeyValues(List<KeyValue> original, Set<String> attributeKeys) {
     return original.stream()
         .map(
@@ -186,8 +171,8 @@ public class Common {
                 .build());
   }
 
-  static InstrumentationLibrary instrumentationLibrary() {
-    return InstrumentationLibrary.newBuilder()
+  static InstrumentationScope instrumentationScope() {
+    return InstrumentationScope.newBuilder()
         .setName("my-instrumentation-library")
         .setVersion("foo")
         .build();
