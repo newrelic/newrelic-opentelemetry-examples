@@ -29,12 +29,10 @@ bootRun {
     environment([
         // Disable the process resource provider, which includes the process.command_line resource attribute that may contain sensitive information
         "OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS": "io.opentelemetry.sdk.extension.resources.ProcessResourceProvider",
-        // By default, metrics exporter is none
-        "OTEL_METRICS_EXPORTER": "otlp",
         // Report metrics every 5s instead of every 60s
         "OTEL_METRIC_EXPORT_INTERVAL": "5000",
         // Report metrics using delta aggregation temporality
-        "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY": "DELTA",
+        "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "DELTA",
         // By default, logs exporter is none
         "OTEL_LOGS_EXPORTER": "otlp",
         // Enable experimental retry support because the internet is unreliable

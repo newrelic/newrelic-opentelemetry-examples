@@ -13,11 +13,9 @@ It uses the experimental [Log SDK](https://github.com/open-telemetry/opentelemet
 Set the following environment variables:
 * `OTEL_EXPORTER_OTLP_HEADERS=api-key=your_license_key`
   * Replace `your_license_key` with your [Account License Key](https://one.newrelic.com/launcher/api-keys-ui.launcher).
-* `OTEL_METRICS_EXPORTER=otlp`
-  * Enable metric export over OTLP. Metric export is disabled by default.
 * `OTEL_METRIC_EXPORT_INTERVAL=5000`
   * Optionally export metrics every 5000 ms instead of the default 60s.
-* `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY=DELTA`
+* `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=DELTA`
   * New Relic supports metrics in delta temporality, instead of the default cumulative.
 * `OTEL_LOGS_EXPORTER=otlp`
   * Enable log export over OTLP. Log export is disabled by default.
@@ -37,9 +35,8 @@ Set the following environment variables:
 Run the application from a shell in the [java root](../) via:
 ```
 export OTEL_EXPORTER_OTLP_HEADERS=api-key=your_license_key \
-&& export OTEL_METRICS_EXPORTER=otlp \
 && export OTEL_METRIC_EXPORT_INTERVAL=5000 \
-&& export OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY=DELTA \
+&& export OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=DELTA \
 && export OTEL_LOGS_EXPORTER=otlp \
 && export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317 \
 && export OTEL_EXPORTER_OTLP_COMPRESSION=gzip \
