@@ -21,6 +21,9 @@ WORKDIR /app
 COPY --from=build /app/build .
 # Install the agent
 COPY --from=build /tracer-home /tracer-home
+# The most important environment variables are shown in this example.
+# For a complete list of options refer to the OpenTelemetry documenations available at
+# https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/blob/47f16b5748218f37dd9bd543a0f133670904f9f7/docs/config.md.
 # This env variable points to the installation directory for the agent
 ENV OTEL_DOTNET_AUTO_HOME="/tracer-home"
 ENV OTEL_PROFILER_EXCLUDE_PROCESSES="dotnet,dotnet.exe"

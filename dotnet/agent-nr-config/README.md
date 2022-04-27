@@ -11,7 +11,7 @@ This project demonstrates a simple .NET application running with the OpenTelemet
 
 The project consists of two main components:
 
-1. The default .NET Weather Forecast example application.
+1. The default .NET Weather Forecast example application. This application does not directly contain any OpenTelemetry code or references.
 2. [Dockerfile](./Dockerfile): Contains the code to install, configure, and run the application while being monitored by the agent.
 
 ## Run
