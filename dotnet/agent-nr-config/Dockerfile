@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+# Download and unpack the agent
+# Refer to https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/releases for the available releases.
 RUN apt-get update && apt-get install unzip \
 	&& wget "https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/releases/download/v0.1.0-beta.1/opentelemetry-dotnet-instrumentation-linux-glibc.zip" -O /tracer-home.zip \
 	&& unzip -d /tracer-home /tracer-home.zip
@@ -8,12 +10,16 @@ WORKDIR /src
 COPY ["agent-nr-config.csproj", "."]
 RUN dotnet restore "./agent-nr-config.csproj"
 
+# Build the application in a framework dependent mode.
+# Automatic instrumentation is not currently supported for self-contained deployments or builds.
 COPY . .
 RUN dotnet build "agent-nr-config.csproj" -c Release -o /app/build
 
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS final
 WORKDIR /app
+# Copy the built application
 COPY --from=build /app/build .
+# Install the agent
 COPY --from=build /tracer-home /tracer-home
 # This env variable points to the installation directory for the agent
 ENV OTEL_DOTNET_AUTO_HOME="/tracer-home"
