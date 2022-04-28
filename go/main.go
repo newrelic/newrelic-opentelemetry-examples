@@ -22,6 +22,12 @@ import (
 
 var (
 	lemonsKey = attribute.Key("ex.com/lemons")
+
+	// This configures temporality to work correctly with New Relic for most metric types.
+	// Measurements recorded with UpDownCounter instruments are the exception.
+	// UpDownCounters should be aggregated with cumulative temporality.
+	// TODO: Update this example with a custom temporality selector that correctly handles UpDownCounters.
+	temporalitySelector = aggregation.DeltaTemporalitySelector()
 )
 
 func initMeter() {
@@ -39,7 +45,7 @@ func initMeter() {
 	exporter, err := otlpmetric.New(
 		ctx,
 		otlpmetricgrpc.NewClient(),
-		otlpmetric.WithMetricAggregationTemporalitySelector(aggregation.DeltaTemporalitySelector()))
+		otlpmetric.WithMetricAggregationTemporalitySelector(temporalitySelector))
 	if err != nil {
 		log.Fatalf("%s: %v", "failed to create metric exporter", err)
 	}
@@ -49,7 +55,7 @@ func initMeter() {
 			selector.NewWithHistogramDistribution(
 				histogram.WithExplicitBoundaries([]float64{1, 2, 5, 10, 20, 50}),
 			),
-			aggregation.DeltaTemporalitySelector(),
+			temporalitySelector,
 		),
 		controller.WithResource(res),
 		controller.WithExporter(exporter),
