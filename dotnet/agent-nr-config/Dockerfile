@@ -26,20 +26,26 @@ COPY --from=build /tracer-home /tracer-home
 # https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/blob/47f16b5748218f37dd9bd543a0f133670904f9f7/docs/config.md.
 # This env variable points to the installation directory for the agent
 ENV OTEL_DOTNET_AUTO_HOME="/tracer-home"
-ENV OTEL_PROFILER_EXCLUDE_PROCESSES="dotnet,dotnet.exe"
+ENV OTEL_DOTNET_AUTO_EXCLUDE_PROCESSES="dotnet,dotnet.exe"
 ENV DOTNET_STARTUP_HOOKS="/tracer-home/netcoreapp3.1/OpenTelemetry.AutoInstrumentation.StartupHook.dll"
 ENV DOTNET_ADDITIONAL_DEPS="/tracer-home/AdditionalDeps"
 ENV DOTNET_SHARED_STORE="/tracer-home/store"
-ENV OTEL_DOTNET_AUTO_ENABLED_INSTRUMENTATIONS="AspNet"
 ENV OTEL_TRACES_EXPORTER="otlp"
 # This env variable points to the New Relic OTLP endpoint
 ENV OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp.nr-data.net:4318"
 # This env variable adds your New Relic license key to the OTLP headers.
 # You should override this when running the container so that a valid license key is used.
+# The instructions in the README for this application shows how to override this value when starting the container.
 ENV OTEL_EXPORTER_OTLP_HEADERS="api-key=${NEW_RELIC_LICENSE_KEY}"
 # This env variable controls the name New Relic will use for your application
 ENV OTEL_SERVICE_NAME="agent-nr-config"
-# The env variables below can be used if byte-code instrumentation is desired
+# This env variable controls which libraries should be instrumented.
+# For a completed list of available instrumentations refer to
+# https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/blob/47f16b5748218f37dd9bd543a0f133670904f9f7/docs/config.md#instrumented-libraries-and-frameworks
+ENV OTEL_DOTNET_AUTO_ENABLED_INSTRUMENTATIONS="AspNet"
+# The env variables below can be used if byte-code instrumentation is desired. See
+# https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/blob/47f16b5748218f37dd9bd543a0f133670904f9f7/docs/config.md#instrumented-libraries-and-frameworks
+# for the list of available instrumentations and which ones require byte-code support.
 # ENV CORECLR_ENABLE_PROFILING=1
 # ENV CORECLR_PROFILER="{918728DD-259F-4A6A-AC2B-B85E1B658318}"
 # ENV CORECLR_PROFILER_PATH="/tracer-home/OpenTelemetry.AutoInstrumentation.Native.so"
