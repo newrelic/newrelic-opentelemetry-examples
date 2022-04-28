@@ -1,0 +1,31 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+exporters:
+  logging:
+    loglevel: debug
+    sampling_initial: 5
+    sampling_thereafter: 200
+  otlp:
+    endpoint: ${NEW_RELIC_OPENTELEMETRY_ENDPOINT}
+    headers:
+      api-key: ${NEW_RELIC_LICENSE_KEY}
+
+service:
+  telemetry:
+    logs:
+      level: debug
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [logging,otlp]
+    metrics:
+      receivers: [otlp]
+      exporters: [logging,otlp]
+    logs:
+      receivers: [otlp]
+      processors: []
+      exporters: [logging,otlp]

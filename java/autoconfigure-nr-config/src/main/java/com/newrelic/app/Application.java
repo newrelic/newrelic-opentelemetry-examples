@@ -3,7 +3,7 @@ package com.newrelic.app;
 import io.opentelemetry.instrumentation.log4j.appender.v2_16.OpenTelemetryAppender;
 import io.opentelemetry.instrumentation.runtimemetrics.GarbageCollector;
 import io.opentelemetry.instrumentation.runtimemetrics.MemoryPools;
-import io.opentelemetry.instrumentation.spring.webmvc.SpringWebMvcTracing;
+import io.opentelemetry.instrumentation.spring.webmvc.SpringWebMvcTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import javax.servlet.Filter;
@@ -18,13 +18,14 @@ public class Application {
       AutoConfiguredOpenTelemetrySdk.initialize();
 
   public static void main(String[] args) {
+    OpenTelemetrySdk openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
+
     // Initialize Log4j2 appender
-    OpenTelemetryAppender.setSdkLogEmitterProvider(
-        autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().getSdkLogEmitterProvider());
+    OpenTelemetryAppender.setSdkLogEmitterProvider(openTelemetrySdk.getSdkLogEmitterProvider());
 
     // Register runtime metrics instrumentation
-    MemoryPools.registerObservers();
-    GarbageCollector.registerObservers();
+    MemoryPools.registerObservers(openTelemetrySdk);
+    GarbageCollector.registerObservers(openTelemetrySdk);
 
     SpringApplication.run(Application.class, args);
   }
@@ -37,6 +38,6 @@ public class Application {
   /** Add Spring WebMVC instrumentation by registering tracing filter. */
   @Bean
   public Filter webMvcTracingFilter(OpenTelemetrySdk openTelemetrySdk) {
-    return SpringWebMvcTracing.create(openTelemetrySdk).newServletFilter();
+    return SpringWebMvcTelemetry.create(openTelemetrySdk).newServletFilter();
   }
 }

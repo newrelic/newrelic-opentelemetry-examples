@@ -14,8 +14,6 @@ This project contains examples illustrating usage of OpenTelemetry with New Reli
 * Collector
   * [OpenTelemetry Collector with OTLP Export to New Relic](./collector/nr-otlp-export): Run the OpenTelemetry Collector with OTLP gRPC export to New Relic.
   * [Kubernetes Collector Tail Based Sampling](./collector/k8s-collector-tail-sampling): Configure a Kubernetes environment to do tail based sampling with the Collector before exporting to New Relic.
-* Go
-  * [Sending metrics with the OpenTelemetry Go SDK](./go/go-metrics): Demonstrates how to configure the Go metrics SDK to send metrics to New Relic.
 * Java
   * [OpenTelemetry Agent New Relic Config](./java/agent-nr-config): A Java application with the OpenTelemetry Agent configured for New Relic.
   * [OpenTelemetry Autoconfigure New Relic Config](./java/autoconfigure-nr-config): A Java application using autoconfigure options to configure export to New Relic.
@@ -30,6 +28,9 @@ This project contains examples illustrating usage of OpenTelemetry with New Reli
   * [OpenTelemetry SDK New Relic Config - OTLP/HTTP (PROTO)](./javascript/simple-nodejs-app-http-exp): An express application demonstrating OpenTelemetry auto-instrumentation and exporting with OTLP/HTTP (PROTO), configured for New Relic via the SDK.
 * Python
   * [OpenTelemetry SDK New Relic Config](./python): Two simple Python applications demonstrating OpenTelemetry instrumentation, one with Flask auto-instrumentation and one without Flask. Configured for New Relic via the SDK. 
+* AWS Lambda
+  * [OpenTelemetry Lambda .NET New relic Config](./aws-lambda/dotnet): An example AWS .NET Lambda function instrumented with OpenTelemetry.
+  * [OpenTelemetry Lambda Java New relic Config](./aws-lambda/java): An example AWS Java Lambda function instrumented with OpenTelemetry.
 
 ## Contribute
 

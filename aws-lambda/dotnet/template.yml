@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: New Relic Example OpenTelemetry .NET Lambda Function
+
+Parameters:
+  newRelicLicenseKey:
+    Type: String
+    Description: A New Relic license key.
+  newRelicEndpoint:
+    Type: String
+    Description: New Relic OpenTelemetry endpoint to use.
+    Default: otlp.nr-data.net:4317
+
+Resources:
+  api:
+    Type: AWS::Serverless::Api
+    Properties:
+      OpenApiVersion: 3.0.2
+      StageName: api
+      # This enables AWS X-Ray tracing within API Gateway which is necessary for
+      # propagating a trace context downstream
+      TracingEnabled: true
+
+  function:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src
+      Description: New Relic Example OpenTelemetry .NET Lambda Function
+      Environment:
+        Variables:
+          # These values get plugged into the collector.yaml file, which is the
+          # OpenTelemetry Collector's config.
+          NEW_RELIC_LICENSE_KEY: !Ref newRelicLicenseKey
+          NEW_RELIC_OPENTELEMETRY_ENDPOINT: !Ref newRelicEndpoint
+          # This overrides the default location for the OpenTelemetry Collector config
+          # file, which is /opt/config.yaml by default. This points to the
+          # collector.yaml in the src directory, which gets deployed along with the
+          # function itself.
+          OPENTELEMETRY_COLLECTOR_CONFIG_FILE: /var/task/collector.yaml
+          OTEL_SERVICE_NAME: newrelic-example-opentelemetry-lambda-dotnet
+      Events:
+        getEndpoint:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /
+            RestApiId: !Ref api
+      FunctionName: newrelic-example-opentelemetry-lambda-dotnet
+      Handler: function::Example.Function::TracingFunctionHandler
+      Layers:
+        # This is a layer managed by AWS that provides the OpenTelemetry Collector
+        - !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:901920570463:layer:aws-otel-collector-ver-0-39-0:1
+      MemorySize: 512
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambda_ReadOnlyAccess
+        - AWSXrayWriteOnlyAccess
+        - AmazonS3ReadOnlyAccess
+        - AmazonDynamoDBFullAccess
+      Runtime: dotnetcore3.1
+      Timeout: 30
+      # This is required to enable additional AWS X-Ray tracing within AWS Distro. We
+      # export these traces to New Relic instead of writing them to AWS X-Ray.
+      Tracing: Active
+
+  logs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: {"Fn::Join": ["", ["/aws/lambda/", {"Ref": "function"}]]}
+      # We override log retention since by default there is no retention limit which
+      # is both wasteful and expensive. This log group gets created by AWS Lambda
+      # automatically, so we need to explicitly create it ourselves to ensure a sensible
+      # retention period.
+      RetentionInDays: 7
+
+Outputs:
+  apiEndpoint:
+    Description: API Endpoint
+    Value: !Sub "https://${api}.execute-api.${AWS::Region}.amazonaws.com/api/"
