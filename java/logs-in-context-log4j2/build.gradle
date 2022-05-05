@@ -23,5 +23,5 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-log4j2'
     implementation 'org.apache.logging.log4j:log4j-layout-template-json:2.14.1'
-    implementation "io.opentelemetry.instrumentation:opentelemetry-logback-mdc-1.0:${project['otel-instrumentation.version']}"
+    implementation "io.opentelemetry.instrumentation:opentelemetry-log4j-context-data-2.16-autoconfigure:${project['otel-instrumentation.version']}"
 }
