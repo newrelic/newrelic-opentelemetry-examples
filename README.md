@@ -18,7 +18,7 @@ This project contains examples illustrating usage of OpenTelemetry with New Reli
   * [OpenTelemetry Agent New Relic Config](./java/agent-nr-config): A Java application with the OpenTelemetry Agent configured for New Relic.
   * [OpenTelemetry Autoconfigure New Relic Config](./java/autoconfigure-nr-config): A Java application using autoconfigure options to configure export to New Relic.
   * [Logs In Context With Log4j2](./java/logs-in-context-log4j2): A Java application configured to include OpenTelemetry trace context on Log4j2 structured logs.
-  * [OpenTelemetry with New Relic Distributed Tracing](./java/otel-nr-dt): Demonstrate distributed tracing for applications instrumented with OpenTelemetry and the New Relic java agent.
+  * [OpenTelemetry with New Relic Distributed Tracing](./java/otel-nr-dt): Demonstrate distributed tracing for applications instrumented with OpenTelemetry and the New Relic Java agent.
   * [OpenTelemetry SDK New Relic Config](./java/sdk-nr-config): A Java application with OpenTelemetry standalone library instrumentation as well as custom instrumentation, configured for New Relic via the SDK. Demonstrates usage of spans, metrics, and logs.
   * [OTLP New Relic Mapping](./java/otlp-nr-mapping): Contains a variety of test cases demonstrating how OTLP payloads are mapped to records in NRDB upon ingest.
   * [OTLP Load Generator](./java/otlp-load-generator): A Java application that generates OTLP span and metric data. 
@@ -29,8 +29,8 @@ This project contains examples illustrating usage of OpenTelemetry with New Reli
 * Python
   * [OpenTelemetry SDK New Relic Config](./python): Two simple Python applications demonstrating OpenTelemetry instrumentation, one with Flask auto-instrumentation and one without Flask. Configured for New Relic via the SDK. 
 * AWS Lambda
-  * [OpenTelemetry Lambda .NET New relic Config](./aws-lambda/dotnet): An example AWS .NET Lambda function instrumented with OpenTelemetry.
-  * [OpenTelemetry Lambda Java New relic Config](./aws-lambda/java): An example AWS Java Lambda function instrumented with OpenTelemetry.
+  * [OpenTelemetry Lambda .NET New Relic Config](./aws-lambda/dotnet): An example AWS .NET Lambda function instrumented with OpenTelemetry.
+  * [OpenTelemetry Lambda Java New Relic Config](./aws-lambda/java): An example AWS Java Lambda function instrumented with OpenTelemetry.
 
 ## Contribute
 
