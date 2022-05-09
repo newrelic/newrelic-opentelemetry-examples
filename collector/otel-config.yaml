@@ -6,6 +6,9 @@ receivers:
       grpc:
   fluentforward:
     endpoint: 0.0.0.0:8006
+processors:
+  # Will convert all monotonic, cumulative sums to monotonic, delta sums
+  cumulativetodelta:
 exporters:
   logging:
     logLevel: $LOG_EXPORTER_LOG_LEVEL
@@ -18,6 +21,7 @@ service:
   pipelines:
     metrics:
       receivers: [otlp]
+      processors: [cumulativetodelta]
       exporters: [logging, otlp]
     traces:
       receivers: [otlp]
