@@ -11,6 +11,7 @@ def get_large_value():
     result += "BBBBBBBBBBBBB"
     return result
 
+largeValue = get_large_value()
 
 # Pass in the service we're creating into the tracer provider
 trace.set_tracer_provider(
@@ -25,7 +26,7 @@ tracer = trace.get_tracer(__name__)
 with tracer.start_as_current_span("foo") as span1:
     # New Relic only accepts attributes values that are less than 4096 characters.
     # When viewing this span in New Relic, the value of the "truncate" attribute will contain no Bs
-    span1.set_attribute("truncated", get_large_value())
+    span1.set_attribute("truncated", largeValue)
     with tracer.start_as_current_span("bar"):
         with tracer.start_as_current_span("baz"):
             print("Hello world from OpenTelemetry Python!")

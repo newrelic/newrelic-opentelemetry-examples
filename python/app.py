@@ -7,14 +7,14 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 
-# New Relic only accepts values that are less than 4096 characters.
-# In New Relic, attributes with this value should have no Bs
 def get_large_value():
     result = ""
     for _ in range(0,4095):
         result += "A"
     result += "BBBBBBBBBBBBB"
     return result
+
+largeValue = get_large_value()
 
 def response_hook(span: Span, status: str, response_headers: List):
     if span and span.is_recording():
