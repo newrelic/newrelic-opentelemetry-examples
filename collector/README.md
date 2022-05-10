@@ -4,6 +4,8 @@
 
 This example demonstrates how to run the OpenTelemetry Collector configured to export to New Relic with the [OTLP gRPC exporter](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/otlpexporter) via docker. See [documentation](https://docs.newrelic.com/docs/integrations/open-source-telemetry-integrations/opentelemetry/introduction-opentelemetry-new-relic/#how-it-works) for more information about New Relic OTLP support.
 
+This collector is also using the [cumulativetodelta processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/cumulativetodeltaprocessor), which handles converting any monotonic, cumulative sums to monotonic, delta sums.  This is important, as [New Relic does not support monotonic, cumulative sums as Counters](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/best-practices/opentelemetry-best-practices-metrics).  
+
 The `docker-compose.yaml` file configures the collector via `otel-config.yaml`.
 
 ## Run
