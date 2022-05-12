@@ -8,3 +8,6 @@ build/
 # Ignore .NET build output
 [Bb]in/
 [Oo]bj/
+
+# Python virtual environment
+venv

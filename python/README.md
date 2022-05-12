@@ -2,7 +2,7 @@
 
 This repo contains two simple Python services that have been instrumented with [OpenTelemetry-Python](https://github.com/open-telemetry/opentelemetry-python) that you can configure to export traces to your New Relic account!
 
-The service `main.py` simply creates spans, while `app.py` does the same but includes [Flask](https://flask.palletsprojects.com/en/2.0.x/) and [Flask instrumentation](https://opentelemetry-python-contrib.readthedocs.io/en/latest/instrumentation/flask/flask.html). 
+The service `main.py` simply creates spans, while `app.py` does the same but includes [Flask](https://flask.palletsprojects.com/en/2.0.x/) and [Flask instrumentation](https://opentelemetry-python-contrib.readthedocs.io/en/latest/instrumentation/flask/flask.html). Both examples take advantage of the `OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT` environment variable to ensure attribute values are never longer than New Relic's limits.
 
 ## Prerequisites
 
@@ -21,6 +21,7 @@ The service `main.py` simply creates spans, while `app.py` does the same but inc
    ```shell
    export OTEL_EXPORTER_OTLP_ENDPOINT=otlp.nr-data.net:4317
    export OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key_here>
+   export OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
    ```
    - Replace `<your_license_key_here>` with your New Relic account ingest license key.
 
