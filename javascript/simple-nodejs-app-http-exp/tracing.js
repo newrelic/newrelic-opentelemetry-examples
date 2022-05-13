@@ -1,7 +1,6 @@
 "use strict";
 
 const { v4: uuidv4 } = require("uuid");
-const grpc = require("@grpc/grpc-js");
 const process = require("process");
 const opentelemetry = require("@opentelemetry/sdk-node");
 const { getNodeAutoInstrumentations } = require("@opentelemetry/auto-instrumentations-node");
