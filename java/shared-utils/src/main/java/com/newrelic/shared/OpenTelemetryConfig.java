@@ -17,7 +17,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -74,7 +74,7 @@ public class OpenTelemetryConfig {
 
     var metricExporterBuilder =
         OtlpGrpcMetricExporter.builder()
-            .setAggregationTemporality(MetricExporter::deltaPreferred)
+            .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred())
             .setEndpoint(OTLP_HOST_SUPPLIER.get())
             .addHeader("api-key", newRelicApiOrLicenseKey());
 
