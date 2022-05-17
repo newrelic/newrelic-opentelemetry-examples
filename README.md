@@ -34,7 +34,6 @@ See [Contribute](#contribute) for how to request OpenTelemetry/New Relic interac
   - [Logs In Context With Log4j2](./java/logs-in-context-log4j2): A Java application configured to include OpenTelemetry trace context on Log4j2 structured logs.
   - [OpenTelemetry SDK New Relic Config](./java/sdk-nr-config): A Java application with OpenTelemetry standalone library instrumentation as well as custom instrumentation, configured for New Relic via the SDK. Demonstrates usage of spans, metrics, and logs.
   - [OTLP New Relic Mapping](./java/otlp-nr-mapping): Contains a variety of test cases demonstrating how OTLP payloads are mapped to records in NRDB upon ingest.
-  - [OTLP Load Generator](./java/otlp-load-generator): A Java application that generates OTLP span and metric data. 
 - .NET
   - [OpenTelemetry SDK New Relic Config](./dotnet/minimal-api/) Simple .NET 6 application demonstrating OpenTelemetry instrumentation.
 - JavaScript
