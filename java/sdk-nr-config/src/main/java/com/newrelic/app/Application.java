@@ -2,7 +2,7 @@ package com.newrelic.app;
 
 import com.newrelic.shared.OpenTelemetryConfig;
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.instrumentation.log4j.appender.v2_16.OpenTelemetryAppender;
+import io.opentelemetry.instrumentation.log4j.appender.v2_17.OpenTelemetryAppender;
 import io.opentelemetry.instrumentation.runtimemetrics.GarbageCollector;
 import io.opentelemetry.instrumentation.runtimemetrics.MemoryPools;
 import io.opentelemetry.instrumentation.spring.webmvc.SpringWebMvcTelemetry;
