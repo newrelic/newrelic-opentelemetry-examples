@@ -32,6 +32,8 @@ Set the following environment variables:
   * Give this application a unique instance id.
 * `OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS=io.opentelemetry.sdk.extension.resources.ProcessResourceProvider`
   * Disable the `ProcessResourceProvider`, excluding the `process.command_line` resource attribute which often exceeds New Relic's maximum attribute length limit.
+* `OTEL_SPAN_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095`
+  * New relic disallows attributes whose length exceeds 4095 characters.
 
 Additional configuration using standard autoconfiguration environment variables defined in the [autoconfigure module](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure).
 
@@ -46,7 +48,8 @@ export OTEL_EXPORTER_OTLP_HEADERS=api-key=your_license_key \
 && export OTEL_EXPERIMENTAL_EXPORTER_OTLP_RETRY_ENABLED=true \
 && export OTEL_SERVICE_NAME=agent-nr-config \
 && export OTEL_RESOURCE_ATTRIBUTES=service.instance.id=1234 \
-&& export OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS=io.opentelemetry.sdk.extension.resources.ProcessResourceProvider
+&& export OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS=io.opentelemetry.sdk.extension.resources.ProcessResourceProvider \
+&& export OTEL_SPAN_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
 
 ./gradlew agent-nr-config:application:bootRun
 ```
