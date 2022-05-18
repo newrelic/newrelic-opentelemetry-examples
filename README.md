@@ -36,7 +36,6 @@ See [Contribute](#contribute) for how to request OpenTelemetry/New Relic interac
 - .NET
   - [OpenTelemetry SDK New Relic Config](./dotnet/minimal-api/) Simple .NET 6 application demonstrating OpenTelemetry instrumentation.
 - JavaScript
-  - [OpenTelemetry SDK New Relic Config - OTLP/gRPC](./javascript/simple-nodejs-app): An express application demonstrating OpenTelemetry auto-instrumentation and exporting with OTLP/gRPC, configured for New Relic via the SDK.
   - [OpenTelemetry SDK New Relic Config - OTLP/HTTP (PROTO)](./javascript/simple-nodejs-app-http-exp): An express application demonstrating OpenTelemetry auto-instrumentation and exporting with OTLP/HTTP (PROTO), configured for New Relic via the SDK.
 - Python
   - [OpenTelemetry SDK New Relic Config](./python): Two simple Python application demonstrating OpenTelemetry instrumentation, one with Flask auto-instrumentation and one without Flask. Configured for New Relic via the SDK.
