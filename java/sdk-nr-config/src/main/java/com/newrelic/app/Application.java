@@ -74,6 +74,7 @@ public class Application {
     var spanExporterBuilder =
         OtlpGrpcSpanExporter.builder()
             .setEndpoint(newrelicOtlpEndpoint)
+            .setCompression("gzip")
             .addHeader("api-key", newrelicApiOrLicenseKey);
     // Enable retry policy via unstable API
     RetryUtil.setRetryPolicyOnDelegate(spanExporterBuilder, RetryPolicy.getDefault());
@@ -91,6 +92,7 @@ public class Application {
     var metricExporterBuilder =
         OtlpGrpcMetricExporter.builder()
             .setEndpoint(newrelicOtlpEndpoint)
+            .setCompression("gzip")
             .addHeader("api-key", newrelicApiOrLicenseKey)
             // IMPORTANT: New Relic requires metrics to be delta temporality
             .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred());
@@ -111,6 +113,7 @@ public class Application {
     var logExporterBuilder =
         OtlpGrpcLogExporter.builder()
             .setEndpoint(newrelicOtlpEndpoint)
+            .setCompression("gzip")
             .addHeader("api-key", newrelicApiOrLicenseKey);
     // Enable retry policy via unstable API
     RetryUtil.setRetryPolicyOnDelegate(logExporterBuilder, RetryPolicy.getDefault());

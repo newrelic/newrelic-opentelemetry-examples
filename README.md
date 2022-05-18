@@ -30,7 +30,6 @@ See [Contribute](#contribute) for how to request OpenTelemetry/New Relic interac
   - [OpenTelemetry Collector with OTLP Export to New Relic](./collector): Run the OpenTelemetry Collector with OTLP gRPC export to New Relic.
 - Java
   - [OpenTelemetry Agent New Relic Config](./java/agent-nr-config): A Java application with the OpenTelemetry Agent configured for New Relic.
-  - [OpenTelemetry Autoconfigure New Relic Config](./java/autoconfigure-nr-config): A Java application using autoconfigure options to configure export to New Relic.
   - [Logs In Context With Log4j2](./java/logs-in-context-log4j2): A Java application configured to include OpenTelemetry trace context on Log4j2 structured logs.
   - [OpenTelemetry SDK New Relic Config](./java/sdk-nr-config): A Java application with OpenTelemetry standalone library instrumentation as well as custom instrumentation, configured for New Relic via the SDK. Demonstrates usage of spans, metrics, and logs.
   - [OTLP New Relic Mapping](./java/otlp-nr-mapping): Contains a variety of test cases demonstrating how OTLP payloads are mapped to records in NRDB upon ingest.
