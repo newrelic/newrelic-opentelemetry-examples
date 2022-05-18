@@ -15,6 +15,7 @@ import io.opentelemetry.instrumentation.runtimemetrics.GarbageCollector;
 import io.opentelemetry.instrumentation.runtimemetrics.MemoryPools;
 import io.opentelemetry.instrumentation.spring.webmvc.SpringWebMvcTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -23,6 +24,7 @@ import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
@@ -69,7 +71,12 @@ public class Application {
             .build();
 
     // Configure tracer provider
-    var sdkTracerProviderBuilder = SdkTracerProvider.builder().setResource(resource);
+    var sdkTracerProviderBuilder =
+        SdkTracerProvider.builder()
+            .setResource(resource)
+            // New Relic's max attribute length is 4095 characters
+            .setSpanLimits(
+                SpanLimits.getDefault().toBuilder().setMaxAttributeValueLength(4095).build());
     // Add otlp span exporter
     var spanExporterBuilder =
         OtlpGrpcSpanExporter.builder()
@@ -108,7 +115,12 @@ public class Application {
     }
 
     // Configure log emitter provider
-    var sdkLogEmitterProvider = SdkLogEmitterProvider.builder().setResource(resource);
+    var sdkLogEmitterProvider =
+        SdkLogEmitterProvider.builder()
+            // New Relic's max attribute length is 4095 characters
+            .setLogLimits(
+                () -> LogLimits.getDefault().toBuilder().setMaxAttributeValueLength(4095).build())
+            .setResource(resource);
     // Add otlp log exporter
     var logExporterBuilder =
         OtlpGrpcLogExporter.builder()
