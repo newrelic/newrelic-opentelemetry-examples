@@ -8,54 +8,39 @@ plugins {
 def agentPath = project.buildDir.toString() + "/otel/opentelemetry-javaagent-all-${project['otel-agent.version']}.jar"
 
 bootRun {
-    mainClass.set 'com.newrelic.app.Application'
+  mainClass.set 'com.newrelic.app.Application'
 
-    // Before running, build the config-extension shadow jar
-    dependsOn(":agent-nr-config:config-extension:shadowJar")
-    // Before running, download the opentelemetry-java-instrumentation agent
-    dependsOn("downloadAgent")
+  // Before running, build the config-extension shadow jar
+  dependsOn(":agent-nr-config:config-extension:shadowJar")
+  // Before running, download the opentelemetry-java-instrumentation agent
+  dependsOn("downloadAgent")
 
-    def extensionPath = project(":agent-nr-config:config-extension").buildDir.toString() + "/libs/config-extension.jar"
+  def extensionPath = project(":agent-nr-config:config-extension").buildDir.toString() + "/libs/config-extension.jar"
 
-    jvmArgs = [
-            // Set the opentelemetry-java-instrumentation agent as the javaagent
-            "-javaagent:${agentPath}",
-            // Use the config-extension shadowJar to configure the agent via SPI
-            "-Dotel.javaagent.extensions=${extensionPath}"
-    ]
-
-    // Additional configuration using standard autoconfiguration environment variables defined at:
-    // https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure
-    environment([
-        // Disable the process resource provider, which includes the process.command_line resource attribute that may contain sensitive information
-        "OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS": "io.opentelemetry.sdk.extension.resources.ProcessResourceProvider",
-        // Report metrics every 5s instead of every 60s
-        "OTEL_METRIC_EXPORT_INTERVAL": "5000",
-        // Report metrics using delta aggregation temporality
-        "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "DELTA",
-        // By default, logs exporter is none
-        "OTEL_LOGS_EXPORTER": "otlp",
-        // Enable experimental retry support because the internet is unreliable
-        "OTEL_EXPERIMENTAL_EXPORTER_OTLP_RETRY_ENABLED": "true"
-        // TODO: configure service.instance.id via environment variables and get rid of config-extension
-    ])
+  jvmArgs = [
+      // Set the opentelemetry-java-instrumentation agent as the javaagent
+      "-javaagent:${agentPath}",
+      // Use the config-extension shadowJar to configure the agent via SPI
+      "-Dotel.javaagent.extensions=${extensionPath}"
+  ]
 }
 
 // Download the opentelemetry java agent and put it in the build directory
 task downloadAgent(type: Download) {
-    src "https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${project['otel-agent.version']}/opentelemetry-javaagent.jar"
-    dest agentPath
-    overwrite false
+  src "https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${project['otel-agent.version']}/opentelemetry-javaagent.jar"
+  dest agentPath
+  overwrite false
 }
 
 configurations.all {
-    exclude module: 'spring-boot-starter-logging'
+  exclude module: 'spring-boot-starter-logging'
 }
 // Force upgrade to appease snyk
 ext['spring-framework.version'] = '5.3.20'
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
-    implementation 'io.opentelemetry:opentelemetry-api'
+  implementation 'io.opentelemetry:opentelemetry-api'
+
+  implementation 'org.springframework.boot:spring-boot-starter-web'
+  implementation 'org.springframework.boot:spring-boot-starter-log4j2'
 }
