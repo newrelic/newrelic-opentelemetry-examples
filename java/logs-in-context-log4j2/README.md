@@ -40,7 +40,7 @@ Next, build and run the application:
 export NEW_RELIC_API_KEY=<INSERT-API-KEY-HERE>
 
 // Run the application and the collector with docker compose
-docker-compose -f logs-in-context-log4j2/docker-compose.yaml up
+docker-compose -f logs-in-context-log4j2/docker-compose.yaml up --build
 ```
 
 Exercise logs in context by calling the `GET /ping`, which generated a log message inside the context of a trace:

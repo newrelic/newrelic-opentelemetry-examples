@@ -1,4 +1,4 @@
-package com.newrelic.shared;
+package com.newrelic.otlp;
 
 import java.util.Optional;
 import java.util.function.Function;

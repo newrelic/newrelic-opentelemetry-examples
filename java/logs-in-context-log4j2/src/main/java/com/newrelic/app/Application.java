@@ -1,6 +1,8 @@
 package com.newrelic.app;
 
-import com.newrelic.shared.OpenTelemetryConfig;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.Resource;
+import java.util.UUID;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -8,7 +10,15 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class Application {
 
   public static void main(String[] args) {
-    OpenTelemetryConfig.configureGlobal(System.getenv("SERVICE_NAME"));
+    AutoConfiguredOpenTelemetrySdk.builder()
+        .addResourceCustomizer(
+            (resource, configProperties) ->
+                resource.merge(
+                    Resource.builder()
+                        .put("service.instance.id", UUID.randomUUID().toString())
+                        .build()))
+        .build();
+
     SpringApplication.run(Application.class, args);
   }
 }

@@ -5,5 +5,3 @@ include 'autoconfigure-nr-config'
 include 'logs-in-context-log4j2'
 include 'otlp-nr-mapping'
 include 'sdk-nr-config'
-include 'shared-utils'
-
