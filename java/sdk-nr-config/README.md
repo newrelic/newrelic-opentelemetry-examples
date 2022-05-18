@@ -14,7 +14,9 @@ Set the following environment variables:
 * `NEW_RELIC_LICENSE_KEY=<your_license_key>`
   * Replace `<your_license_key>` with your [Account License Key](https://one.newrelic.com/launcher/api-keys-ui.launcher).
 * Optional `OTLP_HOST=http://your-collector:4317`
-  * The application is [configured](../shared-utils/src/main/java/com/newrelic/shared/OpenTelemetryConfig.java) to export to New Relic via OTLP by default. Optionally change it by setting this environment variable.
+  * The application is [configured](./src/main/java/com/newrelic/app/Application.java) to export to New Relic via OTLP by default. Optionally change it by setting this environment variable.
+* Optional `LOG_EXPORTER_ENABLED=true`
+  * The application is configured to export only over OTLP. Optionally enable logging to the console as well by setting this environment variable. 
 
 Run the application from a shell in the [java root](../) via:
 ```
