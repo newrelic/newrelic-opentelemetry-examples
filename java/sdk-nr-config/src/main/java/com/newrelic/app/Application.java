@@ -71,12 +71,12 @@ public class Application {
             .build();
 
     // Configure tracer provider
-    var sdkTracerProviderBuilder = SdkTracerProvider.builder()
-        .setResource(resource)
-        // New Relic's max attribute length is 4095 characters
-        .setSpanLimits(SpanLimits.getDefault().toBuilder()
-            .setMaxAttributeValueLength(4095)
-            .build());
+    var sdkTracerProviderBuilder =
+        SdkTracerProvider.builder()
+            .setResource(resource)
+            // New Relic's max attribute length is 4095 characters
+            .setSpanLimits(
+                SpanLimits.getDefault().toBuilder().setMaxAttributeValueLength(4095).build());
     // Add otlp span exporter
     var spanExporterBuilder =
         OtlpGrpcSpanExporter.builder()
@@ -115,10 +115,12 @@ public class Application {
     }
 
     // Configure log emitter provider
-    var sdkLogEmitterProvider = SdkLogEmitterProvider.builder()
-        // New Relic's max attribute length is 4095 characters
-        .setLogLimits(() -> LogLimits.getDefault().toBuilder().setMaxAttributeValueLength(4095).build())
-        .setResource(resource);
+    var sdkLogEmitterProvider =
+        SdkLogEmitterProvider.builder()
+            // New Relic's max attribute length is 4095 characters
+            .setLogLimits(
+                () -> LogLimits.getDefault().toBuilder().setMaxAttributeValueLength(4095).build())
+            .setResource(resource);
     // Add otlp log exporter
     var logExporterBuilder =
         OtlpGrpcLogExporter.builder()
