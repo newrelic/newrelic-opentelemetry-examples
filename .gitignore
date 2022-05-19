@@ -9,5 +9,6 @@ build/
 [Bb]in/
 [Oo]bj/
 
-# Python virtual environment
+# Python
 venv
+__pycache__

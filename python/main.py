@@ -4,6 +4,8 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 
+from metrics import generate_metrics
+
 def get_large_value():
     result = ""
     for _ in range(0,4095):
@@ -27,6 +29,7 @@ with tracer.start_as_current_span("foo") as span1:
     # New Relic only accepts attributes values that are less than 4096 characters.
     # When viewing this span in New Relic, the value of the "truncate" attribute will contain no Bs
     span1.set_attribute("truncated", largeValue)
+    generate_metrics()
     with tracer.start_as_current_span("bar"):
         with tracer.start_as_current_span("baz"):
             print("Hello world from OpenTelemetry Python!")
