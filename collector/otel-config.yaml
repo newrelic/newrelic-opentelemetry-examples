@@ -12,12 +12,12 @@ processors:
   transform:
     traces:
       queries:
-        - "truncate_all(attributes, 4095)"
-        - "truncate_all(resource.attributes, 4095)"
+        - truncate_all(attributes, 4095)
+        - truncate_all(resource.attributes, 4095)
     logs:
       queries:
-        - "truncate_all(attributes, 4095)"
-        - "truncate_all(resource.attributes, 4095)"
+        - truncate_all(attributes, 4095)
+        - truncate_all(resource.attributes, 4095)
 exporters:
   logging:
     logLevel: $LOG_EXPORTER_LOG_LEVEL
