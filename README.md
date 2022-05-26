@@ -10,7 +10,7 @@ This project contains examples illustrating usage of OpenTelemetry with New Reli
 |------------------------|------|------|-----|----|--------|-----------|
 | OTLP Exporter          | +    | +    | +   | +  | +      | +         |
 | Delta Agg. Temporality | +    | +    | N/A | +  | +      | +         |
-| Attribute Limits       | +    | N/A  | +   | +  | +      | N/A       |
+| Attribute Limits       | +    | N/A  | +   | +  | +      | +         |
 
 See [Contribute](#contribute) for how to request OpenTelemetry/New Relic interactions be covered across all supported languages, or how to request a new language be added.
 
