@@ -2,22 +2,36 @@
 
 # New Relic OpenTelemetry Examples
 
-This project contains examples illustrating usage of OpenTelemetry with New Relic. The following table details which New Relic/OpenTelemetry interactions are covered across the the supported languages.  Only examples in a language's latest stable version are provided.
+This project contains examples illustrating usage of OpenTelemetry with New Relic. The examples aim to demonstrate the most common configurations we expect users to encounter, but isn't an exhaustive set of the ways you can use OpenTelemetry with New Relic. The examples generally adhere to the following principles:
+
+* Use the latest version of each language's OpenTelemetry API / SDK.
+* Demonstrate using simple web service applications using a popular library / framework for each language.
+* Demonstrate manual configuration of OpenTelemetry SDK to send data to New Relic for traces, metrics, and logs.
+  * Export data to New Relic over OTLP using protocol most idiomatic for the language, and defaulting to `http/protobuf` when there is no clear preference.
+  * Configure metrics to export using [delta](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk_exporters/otlp.md) temporality preference.
+  * Configure attribute limits to adhere to New Relic's limits on attribute length and count.
+* Demonstrate auto instrumentation / agent configuration if offered by a language. 
+  * Use environment variables / system properties to configure OTLP export, delta metrics export, and attribute limits aligned with manual configuration of SDK.
+
+The following table details features currently demonstrated by the example.
 
 `+` means the feature is covered, `-` means it is not covered, and  `N/A` means feature is not available yet.
 
-|                        | Java | .NET | JS  | Go | Python | Collector |
-|------------------------|------|------|-----|----|--------|-----------|
-| OTLP Exporter          | +    | +    | +   | +  | +      | +         |
-| Delta Agg. Temporality | +    | +    | N/A | +  | +      | +         |
-| Attribute Limits       | +    | N/A  | +   | +  | +      | +         |
+|                                                             | Java | .NET | JS  | Go  | Python | Collector[1] |
+|-------------------------------------------------------------|------|------|-----|-----|--------|--------------|
+| Configure SDK for New Relic                                 |      |      |     |     |        |              |
+| &nbsp;&nbsp;&nbsp;&nbsp;Collect traces                      | +    | +    | +   | +   | +      | +            |
+| &nbsp;&nbsp;&nbsp;&nbsp;Collect metrics                     | +    | +    | +   | +   | +      | +            |
+| &nbsp;&nbsp;&nbsp;&nbsp;Collect logs                        | +    | +    | +   | N/A | N/A    | +            |
+| &nbsp;&nbsp;&nbsp;&nbsp;Export over OTLP                    | +    | +    | +   | +   | +      | +            |
+| &nbsp;&nbsp;&nbsp;&nbsp;Export metrics w/ delta temporality | +    | +    | N/A | +   | +      | +            |
+| &nbsp;&nbsp;&nbsp;&nbsp;Adhere to attribute limits          | +    | N/A  | +   | +   | +      | +            |
+| Configure auto instrumentation / agent for New Relic        | +    | +    | N/A | N/A | N/A    | N/A          |
+
+
+**[1]** The collector has a different architecture and serves a different purpose than the language SDKs. Therefore, an apples-to-apples comparison to SDKs doesn't make sense. The table roughly indicates whether the feature is illustrated in the example collector configuration, even though the feature may not mean exactly the same thing as it does in the context of an SDK.
 
 See [Contribute](#contribute) for how to request OpenTelemetry/New Relic interactions be covered across all supported languages, or how to request a new language be added.
-
-**New Relic/OpenTelemetry Interactions**
-- OTLP Exporter: How to configure an OTLP exporter to send data to New Relic successfully
-- Delta Aggregaion Temporality:  How to configure metrics SDKs (or the collector) to ensure OTLP data is sent to new relic with the proper aggregation temporality.  Counters should be monotonic delta sums, UpDownCounters should be monotonic cumulative sums, and histograms should be explicit bucket histograms with delta temporality.
-- Attribute Limits: How to limit and/or truncate attributes so that data does not exceeding New Relic's attribute limits.
 
 ## Getting Started
 
