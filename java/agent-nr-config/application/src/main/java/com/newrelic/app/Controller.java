@@ -27,6 +27,12 @@ public class Controller {
 
     MY_COUNTER.add(new Random().nextInt(1000));
     LOGGER.info("A sample log message!");
+
+    // Throw an exception ~25% of the time
+    if (new Random().nextInt(4) == 0) {
+      throw new IllegalStateException("Error!");
+    }
+
     return "pong";
   }
 }
