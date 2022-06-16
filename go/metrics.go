@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
-	"go.opentelemetry.io/otel/sdk/metric/sdkapi"
 	"log"
 	"sync"
 	"time"
+
+	"go.opentelemetry.io/otel/sdk/metric/sdkapi"
 
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric"
@@ -26,7 +27,6 @@ type (
 
 func (s newRelicTemporalitySelector) TemporalityFor(desc *sdkapi.Descriptor, kind aggregation.Kind) aggregation.Temporality {
 	if desc.InstrumentKind() == sdkapi.CounterInstrumentKind ||
-		desc.InstrumentKind() == sdkapi.CounterObserverInstrumentKind ||
 		desc.InstrumentKind() == sdkapi.HistogramInstrumentKind {
 		return aggregation.DeltaTemporality
 	}
