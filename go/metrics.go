@@ -27,6 +27,9 @@ type (
 
 func (s newRelicTemporalitySelector) TemporalityFor(desc *sdkapi.Descriptor, kind aggregation.Kind) aggregation.Temporality {
 	if desc.InstrumentKind() == sdkapi.CounterInstrumentKind ||
+		// The Go SDK doesn't support Async Observers with Delta temporality yet.
+		// To avoid errors, use cumulative for Async Counters, which NR will interpret as gauges.
+		// desc.InstrumentKind() == sdkapi.CounterObserverInstrumentKind ||
 		desc.InstrumentKind() == sdkapi.HistogramInstrumentKind {
 		return aggregation.DeltaTemporality
 	}
