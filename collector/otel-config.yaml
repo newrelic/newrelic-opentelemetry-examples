@@ -7,6 +7,7 @@ receivers:
   fluentforward:
     endpoint: 0.0.0.0:8006
 processors:
+  batch:
   # Will convert all monotonic, cumulative sums to monotonic, delta sums
   cumulativetodelta:
   transform:
@@ -30,13 +31,13 @@ service:
   pipelines:
     metrics:
       receivers: [otlp]
-      processors: [cumulativetodelta]
+      processors: [cumulativetodelta, batch]
       exporters: [logging, otlp]
     traces:
       receivers: [otlp]
-      processors: [transform]
+      processors: [transform, batch]
       exporters: [logging, otlp]
     logs:
       receivers: [otlp, fluentforward]
-      processors: [transform]
+      processors: [transform, batch]
       exporters: [logging, otlp]
