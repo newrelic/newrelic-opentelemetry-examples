@@ -35,6 +35,8 @@ Set the following environment variables:
 * `OTEL_SPAN_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095`
   * New relic disallows attributes whose length exceeds 4095 characters.
 
+TODO: Add env var to enable exponential histograms when available
+
 Additional configuration using standard autoconfiguration environment variables defined in the [autoconfigure module](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure).
 
 Run the application from a shell in the [java root](../) via:
