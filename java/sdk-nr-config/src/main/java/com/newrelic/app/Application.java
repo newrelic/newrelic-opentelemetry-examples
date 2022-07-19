@@ -103,6 +103,7 @@ public class Application {
             .addHeader("api-key", newrelicApiOrLicenseKey)
             // IMPORTANT: New Relic requires metrics to be delta temporality
             .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred());
+    // TODO: use exponential histograms when available
     // Enable retry policy via unstable API
     RetryUtil.setRetryPolicyOnDelegate(metricExporterBuilder, RetryPolicy.getDefault());
     sdkMeterProviderBuilder.registerMetricReader(
