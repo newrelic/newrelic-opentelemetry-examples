@@ -45,11 +45,11 @@
     "$resolver": "message",
     "stringified": true
   },
-  "trace.id": {
+  "trace_id": {
     "$resolver": "mdc",
     "key": "trace_id"
   },
-  "span.id": {
+  "span_id": {
     "$resolver": "mdc",
     "key": "span_id"
   },
