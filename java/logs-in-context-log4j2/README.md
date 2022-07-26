@@ -22,7 +22,7 @@ The result is JSON structured logs, with one JSON object per line, which have th
 }
 ```
 
-The OpenTelemetry Log specification defines that when propagating [trace context in legacy formats](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/README.md#trace-context-in-legacy-formats), `trace_id` and `span_id` should be used. However, [New Relic structured logging conventions](https://github.com/newrelic/newrelic-exporter-specs/tree/master/logging) expect trace context to be propagated as `trace.id` and `span.id`. The [transform](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/transformprocessor) processor is defined in the collector config to replace `trace_id` => `trace.id`, and `span_id` => `span.id`. 
+The OpenTelemetry Log specification defines that when propagating [trace context in legacy formats](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/README.md#trace-context-in-legacy-formats), `trace_id` and `span_id` should be used. However, [New Relic structured logging conventions](https://github.com/newrelic/newrelic-exporter-specs/tree/master/logging) expect trace context to be propagated as `trace.id` and `span.id`. The [transform](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/transformprocessor) processor is defined in the collector config to replace `trace_id` => `trace.id`, and `span_id` => `span.id`. Alternatively, this mapping could be done in the [Log4j2 JSON layout](./src/main/resources/Log4j2EventLayout.json), which may be more performant.
 
 ## Run
 

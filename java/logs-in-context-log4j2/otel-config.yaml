@@ -11,7 +11,7 @@ processors:
   transform:
     logs:
       queries:
-        # The OpenTelemetry log SDK says to trace context should be encoded in trace_id and span_id,
+        # The OpenTelemetry log SDK says the trace context should be encoded in trace_id and span_id,
         # but New Relic conventions expects the fields to be dot delimited trace.id and span.id. We
         # use the transform processor to replace trace_id => trace.id, span_id => span.id.
         # https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/README.md#trace-context-in-legacy-formats
