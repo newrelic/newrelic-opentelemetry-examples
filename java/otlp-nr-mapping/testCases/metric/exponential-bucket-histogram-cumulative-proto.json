@@ -76,38 +76,35 @@
     "scopeMetrics" : [ {
       "metrics" : [ {
         "description" : "description",
-        "name" : "my_sum",
-        "sum" : {
-          "aggregationTemporality" : "AGGREGATION_TEMPORALITY_CUMULATIVE",
+        "exponentialHistogram" : {
           "dataPoints" : [ {
-            "asDouble" : 1.0,
             "attributes" : [ {
               "key" : "message_id",
               "value" : {
                 "stringValue" : "OBFUSCATED"
               }
             }, {
-              "key" : "my_sum_skey",
+              "key" : "my_exp_histogram_skey",
               "value" : {
                 "stringValue" : "value"
               }
             }, {
-              "key" : "my_sum_ikey",
+              "key" : "my_exp_histogram_ikey",
               "value" : {
                 "intValue" : "1"
               }
             }, {
-              "key" : "my_sum_bkey",
+              "key" : "my_exp_histogram_bkey",
               "value" : {
                 "boolValue" : true
               }
             }, {
-              "key" : "my_sum_dkey",
+              "key" : "my_exp_histogram_dkey",
               "value" : {
                 "doubleValue" : 1.0
               }
             }, {
-              "key" : "my_sum_sarrkey",
+              "key" : "my_exp_histogram_sarrkey",
               "value" : {
                 "arrayValue" : {
                   "values" : [ {
@@ -118,7 +115,7 @@
                 }
               }
             }, {
-              "key" : "my_sum_iarrkey",
+              "key" : "my_exp_histogram_iarrkey",
               "value" : {
                 "arrayValue" : {
                   "values" : [ {
@@ -129,7 +126,7 @@
                 }
               }
             }, {
-              "key" : "my_sum_barrkey",
+              "key" : "my_exp_histogram_barrkey",
               "value" : {
                 "arrayValue" : {
                   "values" : [ {
@@ -140,7 +137,7 @@
                 }
               }
             }, {
-              "key" : "my_sum_darrkey",
+              "key" : "my_exp_histogram_darrkey",
               "value" : {
                 "arrayValue" : {
                   "values" : [ {
@@ -151,10 +148,18 @@
                 }
               }
             } ],
+            "count" : "11",
+            "max" : 15.2,
+            "min" : 1.5,
+            "positive" : {
+              "bucketCounts" : [ "5", "4", "1", "1" ]
+            },
+            "startTimeUnixNano" : "OBFUSCATED",
+            "sum" : 100.0,
             "timeUnixNano" : "OBFUSCATED"
-          } ],
-          "isMonotonic" : true
+          } ]
         },
+        "name" : "my_exp_histogram",
         "unit" : "unit"
       } ],
       "scope" : {

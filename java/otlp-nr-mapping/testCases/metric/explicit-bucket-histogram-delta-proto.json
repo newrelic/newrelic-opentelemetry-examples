@@ -76,38 +76,36 @@
     "scopeMetrics" : [ {
       "metrics" : [ {
         "description" : "description",
-        "name" : "my_sum",
-        "sum" : {
+        "histogram" : {
           "aggregationTemporality" : "AGGREGATION_TEMPORALITY_DELTA",
           "dataPoints" : [ {
-            "asDouble" : 1.0,
             "attributes" : [ {
               "key" : "message_id",
               "value" : {
                 "stringValue" : "OBFUSCATED"
               }
             }, {
-              "key" : "my_sum_skey",
+              "key" : "my_histogram_skey",
               "value" : {
                 "stringValue" : "value"
               }
             }, {
-              "key" : "my_sum_ikey",
+              "key" : "my_histogram_ikey",
               "value" : {
                 "intValue" : "1"
               }
             }, {
-              "key" : "my_sum_bkey",
+              "key" : "my_histogram_bkey",
               "value" : {
                 "boolValue" : true
               }
             }, {
-              "key" : "my_sum_dkey",
+              "key" : "my_histogram_dkey",
               "value" : {
                 "doubleValue" : 1.0
               }
             }, {
-              "key" : "my_sum_sarrkey",
+              "key" : "my_histogram_sarrkey",
               "value" : {
                 "arrayValue" : {
                   "values" : [ {
@@ -118,7 +116,7 @@
                 }
               }
             }, {
-              "key" : "my_sum_iarrkey",
+              "key" : "my_histogram_iarrkey",
               "value" : {
                 "arrayValue" : {
                   "values" : [ {
@@ -129,7 +127,7 @@
                 }
               }
             }, {
-              "key" : "my_sum_barrkey",
+              "key" : "my_histogram_barrkey",
               "value" : {
                 "arrayValue" : {
                   "values" : [ {
@@ -140,7 +138,7 @@
                 }
               }
             }, {
-              "key" : "my_sum_darrkey",
+              "key" : "my_histogram_darrkey",
               "value" : {
                 "arrayValue" : {
                   "values" : [ {
@@ -151,10 +149,17 @@
                 }
               }
             } ],
+            "bucketCounts" : [ "5", "4", "1", "1" ],
+            "count" : "11",
+            "explicitBounds" : [ 1.0, 2.0, 3.0 ],
+            "max" : 18.0,
+            "min" : 0.5,
+            "startTimeUnixNano" : "OBFUSCATED",
+            "sum" : 100.0,
             "timeUnixNano" : "OBFUSCATED"
-          } ],
-          "isMonotonic" : true
+          } ]
         },
+        "name" : "my_histogram",
         "unit" : "unit"
       } ],
       "scope" : {
