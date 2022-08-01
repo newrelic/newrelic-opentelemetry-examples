@@ -1,0 +1,171 @@
+{
+  "resourceMetrics" : [ {
+    "resource" : {
+      "attributes" : [ {
+        "key" : "service.name",
+        "value" : {
+          "stringValue" : "native-otlp-test"
+        }
+      }, {
+        "key" : "resource_skey",
+        "value" : {
+          "stringValue" : "value"
+        }
+      }, {
+        "key" : "resource_ikey",
+        "value" : {
+          "intValue" : "1"
+        }
+      }, {
+        "key" : "resource_bkey",
+        "value" : {
+          "boolValue" : true
+        }
+      }, {
+        "key" : "resource_dkey",
+        "value" : {
+          "doubleValue" : 1.0
+        }
+      }, {
+        "key" : "resource_sarrkey",
+        "value" : {
+          "arrayValue" : {
+            "values" : [ {
+              "stringValue" : "value1"
+            }, {
+              "stringValue" : "value2"
+            } ]
+          }
+        }
+      }, {
+        "key" : "resource_iarrkey",
+        "value" : {
+          "arrayValue" : {
+            "values" : [ {
+              "intValue" : "1"
+            }, {
+              "intValue" : "2"
+            } ]
+          }
+        }
+      }, {
+        "key" : "resource_barrkey",
+        "value" : {
+          "arrayValue" : {
+            "values" : [ {
+              "boolValue" : true
+            }, {
+              "boolValue" : false
+            } ]
+          }
+        }
+      }, {
+        "key" : "resource_darrkey",
+        "value" : {
+          "arrayValue" : {
+            "values" : [ {
+              "doubleValue" : 1.0
+            }, {
+              "doubleValue" : 2.0
+            } ]
+          }
+        }
+      } ]
+    },
+    "schemaUrl" : "schema url",
+    "scopeMetrics" : [ {
+      "metrics" : [ {
+        "description" : "description",
+        "exponentialHistogram" : {
+          "dataPoints" : [ {
+            "attributes" : [ {
+              "key" : "message_id",
+              "value" : {
+                "stringValue" : "OBFUSCATED"
+              }
+            }, {
+              "key" : "my_exp_histogram_skey",
+              "value" : {
+                "stringValue" : "value"
+              }
+            }, {
+              "key" : "my_exp_histogram_ikey",
+              "value" : {
+                "intValue" : "1"
+              }
+            }, {
+              "key" : "my_exp_histogram_bkey",
+              "value" : {
+                "boolValue" : true
+              }
+            }, {
+              "key" : "my_exp_histogram_dkey",
+              "value" : {
+                "doubleValue" : 1.0
+              }
+            }, {
+              "key" : "my_exp_histogram_sarrkey",
+              "value" : {
+                "arrayValue" : {
+                  "values" : [ {
+                    "stringValue" : "value1"
+                  }, {
+                    "stringValue" : "value2"
+                  } ]
+                }
+              }
+            }, {
+              "key" : "my_exp_histogram_iarrkey",
+              "value" : {
+                "arrayValue" : {
+                  "values" : [ {
+                    "intValue" : "1"
+                  }, {
+                    "intValue" : "2"
+                  } ]
+                }
+              }
+            }, {
+              "key" : "my_exp_histogram_barrkey",
+              "value" : {
+                "arrayValue" : {
+                  "values" : [ {
+                    "boolValue" : true
+                  }, {
+                    "boolValue" : false
+                  } ]
+                }
+              }
+            }, {
+              "key" : "my_exp_histogram_darrkey",
+              "value" : {
+                "arrayValue" : {
+                  "values" : [ {
+                    "doubleValue" : 1.0
+                  }, {
+                    "doubleValue" : 2.0
+                  } ]
+                }
+              }
+            } ],
+            "count" : "11",
+            "max" : 15.2,
+            "min" : 1.5,
+            "positive" : {
+              "bucketCounts" : [ "5", "4", "1", "1" ]
+            },
+            "startTimeUnixNano" : "OBFUSCATED",
+            "sum" : 100.0,
+            "timeUnixNano" : "OBFUSCATED"
+          } ]
+        },
+        "name" : "my_exp_histogram",
+        "unit" : "unit"
+      } ],
+      "scope" : {
+        "name" : "my-instrumentation-library",
+        "version" : "foo"
+      }
+    } ]
+  } ]
+}

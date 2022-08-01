@@ -10,8 +10,8 @@
   "my_histogram" : {
     "buckets" : 320,
     "count" : 11,
-    "max" : 3.0,
-    "min" : 1.0,
+    "max" : 18.0,
+    "min" : 0.5,
     "sum" : 100.0,
     "type" : "distribution"
   },
