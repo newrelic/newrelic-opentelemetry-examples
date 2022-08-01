@@ -3,8 +3,8 @@ services:
   app:
     build: ./
     environment:
-      OTLP_HOST: 'http://collector:4317'
-      SERVICE_NAME: 'logs-in-context'
+      OTEL_SERVICE_NAME: 'logs-in-context'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://collector:4317'
     ports:
       - '8080:8080'
     logging:
@@ -15,14 +15,13 @@ services:
       - collector
 
   collector:
-    image: otel/opentelemetry-collector-contrib:0.47.0
+    image: otel/opentelemetry-collector-contrib:0.56.0
     volumes:
       - ./otel-config.yaml:/otel-config.yaml
-    command: ["--config=/otel-config.yaml", "${OTELCOL_ARGS}"]
+    command: ["/otelcol-contrib", "--config=/otel-config.yaml", "${OTELCOL_ARGS}"]
     environment:
       LOG_EXPORTER_LOG_LEVEL: 'DEBUG'
       NEW_RELIC_API_KEY: '${NEW_RELIC_API_KEY}'
-      SERVICE_NAME: 'logs-in-context'
     ports:
       - '4317:4317' # OTLP gRPC receiver
       - '13133:13133' # health_check

@@ -9,8 +9,7 @@ run {
 }
 
 dependencies {
-  implementation project(':shared-utils')
-
+  implementation 'io.opentelemetry:opentelemetry-sdk'
   implementation "io.opentelemetry.proto:opentelemetry-proto:${project['otel-proto.version']}"
 
   implementation platform("com.squareup.okhttp3:okhttp-bom:${project['okhttp.version']}")

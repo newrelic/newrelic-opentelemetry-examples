@@ -2,8 +2,8 @@ package com.newrelic.otlp;
 
 import static com.newrelic.otlp.Common.obfuscateJson;
 import static com.newrelic.otlp.Common.serializeToJson;
-import static com.newrelic.shared.EnvUtils.getEnvOrDefault;
-import static com.newrelic.shared.EnvUtils.getOrThrow;
+import static com.newrelic.otlp.EnvUtils.getEnvOrDefault;
+import static com.newrelic.otlp.EnvUtils.getOrThrow;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.core.JsonProcessingException;

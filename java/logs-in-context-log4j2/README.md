@@ -4,11 +4,11 @@
 
 This project contains a Java application configured to use [Log4j2](https://logging.apache.org/log4j/2.x/) to write JSON structured logs that propagate OpenTelemetry trace context onto log messages. It also contains a [docker-compose.yaml](./docker-compose.yaml) which illustrates how to forward these logs to an OpenTelemetry Collector, and onto New Relic.
 
-The [log4j2.xml](./src/main/resources/log4j2.xml) configures the application to log out to the console with a [JSON Template Layout](https://logging.apache.org/log4j/2.x/manual/json-template-layout.html) defined in [Log4j2EventLayout.json](./src/main/resources/Log4j2EventLayout.json). The layout follows the [New Relic structured logging conventions](https://github.com/newrelic/newrelic-exporter-specs/tree/master/logging).
+The [log4j2.xml](./src/main/resources/log4j2.xml) configures the application to log out to the console with a [JSON Template Layout](https://logging.apache.org/log4j/2.x/manual/json-template-layout.html) defined in [Log4j2EventLayout.json](./src/main/resources/Log4j2EventLayout.json).
 
 The application uses the [OpenTelemetry Log4j2 Integration](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/log4j/log4j-2.13.2/library) to inject trace context to Log4j2 [thread context](https://logging.apache.org/log4j/2.x/manual/thread-context.html).
 
-The result is JSON structured logs, with one JSON object per line, which have the `span.id` and `trace.id` from OpenTelemetry included:
+The result is JSON structured logs, with one JSON object per line, which have the `span_id` and `trace_id` from OpenTelemetry included:
 
 ```json
 {
@@ -17,10 +17,12 @@ The result is JSON structured logs, with one JSON object per line, which have th
   "log.level": "INFO",
   "logger.name": "com.newrelic.app.Controller",
   "message": "A sample log message!",
-  "trace.id": "6aae93314fe034149cd85f07eac24bc5",
-  "span.id": "f1be31bc6e4471d8"
+  "trace_id": "6aae93314fe034149cd85f07eac24bc5",
+  "span_id": "f1be31bc6e4471d8"
 }
 ```
+
+The OpenTelemetry Log specification defines that when propagating [trace context in legacy formats](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/README.md#trace-context-in-legacy-formats), `trace_id` and `span_id` should be used. However, [New Relic structured logging conventions](https://github.com/newrelic/newrelic-exporter-specs/tree/master/logging) expect trace context to be propagated as `trace.id` and `span.id`. The [transform](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/transformprocessor) processor is defined in the collector config to replace `trace_id` => `trace.id`, and `span_id` => `span.id`. Alternatively, this mapping could be done in the [Log4j2 JSON layout](./src/main/resources/Log4j2EventLayout.json), which may be more performant.
 
 ## Run
 
@@ -40,7 +42,7 @@ Next, build and run the application:
 export NEW_RELIC_API_KEY=<INSERT-API-KEY-HERE>
 
 // Run the application and the collector with docker compose
-docker-compose -f logs-in-context-log4j2/docker-compose.yaml up
+docker-compose -f logs-in-context-log4j2/docker-compose.yaml up --build
 ```
 
 Exercise logs in context by calling the `GET /ping`, which generated a log message inside the context of a trace:

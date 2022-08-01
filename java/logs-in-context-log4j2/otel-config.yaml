@@ -6,6 +6,17 @@ receivers:
       grpc:
   fluentforward:
     endpoint: 0.0.0.0:8006
+processors:
+  batch:
+  transform:
+    logs:
+      queries:
+        # The OpenTelemetry log SDK says the trace context should be encoded in trace_id and span_id,
+        # but New Relic conventions expects the fields to be dot delimited trace.id and span.id. We
+        # use the transform processor to replace trace_id => trace.id, span_id => span.id.
+        # https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/README.md#trace-context-in-legacy-formats
+        - replace_pattern(body, "\"trace_id\":", "\"trace.id\":")
+        - replace_pattern(body, "\"span_id\":", "\"span.id\":")
 exporters:
   logging:
     logLevel: $LOG_EXPORTER_LOG_LEVEL
@@ -18,10 +29,13 @@ service:
   pipelines:
     metrics:
       receivers: [otlp]
+      processors: [batch]
       exporters: [logging, otlp]
     traces:
       receivers: [otlp]
+      processors: [ batch ]
       exporters: [logging, otlp]
     logs:
       receivers: [fluentforward]
+      processors: [ transform, batch ]
       exporters: [logging, otlp]

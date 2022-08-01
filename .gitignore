@@ -8,3 +8,7 @@ build/
 # Ignore .NET build output
 [Bb]in/
 [Oo]bj/
+
+# Python
+venv
+__pycache__

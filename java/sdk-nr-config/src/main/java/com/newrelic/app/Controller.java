@@ -31,6 +31,12 @@ public class Controller {
       Thread.sleep(sleepTime);
       MY_COUNTER.add(sleepTime, Attributes.of(AttributeKey.stringKey("method"), "ping"));
       LOGGER.info("A sample log message!");
+
+      // Throw an exception ~25% of the time
+      if (new Random().nextInt(4) == 0) {
+        throw new IllegalStateException("Error!");
+      }
+
       return "pong";
     } finally {
       span.end();

@@ -1,0 +1,9 @@
+* @newrelic/oie
+
+collector/                  @TylerHelmuth
+dotnet/minimal-api          @alanwest
+dotnet/agent-nr-config/     @nrcventura
+go/                         @TylerHelmuth
+java/                       @jack-berg
+javascript                  @svetlanabrennan
+python/                     @TylerHelmuth

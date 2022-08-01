@@ -22,6 +22,8 @@ Currently New Relic supports Proto over HTTP (not JSON over HTTP) which requires
    export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317
 
    export OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key_here>
+   
+   export OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
    ```
    - Replace `<your_license_key_here>` with your New Relic account ingest license key.
 
