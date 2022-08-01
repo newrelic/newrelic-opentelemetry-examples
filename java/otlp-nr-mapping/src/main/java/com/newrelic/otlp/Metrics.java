@@ -48,64 +48,34 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
     var testCases = new ArrayList<TestCase<ExportMetricsServiceRequest>>();
 
     // gauge
-    testCases.add(of("gauge with starttime", id -> gauge("my_gauge", id, true)));
-    testCases.add(of("gauge without starttime", id -> gauge("my_gauge", id, false)));
+    testCases.add(of("gauge", id -> gauge("my_gauge", id)));
 
     // summary
-    testCases.add(of("summary with starttime", id -> summary("my_summary", id, true)));
-    testCases.add(of("summary without starttime", id -> summary("my_summary", id, false)));
+    testCases.add(of("summary", id -> summary("my_summary", id)));
 
     // sum
     testCases.add(
         of(
-            "sum monotonic cumulative with starttime",
-            id -> sum("my_sum", id, true, AGGREGATION_TEMPORALITY_CUMULATIVE, true)));
+            "sum monotonic cumulative",
+            id -> sum("my_sum", id, true, AGGREGATION_TEMPORALITY_CUMULATIVE)));
+    testCases.add(
+        of("sum monotonic delta", id -> sum("my_sum", id, true, AGGREGATION_TEMPORALITY_DELTA)));
     testCases.add(
         of(
-            "sum monotonic cumulative without starttime",
-            id -> sum("my_sum", id, true, AGGREGATION_TEMPORALITY_CUMULATIVE, false)));
+            "sum non monotonic cumulative",
+            id -> sum("my_sum", id, false, AGGREGATION_TEMPORALITY_CUMULATIVE)));
     testCases.add(
         of(
-            "sum monotonic delta with starttime",
-            id -> sum("my_sum", id, true, AGGREGATION_TEMPORALITY_DELTA, true)));
-    testCases.add(
-        of(
-            "sum monotonic delta without starttime",
-            id -> sum("my_sum", id, true, AGGREGATION_TEMPORALITY_DELTA, false)));
-    testCases.add(
-        of(
-            "sum non monotonic cumulative with starttime",
-            id -> sum("my_sum", id, false, AGGREGATION_TEMPORALITY_CUMULATIVE, true)));
-    testCases.add(
-        of(
-            "sum non monotonic cumulative without starttime",
-            id -> sum("my_sum", id, false, AGGREGATION_TEMPORALITY_CUMULATIVE, false)));
-    testCases.add(
-        of(
-            "sum non monotonic delta with starttime",
-            id -> sum("my_sum", id, false, AGGREGATION_TEMPORALITY_DELTA, true)));
-    testCases.add(
-        of(
-            "sum non monotonic delta without starttime",
-            id -> sum("my_sum", id, false, AGGREGATION_TEMPORALITY_DELTA, false)));
+            "sum non monotonic delta",
+            id -> sum("my_sum", id, false, AGGREGATION_TEMPORALITY_DELTA)));
 
     // histogram
     testCases.add(
         of(
-            "histogram cumulative with starttime",
-            id -> histogram("my_histogram", id, AGGREGATION_TEMPORALITY_CUMULATIVE, true)));
+            "histogram cumulative",
+            id -> histogram("my_histogram", id, AGGREGATION_TEMPORALITY_CUMULATIVE)));
     testCases.add(
-        of(
-            "histogram cumulative without starttime",
-            id -> histogram("my_histogram", id, AGGREGATION_TEMPORALITY_CUMULATIVE, false)));
-    testCases.add(
-        of(
-            "histogram delta with starttime",
-            id -> histogram("my_histogram", id, AGGREGATION_TEMPORALITY_DELTA, true)));
-    testCases.add(
-        of(
-            "histogram delta without starttime",
-            id -> histogram("my_histogram", id, AGGREGATION_TEMPORALITY_DELTA, false)));
+        of("histogram delta", id -> histogram("my_histogram", id, AGGREGATION_TEMPORALITY_DELTA)));
 
     // other test cases
     testCases.add(of("attribute precedence", Metrics::attributePrecedence));
@@ -200,19 +170,14 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
     return requestBuilder.build();
   }
 
-  private static ExportMetricsServiceRequest gauge(
-      String name, String id, boolean includeStartTime) {
+  private static ExportMetricsServiceRequest gauge(String name, String id) {
     return metricsRequest(
         metricBuilder(name)
-            .setGauge(
-                Gauge.newBuilder()
-                    .addDataPoints(numberDataPoint(name, id, includeStartTime))
-                    .build())
+            .setGauge(Gauge.newBuilder().addDataPoints(numberDataPoint(name, id)).build())
             .build());
   }
 
-  private static ExportMetricsServiceRequest summary(
-      String name, String id, boolean includeStartTime) {
+  private static ExportMetricsServiceRequest summary(String name, String id) {
     var summaryDataPointBuilder =
         SummaryDataPoint.newBuilder()
             .setTimeUnixNano(toEpochNano(Instant.now()))
@@ -229,10 +194,8 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
                     .setValue(99.0)
                     .build())
             .addAttributes(idAttribute(id))
-            .addAllAttributes(allTheAttributes(name + "_"));
-    if (includeStartTime) {
-      summaryDataPointBuilder.setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)));
-    }
+            .addAllAttributes(allTheAttributes(name + "_"))
+            .setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)));
     return metricsRequest(
         metricBuilder(name)
             .setSummary(Summary.newBuilder().addDataPoints(summaryDataPointBuilder.build()).build())
@@ -240,26 +203,19 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
   }
 
   private static ExportMetricsServiceRequest sum(
-      String name,
-      String id,
-      boolean isMonotonic,
-      AggregationTemporality aggregationTemporality,
-      boolean includeStartTime) {
+      String name, String id, boolean isMonotonic, AggregationTemporality aggregationTemporality) {
     return metricsRequest(
         metricBuilder(name)
             .setSum(
                 Sum.newBuilder()
                     .setIsMonotonic(isMonotonic)
                     .setAggregationTemporality(aggregationTemporality)
-                    .addDataPoints(numberDataPoint(name, id, includeStartTime)))
+                    .addDataPoints(numberDataPoint(name, id)))
             .build());
   }
 
   private static ExportMetricsServiceRequest histogram(
-      String name,
-      String id,
-      AggregationTemporality aggregationTemporality,
-      boolean includeStartTime) {
+      String name, String id, AggregationTemporality aggregationTemporality) {
     var histogramDataPointBuilder =
         HistogramDataPoint.newBuilder()
             .setTimeUnixNano(toEpochNano(Instant.now()))
@@ -268,10 +224,8 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
             .addAllExplicitBounds(List.of(1.0, 2.0, 3.0))
             .addAllBucketCounts(List.of(5L, 4L, 1L, 1L))
             .addAttributes(idAttribute(id))
-            .addAllAttributes(allTheAttributes(name + "_"));
-    if (includeStartTime) {
-      histogramDataPointBuilder.setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)));
-    }
+            .addAllAttributes(allTheAttributes(name + "_"))
+            .setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)));
     return metricsRequest(
         metricBuilder(name)
             .setHistogram(
@@ -282,18 +236,14 @@ public class Metrics implements TestCaseProvider<ExportMetricsServiceRequest> {
             .build());
   }
 
-  private static NumberDataPoint numberDataPoint(
-      String metricName, String id, boolean includeStartTime) {
-    var numberDataPointBuilder =
-        NumberDataPoint.newBuilder()
-            .setTimeUnixNano(toEpochNano(Instant.now()))
-            .setAsDouble(1.0)
-            .addAttributes(idAttribute(id))
-            .addAllAttributes(allTheAttributes(metricName + "_"));
-    if (includeStartTime) {
-      numberDataPointBuilder.setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)));
-    }
-    return numberDataPointBuilder.build();
+  private static NumberDataPoint numberDataPoint(String metricName, String id) {
+    return NumberDataPoint.newBuilder()
+        .setTimeUnixNano(toEpochNano(Instant.now()))
+        .setAsDouble(1.0)
+        .addAttributes(idAttribute(id))
+        .addAllAttributes(allTheAttributes(metricName + "_"))
+        .setStartTimeUnixNano(toEpochNano(Instant.now().minusSeconds(10)))
+        .build();
   }
 
   private static Metric.Builder metricBuilder(String name) {
