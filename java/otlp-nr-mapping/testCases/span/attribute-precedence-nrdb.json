@@ -12,7 +12,6 @@
   "name" : "my-span",
   "newRelic.ingestPoint" : "api.traces",
   "newrelic.source" : "api.traces.otlp",
-  "nr.isPrimaryEntityData" : true,
   "otel.library.name" : "my-instrumentation-library",
   "otel.library.version" : "foo",
   "service.name" : "native-otlp-test",

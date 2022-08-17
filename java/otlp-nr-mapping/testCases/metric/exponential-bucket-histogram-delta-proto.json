@@ -76,8 +76,7 @@
     "scopeMetrics" : [ {
       "metrics" : [ {
         "description" : "description",
-        "histogram" : {
-          "aggregationTemporality" : "AGGREGATION_TEMPORALITY_CUMULATIVE",
+        "exponentialHistogram" : {
           "dataPoints" : [ {
             "attributes" : [ {
               "key" : "message_id",
@@ -85,27 +84,27 @@
                 "stringValue" : "OBFUSCATED"
               }
             }, {
-              "key" : "my_histogram_skey",
+              "key" : "my_exp_histogram_skey",
               "value" : {
                 "stringValue" : "value"
               }
             }, {
-              "key" : "my_histogram_ikey",
+              "key" : "my_exp_histogram_ikey",
               "value" : {
                 "intValue" : "1"
               }
             }, {
-              "key" : "my_histogram_bkey",
+              "key" : "my_exp_histogram_bkey",
               "value" : {
                 "boolValue" : true
               }
             }, {
-              "key" : "my_histogram_dkey",
+              "key" : "my_exp_histogram_dkey",
               "value" : {
                 "doubleValue" : 1.0
               }
             }, {
-              "key" : "my_histogram_sarrkey",
+              "key" : "my_exp_histogram_sarrkey",
               "value" : {
                 "arrayValue" : {
                   "values" : [ {
@@ -116,7 +115,7 @@
                 }
               }
             }, {
-              "key" : "my_histogram_iarrkey",
+              "key" : "my_exp_histogram_iarrkey",
               "value" : {
                 "arrayValue" : {
                   "values" : [ {
@@ -127,7 +126,7 @@
                 }
               }
             }, {
-              "key" : "my_histogram_barrkey",
+              "key" : "my_exp_histogram_barrkey",
               "value" : {
                 "arrayValue" : {
                   "values" : [ {
@@ -138,7 +137,7 @@
                 }
               }
             }, {
-              "key" : "my_histogram_darrkey",
+              "key" : "my_exp_histogram_darrkey",
               "value" : {
                 "arrayValue" : {
                   "values" : [ {
@@ -149,15 +148,18 @@
                 }
               }
             } ],
-            "bucketCounts" : [ "5", "4", "1", "1" ],
             "count" : "11",
-            "explicitBounds" : [ 1.0, 2.0, 3.0 ],
+            "max" : 15.2,
+            "min" : 1.5,
+            "positive" : {
+              "bucketCounts" : [ "5", "4", "1", "1" ]
+            },
             "startTimeUnixNano" : "OBFUSCATED",
             "sum" : 100.0,
             "timeUnixNano" : "OBFUSCATED"
           } ]
         },
-        "name" : "my_histogram",
+        "name" : "my_exp_histogram",
         "unit" : "unit"
       } ],
       "scope" : {
