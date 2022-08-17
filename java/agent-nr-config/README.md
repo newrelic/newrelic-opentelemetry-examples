@@ -18,6 +18,8 @@ Set the following environment variables:
   * Optionally export metrics every 5000 ms instead of the default 60s.
 * `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=DELTA`
   * New Relic supports metrics in delta temporality, instead of the default cumulative.
+* `OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION=EXPONENTIAL_BUCKET_HISTOGRAM`
+  * Use exponential histogram instead of default explicit bucket histogram for better data compression.
 * `OTEL_LOGS_EXPORTER=otlp`
   * Enable log export over OTLP. Log export is disabled by default.
 * `OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317`
@@ -35,8 +37,6 @@ Set the following environment variables:
 * `OTEL_SPAN_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095`
   * New relic disallows attributes whose length exceeds 4095 characters.
 
-TODO: Add env var to enable exponential histograms when available
-
 Additional configuration using standard autoconfiguration environment variables defined in the [autoconfigure module](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure).
 
 Run the application from a shell in the [java root](../) via:
@@ -44,6 +44,7 @@ Run the application from a shell in the [java root](../) via:
 export OTEL_EXPORTER_OTLP_HEADERS=api-key=your_license_key \
 && export OTEL_METRIC_EXPORT_INTERVAL=5000 \
 && export OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=DELTA \
+&& export OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION=EXPONENTIAL_BUCKET_HISTOGRAM \
 && export OTEL_LOGS_EXPORTER=otlp \
 && export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317 \
 && export OTEL_EXPORTER_OTLP_COMPRESSION=gzip \

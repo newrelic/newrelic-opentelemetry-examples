@@ -18,10 +18,13 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanLimits;
@@ -102,8 +105,12 @@ public class Application {
             .setCompression("gzip")
             .addHeader("api-key", newrelicApiOrLicenseKey)
             // IMPORTANT: New Relic requires metrics to be delta temporality
-            .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred());
-    // TODO: use exponential histograms when available
+            .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred())
+            // Use exponential histogram aggregation for histogram instruments to produce better
+            // data and compression
+            .setDefaultAggregationSelector(
+                DefaultAggregationSelector.getDefault()
+                    .with(InstrumentType.HISTOGRAM, ExponentialHistogramAggregation.getDefault()));
     // Enable retry policy via unstable API
     RetryUtil.setRetryPolicyOnDelegate(metricExporterBuilder, RetryPolicy.getDefault());
     sdkMeterProviderBuilder.registerMetricReader(
