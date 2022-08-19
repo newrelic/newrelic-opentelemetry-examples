@@ -13,7 +13,7 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.instrumentation.log4j.appender.v2_17.OpenTelemetryAppender;
 import io.opentelemetry.instrumentation.runtimemetrics.GarbageCollector;
 import io.opentelemetry.instrumentation.runtimemetrics.MemoryPools;
-import io.opentelemetry.instrumentation.spring.webmvc.SpringWebMvcTelemetry;
+import io.opentelemetry.instrumentation.spring.webmvc.v5_3.SpringWebMvcTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
@@ -162,6 +162,6 @@ public class Application {
   /** Add Spring WebMVC instrumentation by registering tracing filter. */
   @Bean
   public Filter webMvcTracingFilter() {
-    return SpringWebMvcTelemetry.create(GlobalOpenTelemetry.get()).newServletFilter();
+    return SpringWebMvcTelemetry.create(GlobalOpenTelemetry.get()).createServletFilter();
   }
 }
