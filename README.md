@@ -25,7 +25,7 @@ The following table details features currently demonstrated by the example.
 | &nbsp;&nbsp;&nbsp;&nbsp;Collect logs                        | +    | +    | +   | N/A | N/A    | +            |
 | &nbsp;&nbsp;&nbsp;&nbsp;Export over OTLP                    | +    | +    | +   | +   | +      | +            |
 | &nbsp;&nbsp;&nbsp;&nbsp;Export metrics w/ delta temporality | +    | +    | N/A | +   | +      | +            |
-| &nbsp;&nbsp;&nbsp;&nbsp;Adhere to attribute limits          | +    | N/A  | +   | +   | +      | +            |
+| &nbsp;&nbsp;&nbsp;&nbsp;Adhere to attribute limits          | +    | +    | +   | +   | +      | +            |
 | Configure auto instrumentation / agent for New Relic        | +    | +    | N/A | N/A | N/A    | N/A          |
 
 
@@ -48,7 +48,7 @@ See [Contribute](#contribute) for how to request OpenTelemetry/New Relic interac
   - [OpenTelemetry SDK New Relic Config](./java/sdk-nr-config): A Java application with OpenTelemetry standalone library instrumentation as well as custom instrumentation, configured for New Relic via the SDK. Demonstrates usage of spans, metrics, and logs.
   - [OTLP New Relic Mapping](./java/otlp-nr-mapping): Contains a variety of test cases demonstrating how OTLP payloads are mapped to records in NRDB upon ingest.
 - .NET
-  - [OpenTelemetry SDK New Relic Config](./dotnet/minimal-api/) Simple .NET 6 application demonstrating OpenTelemetry instrumentation.
+  - [OpenTelemetry SDK New Relic Config](./dotnet/aspnetcore/) Simple ASP.NET Core application demonstrating OpenTelemetry instrumentation.
 - JavaScript
   - [OpenTelemetry SDK New Relic Config - OTLP/HTTP (PROTO)](./javascript/simple-nodejs-app-http-exp): An express application demonstrating OpenTelemetry auto-instrumentation and exporting with OTLP/HTTP (PROTO), configured for New Relic via the SDK.
 - Python

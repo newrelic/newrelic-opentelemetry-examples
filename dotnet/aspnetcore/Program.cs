@@ -56,6 +56,7 @@ builder.Services.AddOpenTelemetryMetrics(meterProviderBuilder =>
 
     // Step 2. Configure the SDK to listen to the following auto-instrumentation
     meterProviderBuilder
+        .AddRuntimeInstrumentation()
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation();
 
