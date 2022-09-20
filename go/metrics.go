@@ -6,75 +6,17 @@ import (
 	"sync"
 	"time"
 
-	"go.opentelemetry.io/otel/sdk/metric/sdkapi"
-
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric"
-	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/metric/global"
 	"go.opentelemetry.io/otel/metric/instrument"
-	"go.opentelemetry.io/otel/sdk/metric/aggregator/histogram"
-	controller "go.opentelemetry.io/otel/sdk/metric/controller/basic"
-	"go.opentelemetry.io/otel/sdk/metric/export/aggregation"
-	processor "go.opentelemetry.io/otel/sdk/metric/processor/basic"
-	selector "go.opentelemetry.io/otel/sdk/metric/selector/simple"
 	"go.opentelemetry.io/otel/sdk/resource"
 )
 
-type (
-	newRelicTemporalitySelector struct{}
-)
-
-func (s newRelicTemporalitySelector) TemporalityFor(desc *sdkapi.Descriptor, kind aggregation.Kind) aggregation.Temporality {
-	if desc.InstrumentKind() == sdkapi.CounterInstrumentKind ||
-		// The Go SDK doesn't support Async Observers with Delta temporality yet.
-		// To avoid errors, use cumulative for Async Counters, which NR will interpret as gauges.
-		// desc.InstrumentKind() == sdkapi.CounterObserverInstrumentKind ||
-		desc.InstrumentKind() == sdkapi.HistogramInstrumentKind {
-		return aggregation.DeltaTemporality
-	}
-	return aggregation.CumulativeTemporality
-}
-
-func NewRelicTemporalitySelector() aggregation.TemporalitySelector {
-	return newRelicTemporalitySelector{}
-}
-
 var (
 	lemonsKey = attribute.Key("ex.com/lemons")
-
-	// This configures temporality to work correctly with New Relic for all metric types.
-	// Counters and Histograms instruments use delta, everything else uses cumulative.
-	temporalitySelector = NewRelicTemporalitySelector()
 )
 
 func initMeter(ctx context.Context, res *resource.Resource) {
-	exporter, err := otlpmetric.New(
-		ctx,
-		otlpmetricgrpc.NewClient(),
-		otlpmetric.WithMetricAggregationTemporalitySelector(temporalitySelector))
-	if err != nil {
-		log.Fatalf("%s: %v", "failed to create metric exporter", err)
-	}
-
-	cont := controller.New(
-		processor.NewFactory(
-			selector.NewWithHistogramDistribution(
-				histogram.WithExplicitBoundaries([]float64{1, 2, 5, 10, 20, 50}),
-			),
-			temporalitySelector,
-		),
-		controller.WithResource(res),
-		controller.WithExporter(exporter),
-		controller.WithCollectPeriod(2*time.Second),
-	)
-
-	err = cont.Start(ctx)
-	if err != nil {
-		log.Fatalf("%s: %v", "failed to start controller", err)
-	}
-
-	global.SetMeterProvider(cont)
 }
 
 func generateMetrics() {
