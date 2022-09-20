@@ -16,7 +16,7 @@ Set the following environment variables to configure export to New Relic over OT
 * `OTEL_EXPORTER_OTLP_HEADERS="api-key=<your_license_key>"`
   * Replace `<your_license_key>` with your
     [Account License Key](https://one.newrelic.com/launcher/api-keys-ui.launcher).
-* OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4094
+* `OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4094`
 
 Run:
 
