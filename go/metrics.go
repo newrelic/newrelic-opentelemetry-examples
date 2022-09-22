@@ -7,8 +7,12 @@ import (
 	"time"
 
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/metric/global"
 	"go.opentelemetry.io/otel/metric/instrument"
+	"go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/metric/metricdata"
+	"go.opentelemetry.io/otel/sdk/metric/view"
 	"go.opentelemetry.io/otel/sdk/resource"
 )
 
@@ -16,7 +20,30 @@ var (
 	lemonsKey = attribute.Key("ex.com/lemons")
 )
 
+func NewRelicTemporalitySelector(kind view.InstrumentKind) metricdata.Temporality {
+	if kind == view.SyncUpDownCounter || kind == view.AsyncUpDownCounter {
+		return metricdata.CumulativeTemporality
+	}
+	return metricdata.DeltaTemporality
+}
+
 func initMeter(ctx context.Context, res *resource.Resource) {
+	exporter, err := otlpmetricgrpc.New(ctx)
+	if err != nil {
+		log.Fatalf("%s: %v", "failed to create metric exporter", err)
+	}
+
+	reader := metric.NewPeriodicReader(
+		exporter,
+		metric.WithTemporalitySelector(NewRelicTemporalitySelector),
+		metric.WithInterval(2*time.Second),
+	)
+
+	meterProvider := metric.NewMeterProvider(
+		metric.WithResource(res),
+		metric.WithReader(reader),
+	)
+	global.SetMeterProvider(meterProvider)
 }
 
 func generateMetrics() {
