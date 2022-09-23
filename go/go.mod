@@ -1,4 +1,4 @@
-module newrelic-go-example
+module github.com/newrelic/newrelic-opentelemetry-examples/go
 
 go 1.17
 
