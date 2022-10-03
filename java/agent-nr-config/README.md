@@ -7,7 +7,7 @@ This project demonstrates a simple Java application running with the OpenTelemet
 The project consists of two modules:
 
 1. [application](./application): Contains a simple Spring Boot application configured to run with OpenTelemetry.
-2. [config-extension](./config-extension): Contains SPI configuration code, which allows for optional additional configuration not available via environment variables. The contents are packaged as a shadow jar, which the `application` module is configured to use as an extension jar.
+2. [config-extension](./config-extension): Contains SPI configuration code, which allows for optional additional configuration not available via environment variables. In this example, we use a sampler which is equivalent to the default `parentbased_always_on`, but which does not sample spring boot actuator endpoints with targets matching `/actuator.*`. samplerThe contents are packaged as a shadow jar, which the `application` module is configured to use as an extension jar.
 
 ## Run
 
