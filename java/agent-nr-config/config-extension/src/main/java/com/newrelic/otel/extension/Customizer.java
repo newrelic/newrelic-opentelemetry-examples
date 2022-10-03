@@ -25,7 +25,7 @@ public class Customizer implements AutoConfigurationCustomizerProvider {
             resource.merge(
                 Resource.builder().put(SERVICE_INSTANCE_ID, UUID.randomUUID().toString()).build()));
 
-    // Set the sampler to be the default parent based always on, but which drops calls to spring
+    // Set the sampler to be the default parentbased_always_on, but drop calls to spring
     // boot actuator endpoints
     autoConfiguration.addTracerProviderCustomizer(
         (sdkTracerProviderBuilder, configProperties) ->
