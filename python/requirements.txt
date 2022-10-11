@@ -8,5 +8,5 @@ opentelemetry-propagator-b3==1.12.0rc1
 opentelemetry-proto==1.12.0rc1
 opentelemetry-sdk==1.12.0rc1
 opentelemetry-semantic-conventions==0.31b0
-protobuf==3.19.1
+protobuf==3.19.5
 opentelemetry-instrumentation-flask==0.31b0
