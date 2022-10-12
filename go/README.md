@@ -21,4 +21,4 @@ go run .
 
 ## View your data in New Relic
 
-The application produces metric data reporting to a service named `OpenTelemetry-Go-Example`.
+The application produces trace and metric data reporting to a service named `OpenTelemetry-Go-Example`.
