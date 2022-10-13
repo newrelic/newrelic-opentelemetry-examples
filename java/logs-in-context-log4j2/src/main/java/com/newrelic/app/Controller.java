@@ -24,7 +24,7 @@ public class Controller {
             .spanBuilder("/ping")
             .setAttribute(SemanticAttributes.HTTP_METHOD, "GET")
             .setAttribute(SemanticAttributes.HTTP_SCHEME, "http")
-            .setAttribute(SemanticAttributes.HTTP_HOST, "localhost:8080")
+            .setAttribute(SemanticAttributes.NET_HOST_NAME, "localhost:8080")
             .setAttribute(SemanticAttributes.HTTP_TARGET, "/ping")
             .setSpanKind(SpanKind.SERVER)
             .startSpan();
