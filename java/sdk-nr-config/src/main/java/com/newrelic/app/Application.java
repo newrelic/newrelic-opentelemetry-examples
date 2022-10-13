@@ -1,23 +1,23 @@
 package com.newrelic.app;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporter;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
-import io.opentelemetry.instrumentation.log4j.appender.v2_17.OpenTelemetryAppender;
 import io.opentelemetry.instrumentation.runtimemetrics.GarbageCollector;
 import io.opentelemetry.instrumentation.runtimemetrics.MemoryPools;
 import io.opentelemetry.instrumentation.spring.webmvc.v5_3.SpringWebMvcTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.LogLimits;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
-import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -46,8 +46,8 @@ public class Application {
     // Configure OpenTelemetry as early as possible
     var openTelemetrySdk = openTelemetrySdk();
 
-    // Initialize Log4j2 appender
-    OpenTelemetryAppender.setSdkLogEmitterProvider(openTelemetrySdk.getSdkLogEmitterProvider());
+    // Set GlobalLoggerProvider, which is used by Log4j2 appender
+    GlobalLoggerProvider.set(openTelemetrySdk.getSdkLoggerProvider());
 
     // Register runtime metrics instrumentation
     MemoryPools.registerObservers(openTelemetrySdk);
@@ -122,30 +122,30 @@ public class Application {
               .build());
     }
 
-    // Configure log emitter provider
-    var sdkLogEmitterProvider =
-        SdkLogEmitterProvider.builder()
+    // Configure logger provider
+    var sdkLoggerProvider =
+        SdkLoggerProvider.builder()
             // New Relic's max attribute length is 4095 characters
             .setLogLimits(
                 () -> LogLimits.getDefault().toBuilder().setMaxAttributeValueLength(4095).build())
             .setResource(resource);
     // Add otlp log exporter
-    var logExporterBuilder =
-        OtlpGrpcLogExporter.builder()
+    var logRecordExporterBuilder =
+        OtlpGrpcLogRecordExporter.builder()
             .setEndpoint(newrelicOtlpEndpoint)
             .setCompression("gzip")
             .addHeader("api-key", newrelicApiOrLicenseKey);
     // Enable retry policy via unstable API
-    RetryUtil.setRetryPolicyOnDelegate(logExporterBuilder, RetryPolicy.getDefault());
-    sdkLogEmitterProvider.addLogProcessor(
-        BatchLogProcessor.builder(logExporterBuilder.build()).build());
+    RetryUtil.setRetryPolicyOnDelegate(logRecordExporterBuilder, RetryPolicy.getDefault());
+    sdkLoggerProvider.addLogRecordProcessor(
+        BatchLogRecordProcessor.builder(logRecordExporterBuilder.build()).build());
 
     // Bring it all together
     return OpenTelemetrySdk.builder()
         .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
         .setTracerProvider(sdkTracerProviderBuilder.build())
         .setMeterProvider(sdkMeterProviderBuilder.build())
-        .setLogEmitterProvider(sdkLogEmitterProvider.build())
+        .setLoggerProvider(sdkLoggerProvider.build())
         .buildAndRegisterGlobal();
   }
 
