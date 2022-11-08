@@ -1,11 +1,11 @@
 plugins {
     id 'java-library'
-    id 'org.springframework.boot' version '2.6.7'
-    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
-    id 'de.undercouch.download' version '4.1.1'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+    id 'de.undercouch.download'
 }
 
-def agentPath = project.buildDir.toString() + "/otel/opentelemetry-javaagent-all-${project['otel-agent.version']}.jar"
+def agentPath = project.buildDir.toString() + "/otel/opentelemetry-javaagent.jar"
 
 bootRun {
   mainClass.set 'com.newrelic.app.Application'
@@ -27,7 +27,7 @@ bootRun {
 
 // Download the opentelemetry java agent and put it in the build directory
 task downloadAgent(type: Download) {
-  src "https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${project['otel-agent.version']}/opentelemetry-javaagent.jar"
+  src "https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar"
   dest agentPath
   overwrite false
 }

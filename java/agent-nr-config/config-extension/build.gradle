@@ -1,6 +1,6 @@
 plugins {
   id 'java-library'
-  id 'com.github.johnrengelman.shadow' version '6.1.0'
+  id 'com.github.johnrengelman.shadow'
 }
 
 tasks {
@@ -20,5 +20,5 @@ dependencies {
   compileOnly 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure'
   compileOnly 'io.opentelemetry:opentelemetry-semconv'
 
-  implementation "io.opentelemetry.contrib:opentelemetry-samplers:${project['otel-contrib.version']}"
+  implementation "io.opentelemetry.contrib:opentelemetry-samplers:1.18.0-alpha"
 }

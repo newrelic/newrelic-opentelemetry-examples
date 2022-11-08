@@ -10,23 +10,26 @@ run {
 
 dependencies {
   implementation 'io.opentelemetry:opentelemetry-sdk'
-  implementation "io.opentelemetry.proto:opentelemetry-proto:${project['otel-proto.version']}"
+  implementation "io.opentelemetry.proto:opentelemetry-proto:0.18.0-alpha"
 
-  implementation platform("com.squareup.okhttp3:okhttp-bom:${project['okhttp.version']}")
+  implementation platform("com.squareup.okhttp3:okhttp-bom:4.9.3")
   implementation 'com.squareup.okhttp3:okhttp'
 
-  implementation "org.apache.commons:commons-text:${project['apache-commons-text.version']}"
+  implementation "org.apache.commons:commons-text:1.9"
 
-  implementation "com.fasterxml.jackson.core:jackson-databind:${project['jackson.version']}"
-  implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${project['jackson.version']}"
-  implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${project['jackson.version']}"
+  implementation platform("com.fasterxml.jackson:jackson-bom:2.13.1")
+  implementation "com.fasterxml.jackson.core:jackson-databind"
+  implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8"
+  implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
-  implementation "io.grpc:grpc-protobuf:${project['grpc.version']}"
-  implementation "io.grpc:grpc-stub:${project['grpc.version']}"
-  implementation "io.grpc:grpc-netty-shaded:${project['grpc.version']}"
-  implementation "com.google.protobuf:protobuf-java-util:${project['protobuf-java-util.version']}"
+  implementation platform("io.grpc:grpc-bom:1.43.2")
+  implementation "io.grpc:grpc-protobuf"
+  implementation "io.grpc:grpc-stub"
+  implementation "io.grpc:grpc-netty-shaded"
+
+  implementation "com.google.protobuf:protobuf-java-util:3.19.1"
   constraints {
-    implementation "com.google.code.gson:gson:${project['gson.version']}"
+    implementation "com.google.code.gson:gson:2.8.9"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.6.0"
   }
 }

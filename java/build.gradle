@@ -1,5 +1,5 @@
 plugins {
-    id 'com.diffplug.spotless' version '5.11.1' apply false
+    id 'com.diffplug.spotless' apply false
 }
 
 subprojects {
@@ -28,9 +28,9 @@ subprojects {
         }
 
         dependencies {
-            implementation platform("io.opentelemetry:opentelemetry-bom:${project['otel.version']}")
-            implementation platform("io.opentelemetry:opentelemetry-bom-alpha:${project['otel-alpha.version']}")
-            implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${project['otel-instrumentation.version']}")
+            implementation platform("io.opentelemetry:opentelemetry-bom:1.19.0")
+            implementation platform("io.opentelemetry:opentelemetry-bom-alpha:1.19.0-alpha")
+            implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.19.0-alpha")
 
             testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
             testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
