@@ -1,0 +1,13 @@
+version: 2
+registries:
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "gradle"
+    directory: "/java"
+    rebase-strategy: "disabled"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
