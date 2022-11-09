@@ -11,8 +11,6 @@ bootRun {
 configurations.all {
   exclude module: 'spring-boot-starter-logging'
 }
-// Force upgrade to appease snyk
-ext['spring-framework.version'] = '5.3.20'
 
 dependencies {
   implementation 'io.opentelemetry:opentelemetry-sdk'
