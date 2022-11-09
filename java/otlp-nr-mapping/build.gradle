@@ -22,7 +22,7 @@ dependencies {
   implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8"
   implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
-  implementation platform("io.grpc:grpc-bom:1.43.2")
+  implementation platform("io.grpc:grpc-bom:1.50.2")
   implementation "io.grpc:grpc-protobuf"
   implementation "io.grpc:grpc-stub"
   implementation "io.grpc:grpc-netty-shaded"
