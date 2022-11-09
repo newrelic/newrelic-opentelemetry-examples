@@ -13,8 +13,9 @@ bootRun {
 configurations.all {
   exclude module: 'spring-boot-starter-logging'
 }
-// Force upgrade to appease snyk
-ext['spring-framework.version'] = '5.3.20'
+
+// Override spring log4j2 versino to align with latest org.apache.logging.log4j:log4j-layout-template-json
+ext['log4j2.version'] = '2.19.0'
 
 dependencies {
   implementation 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure'
