@@ -55,9 +55,10 @@ See [Contribute](#contribute) for how to request OpenTelemetry/New Relic interac
   - [OpenTelemetry SDK New Relic Config](./python): Two simple Python application demonstrating OpenTelemetry instrumentation, one with Flask auto-instrumentation and one without Flask. Configured for New Relic via the SDK.
 - Go
   - [OpenTelemetry SDK New Relic Config](./go): Simple Go applications demonstrating OpenTelemetry instrumentation.
-- AWS Lambda
-  - [OpenTelemetry Lambda .NET New Relic Config](./aws-lambda/dotnet): An example AWS .NET Lambda function instrumented with OpenTelemetry.
-  - [OpenTelemetry Lambda Java New Relic Config](./aws-lambda/java): An example AWS Java Lambda function instrumented with OpenTelemetry.
+- Serverless
+  - AWS Lambda
+    - [OpenTelemetry Lambda .NET New Relic Config](./serverless/aws-lambda/dotnet): An example AWS .NET Lambda function instrumented with OpenTelemetry.
+    - [OpenTelemetry Lambda Java New Relic Config](./serverless/aws-lambda/java): An example AWS Java Lambda function instrumented with OpenTelemetry.
 
 ## Contribute
 
