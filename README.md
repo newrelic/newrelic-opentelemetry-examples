@@ -57,8 +57,8 @@ See [Contribute](#contribute) for how to request OpenTelemetry/New Relic interac
   - [OpenTelemetry SDK New Relic Config](./go): Simple Go applications demonstrating OpenTelemetry instrumentation.
 - Serverless
   - AWS Lambda
-    - [OpenTelemetry Lambda .NET New Relic Config](./aws-lambda/dotnet): An example AWS .NET Lambda function instrumented with OpenTelemetry.
-    - [OpenTelemetry Lambda Java New Relic Config](./aws-lambda/java): An example AWS Java Lambda function instrumented with OpenTelemetry.
+    - [OpenTelemetry Lambda .NET New Relic Config](./serverless/aws-lambda/dotnet): An example AWS .NET Lambda function instrumented with OpenTelemetry.
+    - [OpenTelemetry Lambda Java New Relic Config](./serverless/aws-lambda/java): An example AWS Java Lambda function instrumented with OpenTelemetry.
 
 ## Contribute
 
