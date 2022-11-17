@@ -31,7 +31,7 @@ subprojects {
         dependencies {
             implementation platform("io.opentelemetry:opentelemetry-bom:1.20.1")
             implementation platform("io.opentelemetry:opentelemetry-bom-alpha:1.20.0-alpha")
-            implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.19.2-alpha")
+            implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.20.0-alpha")
 
             testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
             testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
