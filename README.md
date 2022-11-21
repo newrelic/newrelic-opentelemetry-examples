@@ -22,9 +22,9 @@ The following table details features currently demonstrated by the example.
 | Configure SDK for New Relic                                 |      |      |     |     |        |              |
 | &nbsp;&nbsp;&nbsp;&nbsp;Collect traces                      | +    | +    | +   | +   | +      | +            |
 | &nbsp;&nbsp;&nbsp;&nbsp;Collect metrics                     | +    | +    | +   | +   | +      | +            |
-| &nbsp;&nbsp;&nbsp;&nbsp;Collect logs                        | +    | +    | +   | N/A | N/A    | +            |
+| &nbsp;&nbsp;&nbsp;&nbsp;Collect logs                        | +    | +    | N/A | N/A | N/A    | +            |
 | &nbsp;&nbsp;&nbsp;&nbsp;Export over OTLP                    | +    | +    | +   | +   | +      | +            |
-| &nbsp;&nbsp;&nbsp;&nbsp;Export metrics w/ delta temporality | +    | +    | N/A | +   | +      | +            |
+| &nbsp;&nbsp;&nbsp;&nbsp;Export metrics w/ delta temporality | +    | +    | +   | +   | +      | +            |
 | &nbsp;&nbsp;&nbsp;&nbsp;Adhere to attribute limits          | +    | +    | +   | +   | +      | +            |
 | Configure auto instrumentation / agent for New Relic        | +    | +    | N/A | N/A | N/A    | N/A          |
 
