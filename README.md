@@ -26,7 +26,7 @@ The following table details features currently demonstrated by the example.
 | &nbsp;&nbsp;&nbsp;&nbsp;Export over OTLP                    | +    | +    | +   | +   | +      | +            |
 | &nbsp;&nbsp;&nbsp;&nbsp;Export metrics w/ delta temporality | +    | +    | +   | +   | +      | +            |
 | &nbsp;&nbsp;&nbsp;&nbsp;Adhere to attribute limits          | +    | +    | +   | +   | +      | +            |
-| Configure auto instrumentation / agent for New Relic        | +    | +    | N/A | N/A | N/A    | N/A          |
+| Configure auto instrumentation / agent for New Relic        | +    | +    | +   | N/A | N/A    | N/A          |
 
 
 **[1]** The collector has a different architecture and serves a different purpose than the language SDKs. Therefore, an apples-to-apples comparison to SDKs doesn't make sense. The table roughly indicates whether the feature is illustrated in the example collector configuration, even though the feature may not mean exactly the same thing as it does in the context of an SDK.
@@ -45,12 +45,12 @@ See [Contribute](#contribute) for how to request OpenTelemetry/New Relic interac
 - Java
   - [OpenTelemetry Agent New Relic Config](./java/agent-nr-config): A Java application with the OpenTelemetry Agent configured for New Relic.
   - [Logs In Context With Log4j2](./java/logs-in-context-log4j2): A Java application configured to include OpenTelemetry trace context on Log4j2 structured logs.
-  - [OpenTelemetry SDK New Relic Config](./java/sdk-nr-config): A Java application with OpenTelemetry standalone library instrumentation as well as custom instrumentation, configured for New Relic via the SDK. Demonstrates usage of spans, metrics, and logs.
+  - [OpenTelemetry SDK New Relic Config](./java/sdk-nr-config): A Java application with OpenTelemetry standalone library instrumentation as well as custom instrumentation, configured for New Relic via the SDK.
   - [OTLP New Relic Mapping](./java/otlp-nr-mapping): Contains a variety of test cases demonstrating how OTLP payloads are mapped to records in NRDB upon ingest.
 - .NET
   - [OpenTelemetry SDK New Relic Config](./dotnet/aspnetcore/) Simple ASP.NET Core application demonstrating OpenTelemetry instrumentation.
 - JavaScript
-  - [OpenTelemetry SDK New Relic Config - OTLP/HTTP (PROTO)](./javascript/simple-nodejs-app-http-exp): An express application demonstrating OpenTelemetry auto-instrumentation and exporting with OTLP/HTTP (PROTO), configured for New Relic via the SDK.
+  - [OpenTelemetry SDK New Relic Config](./javascript/simple-nodejs-app-http-exp): An express application demonstrating OpenTelemetry auto-instrumentation, configured for New Relic via the SDK.
 - Python
   - [OpenTelemetry SDK New Relic Config](./python): Two simple Python application demonstrating OpenTelemetry instrumentation, one with Flask auto-instrumentation and one without Flask. Configured for New Relic via the SDK.
 - Go
