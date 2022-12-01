@@ -34,7 +34,7 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
-import javax.servlet.Filter;
+import jakarta.servlet.Filter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
