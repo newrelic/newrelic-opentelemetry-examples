@@ -1,0 +1,8 @@
+[
+  { "body": "{'name': 'AzureBot'}" },
+  { "body": "{'name': 'AzureBot', 'forceStatus': '507'}" },
+  { "body": "{'name': 'AzureBot', 'forceStatus': '202'}" },
+  { "body": "{'name': 'AzureBot', 'forceStatus': '200'}" },
+  { "body": "{'name': 'AzureBot', 'forceStatus': '400'}" },
+  { "body": "{'name': 'AzureBot', 'throws': 'true'}" }
+]
