@@ -1,0 +1,11 @@
+{
+  "bindings": [
+    {
+      "name": "myQueueItem",
+      "type": "serviceBusTrigger",
+      "direction": "in",
+      "queueName": "otel-example-queue-items",
+      "connection": "APPLICATION_QUEUE_STORAGE"
+    }
+  ]
+}

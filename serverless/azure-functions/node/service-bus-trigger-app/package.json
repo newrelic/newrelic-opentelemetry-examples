@@ -1,0 +1,19 @@
+{
+  "name": "service-bus-trigger-app",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "func start",
+    "dev": "func start --port 11001",
+    "test": "echo \"No tests yet...\""
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.3.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.34.0",
+    "@opentelemetry/instrumentation-http": "^0.34.0",
+    "@opentelemetry/resources": "^1.8.0",
+    "@opentelemetry/sdk-trace-node": "^1.8.0",
+    "axios": "^1.2.1",
+    "uuid": "^9.0.0"
+  }
+}
