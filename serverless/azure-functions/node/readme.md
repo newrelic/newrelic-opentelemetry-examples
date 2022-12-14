@@ -6,6 +6,8 @@ To limit bouncing around, all setup and instrumentation code has been included w
 
 ## Applications
 
+Because these are setup as individual applications, you'll want to open these folders separately when using VS Code tooling.
+
 * [Timer trigger](./timer-trigger-app/readme.md): An Azure Function App that contains a timer triggered function which writes a message to an Azure Service Bus queue every two minutes.
 * [Service Bus queue trigger](./service-bus-trigger-app/readme.md): An Azure Function App that contains a queue triggered function that makes requests to an external URL with the contents of the consumed message body.
 * [HTTP trigger](./http-trigger-app/readme.md): An Azure Function App that contains an HTTP triggered function that makes an external call and then sets an appropriate status, or throws an error, depending on the incoming request params or body.

@@ -12,7 +12,7 @@ Traces are buffered using a `BatchSpanProcessor`. The batch span processor will 
 
 ## Required/Recommended Configuration
 
-The following settings are recommended to be set in your Azure Function App configuration and local settings (or ENV vars).
+The following settings are recommended to be set in your Azure Function App configuration and local settings (`local.settings.json`) or ENV vars. The first time you debug an example, VS Code will automatically create `local.settings.json` for you and will prompt you to choose/create a storage account. This file is not committed to source control as it may contain secrets.
 
 * `API_KEY` [required]: Must be set to allow data to be sent to new relic. Requires a new relic ingest license key: https://one.newrelic.com/launcher/api-keys-ui.launcher.
 
@@ -50,7 +50,7 @@ Enter a name, a Node.js runtime and a region. This current version of the exampl
 
 Add required application settings as well as any desired optional settings. These will become ENV variables available to the the function.
 
-An easy way to get started is through the Azure plugin to select the function app -> `Application Settings` -> right-click -> `Upload local settings`. And then modify any different settings you need in Azure. Modification can also be done through the Azure extension.
+An easy way to get started is through the Azure plugin. Select the function app -> `Application Settings` -> right-click -> `Upload local settings` OR use the command pallet (`Command + Shift + P`) -> `Azure Functions: Upload Local Settings`... And then modify any different settings you need in Azure. Modification can also be done through the Azure extension.
 
 ## Deploy to the Azure Function App
 
