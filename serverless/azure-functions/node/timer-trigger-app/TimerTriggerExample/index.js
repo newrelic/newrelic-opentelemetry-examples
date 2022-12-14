@@ -20,11 +20,12 @@ async function queueMessageTimerFunction(context, myTimer) {
 
 let _index = 0
 function getNextMessage() {
-  const message = MESSAGES[_index++];
+  const messageBody = MESSAGES[_index++];
 
   if (_index >= MESSAGES.length) {
     _index = 0;
   }
 
+  const message = { body: JSON.stringify(messageBody) };
   return message;
 }
