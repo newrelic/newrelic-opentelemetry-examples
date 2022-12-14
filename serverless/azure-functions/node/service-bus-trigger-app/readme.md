@@ -20,11 +20,11 @@ This does not yet currently add additional Pub/Sub attributes from the semantic 
 
 The following settings are recommended to be set in your Azure Function App configuration and local settings (or ENV vars).
 
-* `API_KEY` [required]: Must be set to allow data to be sent to new relic. requires a new relic ingest license key: https://one.newrelic.com/launcher/api-keys-ui.launcher.
+* `API_KEY` [required]: Must be set to allow data to be sent to new relic. Requires a new relic ingest license key: https://one.newrelic.com/launcher/api-keys-ui.launcher.
 
 * `APPLICATION_QUEUE_STORAGE` [required]: Connection string for the Azure Service Bus Queue to connect to. Should take the form `Endpoint=sb://<some resource name>/;SharedAccessKeyName=<some access key name>;SharedAccessKey=<some access key value>`. For the example to work with the timer trigger function, this needs to be the same as configured there.
 
-* `EXTERNAL_URL`: URL to make external calls to. If using with the downstream http trigger example, this needs to point to that available endpoint. This can be grabbed via the Azure extension in the http trigger project by using the command pallet: `command+shift+p` -> `Copy Function Url`.
+* `EXTERNAL_URL`: URL to make external calls to. If using with the downstream http trigger example, this needs to point to that available endpoint. This can be grabbed via the Azure extension for the http trigger project by using the command pallet: `Command + Shift + P` -> `Azure Functions: Copy Function Url` once that Azure Function App has been deployed.
 
 ## Optional Configuration
 
@@ -50,7 +50,7 @@ Use `npm run dev` to run locally, without a debugger, with multiple azure functi
 
 Creating a new Azure Function App can be done through the website or via the Azure extension. Below describes creating through the Azure extension in VS Code.
 
-[`Resources` -> `Function App` -> right-click] OR [command pallet (`command+shift+p`)] -> `Create Function App in Azure....`
+[`Resources` -> `Function App` -> right-click] OR [command pallet (`Command + Shift + P`)] -> `Azure Functions: Create Function App in Azure....`
 
 Enter a name, a Node.js runtime and a region. This current version of the example has been tested with Node 16 in Azure and Node 18 locally.
 
@@ -64,4 +64,4 @@ An easy way to get started is through the Azure plugin to select the function ap
 
 Now in your primary application folder, deploy the application to the Azure Function App.
 
-[right-click] OR [command pallet (`command+shift+p`)] -> `Deploy to Function App...` and choose the Function App you created earlier.
+[right-click] OR [command pallet (`Command + Shift + P`)] -> `Azure Functions: Deploy to Function App...` and choose the Function App you created earlier.

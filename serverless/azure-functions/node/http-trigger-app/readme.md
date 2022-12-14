@@ -69,3 +69,5 @@ Once deployed, to execute from another function within Azure, you'll need to get
 This can be done inside VS Code by leveraging the command pallet. `Command + Shift + P` -> `Azure Functions: Copy Function URL`. Choose the deployed Azure Function App and then the specific function. Once selected, the URL will be on your clip-board. Paste into the appropriate location for usage, such as the `EXTERNAL_URL` setting of the queue trigger example.
 
 This URL will likely take the form `https://<azure function app>.azurewebsites.net/api/<functionname>?code=<some code>`.
+
+You can also get the URL through the Azure UI. Navigate to your Azure Function App -> `Functions` (left nav) -> `HttpTriggerExample` -> `Get Function URL` (tool bar) -> copy the default function key.

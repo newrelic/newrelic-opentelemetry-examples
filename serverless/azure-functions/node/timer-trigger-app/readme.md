@@ -14,7 +14,7 @@ Traces are buffered using a `BatchSpanProcessor`. The batch span processor will 
 
 The following settings are recommended to be set in your Azure Function App configuration and local settings (or ENV vars).
 
-* `API_KEY` [required]: Must be set to allow data to be sent to new relic. requires a new relic ingest license key: https://one.newrelic.com/launcher/api-keys-ui.launcher.
+* `API_KEY` [required]: Must be set to allow data to be sent to new relic. Requires a new relic ingest license key: https://one.newrelic.com/launcher/api-keys-ui.launcher.
 
 * `APPLICATION_QUEUE_STORAGE`: Connection string for the Azure Service Bus Queue to connect to. The function will skip sending messages if this is not set. Should take the form `Endpoint=sb://<some resource name>/;SharedAccessKeyName=<some access key name>;SharedAccessKey=<some access key value>`. For the downstream queue example to work, this needs to be the same queue as configured for that example.
 
@@ -42,7 +42,7 @@ Use `npm run dev` to run locally, without a debugger, with multiple azure functi
 
 Creating a new Azure Function App can be done through the website or via the Azure extension. Below describes creating through the Azure extension in VS Code.
 
-[`Resources` -> `Function App` -> right-click] OR [command pallet (`command+shift+p`)] -> `Create Function App in Azure....`
+[`Resources` -> `Function App` -> right-click] OR [command pallet (`Command + Shift + P`)] -> `Azure Functions: Create Function App in Azure....`
 
 Enter a name, a Node.js runtime and a region. This current version of the example has been tested with Node 16 in Azure and Node 18 locally.
 
@@ -56,4 +56,4 @@ An easy way to get started is through the Azure plugin to select the function ap
 
 Now in your primary application folder, deploy the application to the Azure Function App.
 
-[right-click] OR [command pallet (`command+shift+p`)] -> `Deploy to Function App...` and choose the Function App you created earlier.
+[right-click] OR [command pallet (`Command + Shift + P`)] -> `Azure Functions: Deploy to Function App...` and choose the Function App you created earlier.
