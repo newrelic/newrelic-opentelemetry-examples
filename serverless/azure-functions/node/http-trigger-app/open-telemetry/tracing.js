@@ -36,13 +36,11 @@ const provider = new NodeTracerProvider({
 });
 
 // It is also valid to set ENV vars for configuration here instead of manually setting.
-// OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317
 // OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key_here>
 const metadata = new grpc.Metadata();
 metadata.set('api-key', process.env.API_KEY);
 
 const otlpExporter = new OTLPTraceExporter({
-  url: 'https://otlp.nr-data.net:4317',
   credentials: grpc.credentials.createSsl(),
   metadata
 });

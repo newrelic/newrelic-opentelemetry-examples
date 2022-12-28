@@ -24,13 +24,14 @@ See also the FAAS Semantic conventions, which are currently experimental and sub
 
 The following settings are recommended to be set in your Azure Function App configuration and local settings (`local.settings.json`) or ENV vars. The first time you debug an example, VS Code will automatically create `local.settings.json` for you. This file is not committed to source control as it may contain secrets.
 
+* `OTEL_EXPORTER_OTLP_ENDPOINT`: Must be set to a valid endpoint such as: `https://otlp.nr-data.net:4317`. See options in the [Open Telemetry Setup](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/opentelemetry-setup/#review-settings) page.
+
 * `API_KEY` [required]: Must be set to allow data to be sent to new relic. Requires a new relic ingest license key: https://one.newrelic.com/launcher/api-keys-ui.launcher.
 
 ## Optional Configuration
 
-Instead of manually plumbing values configuration as in the example, the following environment variables may be set to configure export to New Relic over OTLP and adhere to [New Relic's data ingest limits](https://docs.newrelic.com/docs/data-apis/manage-data/view-system-limits/#all_products):
+Instead of manually plumbing values configuration as in the example, the following environment variables may be set to configure export to New Relic and adhere to [New Relic's data ingest limits](https://docs.newrelic.com/docs/data-apis/manage-data/view-system-limits/#all_products):
 
-* `OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317`
 * `OTEL_EXPORTER_OTLP_HEADERS="api-key=<your_license_key>"`
   * Replace `<your_license_key>` with your
     [Account License Key](https://one.newrelic.com/launcher/api-keys-ui.launcher).
