@@ -147,7 +147,7 @@ async function _endInvocation(span, error, status) {
     });
 
     // Your threshold considerations may vary.
-    if (status >= 400) {
+    if (status >= 500) {
       span.setStatus({
         code: opentelemetry.SpanStatusCode.ERROR,
         message: `Status Code Error: ${statusCode}`
