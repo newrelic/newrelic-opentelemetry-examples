@@ -10,15 +10,13 @@ Requires:
 To run this demo app via the CLI:
 
 1. Switch to the `java` directory
-2. Export the following environment variable (replace `<your_license_key>` with your [New Relic ingest license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)):
+2. Set these two environment variables to send data to your New Relic account:
 ```
-export newrelicLicenseKey=<your_license_key>
+export OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>
+export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317
 ```
-
-Optionally, you can also set the following to a different endpoint; this app has been configured to export data to this endpoint by default. 
-```
-export newrelicOtlpEndpoint=https://otlp.nr-data.net:4317
-```
+* Make sure to use your [ingest license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)
+* If your account is based in the EU, set the endpoint to: https://otlp.eu01.nr-data.net:4317
 
 3. Run the following command
 
