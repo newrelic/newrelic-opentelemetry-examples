@@ -31,7 +31,7 @@ public class Controller {
     private static final AttributeKey<Boolean> ATTR_VALID_N = AttributeKey.booleanKey("fibonacci.valid.n");
 
     private final Tracer tracer;
-    private final LongCounter myCounter;
+    private final LongCounter fibonacciInvocations;
 
     @Autowired
     Controller(OpenTelemetry openTelemetry) {
@@ -39,7 +39,7 @@ public class Controller {
         tracer = openTelemetry.getTracer(Controller.class.getName());
         // Initialize instrument
         Meter meter = openTelemetry.getMeter(Controller.class.getName());
-        myCounter = meter.counterBuilder("my-custom-counter").setDescription("A counter that counts things").build();
+        fibonacciInvocations = meter.counterBuilder("fibonacci.invocations").setDescription("Measures the number of times the fibonacci method is invoked.").build();
     }
 
     @GetMapping(value = "/fibonacci")
@@ -82,7 +82,7 @@ public class Controller {
             }
             span.setAttribute(ATTR_RESULT, last);
             // Counter to capture valid inputs and the number of times each occurs
-            myCounter.add(1, Attributes.of(ATTR_VALID_N, true));
+            fibonacciInvocations.add(1, Attributes.of(ATTR_VALID_N, true));
             // Log the result of a valid input
             LOGGER.info("An output of " + last + " was recorded");
             return last;
@@ -90,7 +90,7 @@ public class Controller {
             // Record the exception and set the span status
             span.recordException(e).setStatus(StatusCode.ERROR, e.getMessage());
             // Counter to capture invalid inputs and the number of times each occurs
-            myCounter.add(1, Attributes.of(ATTR_VALID_N, false));
+            fibonacciInvocations.add(1, Attributes.of(ATTR_VALID_N, false));
             // Log when no output was recorded
             LOGGER.info("An exception occurred and no output was recorded");
             throw e;
