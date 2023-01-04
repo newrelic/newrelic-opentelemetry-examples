@@ -27,6 +27,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-log4j2'
 
     // OpenTelemetry core
+    implementation 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure'
     implementation platform('io.opentelemetry:opentelemetry-bom:1.20.1')
     implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.20.1-alpha')
     implementation 'io.opentelemetry:opentelemetry-api'

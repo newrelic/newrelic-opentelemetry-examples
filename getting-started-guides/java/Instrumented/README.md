@@ -18,7 +18,12 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317
 * Make sure to use your [ingest license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)
 * If your account is based in the EU, set the endpoint to: https://otlp.eu01.nr-data.net:4317
 
-3. Run the following command
+3. Set this environment variable to name the demo app:
+```
+export OTEL_SERVICE_NAME=getting-started-java
+```
+
+4. Run the following command
 
 ```shell
 ./gradlew bootRun
