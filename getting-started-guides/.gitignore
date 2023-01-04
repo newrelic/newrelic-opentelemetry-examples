@@ -1,9 +1,0 @@
-.idea/
-
-# .NET build artifacts
-[Bb]in/
-[Oo]bj/
-
-# Java build artifacts
-build/
-.gradle/
