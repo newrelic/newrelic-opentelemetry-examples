@@ -1,6 +1,6 @@
 # Getting Started Guide - Java
 
-This is the solution (completely instrumented with OpenTelemetry) for the Java demo application used in the Getting Started Guide - Java doc. 
+This is the solution (completely instrumented with OpenTelemetry) for the Java demo application used in the Getting Started Guide - Java tutorial. 
 
 Requires:
 

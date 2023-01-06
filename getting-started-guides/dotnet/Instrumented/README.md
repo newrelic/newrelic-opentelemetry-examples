@@ -1,6 +1,6 @@
 # Getting Started Guide - .NET
 
-This is the solution (completely instrumented with OpenTelemetry) for the .NET demo application used in the Getting Started Guide - .NET doc. 
+This is the solution (completely instrumented with OpenTelemetry) for the .NET demo application used in the Getting Started Guide - .NET tutorial. 
 
 Requires:
 
