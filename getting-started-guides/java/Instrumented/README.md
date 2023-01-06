@@ -1,6 +1,6 @@
 # Getting Started Guide - Java
 
-This is the solution (completely instrumented with OpenTelemetry) for the Java demo application used in the Getting Started Guide - Java tutorial. 
+This is the solution (completely instrumented with OpenTelemetry) for the Java demo application used in the Getting Started Guide - Java doc. 
 
 Requires:
 
@@ -26,7 +26,7 @@ export OTEL_SERVICE_NAME=getting-started-java
 4. Run the following command
 
 ```shell
-./gradlew bootRun
+../gradlew bootRun
 ```
 
 4. To generate traffic, in a new terminal tab run the following command
