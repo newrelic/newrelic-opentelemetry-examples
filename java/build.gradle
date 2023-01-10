@@ -34,7 +34,7 @@ subprojects {
       implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.21.0-alpha")
 
       testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
-      testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
+      testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
     }
   }
 }
