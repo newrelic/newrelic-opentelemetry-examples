@@ -1,6 +1,7 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
 plugins {
   id 'org.springframework.boot'
-  id 'io.spring.dependency-management'
   id 'java'
 }
 
@@ -13,12 +14,13 @@ configurations.all {
 }
 
 dependencies {
+  implementation platform(SpringBootPlugin.BOM_COORDINATES)
   implementation 'org.springframework.boot:spring-boot-starter-web'
   implementation 'org.springframework.boot:spring-boot-starter-log4j2'
 
   // OpenTelemetry core
-  implementation platform('io.opentelemetry:opentelemetry-bom:1.20.1')
-  implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.20.1-alpha')
+  implementation platform('io.opentelemetry:opentelemetry-bom:1.22.0')
+  implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.22.0-alpha')
   implementation 'io.opentelemetry:opentelemetry-api'
   implementation 'io.opentelemetry:opentelemetry-sdk'
   implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
@@ -26,8 +28,8 @@ dependencies {
   implementation 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure'
 
   // OpenTelemetry instrumentation
-  implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.20.2-alpha')
+  implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.22.1-alpha')
   implementation 'io.opentelemetry.instrumentation:opentelemetry-runtime-metrics'
   implementation 'io.opentelemetry.instrumentation:opentelemetry-log4j-appender-2.17'
-  implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-5.3'
+  implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-6.0'
 }

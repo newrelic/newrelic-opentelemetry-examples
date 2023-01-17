@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
 plugins {
   id 'java-library'
   id 'org.springframework.boot'
@@ -19,7 +21,7 @@ dependencies {
   implementation 'io.opentelemetry:opentelemetry-exporter-logging'
   implementation 'io.opentelemetry:opentelemetry-semconv'
 
-  implementation platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+  implementation platform(SpringBootPlugin.BOM_COORDINATES)
   implementation 'io.opentelemetry.instrumentation:opentelemetry-runtime-metrics'
   implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-6.0'
   implementation 'io.opentelemetry.instrumentation:opentelemetry-log4j-appender-2.17'

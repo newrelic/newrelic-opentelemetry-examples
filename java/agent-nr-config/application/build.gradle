@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
 plugins {
     id 'java-library'
     id 'org.springframework.boot'
@@ -38,7 +40,7 @@ configurations.all {
 dependencies {
   implementation 'io.opentelemetry:opentelemetry-api'
 
-  implementation platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+  implementation platform(SpringBootPlugin.BOM_COORDINATES)
   implementation 'org.springframework.boot:spring-boot-starter-web'
   implementation 'org.springframework.boot:spring-boot-starter-log4j2'
   implementation 'org.springframework.boot:spring-boot-starter-actuator'
