@@ -8,7 +8,7 @@ subprojects {
 
     java {
       toolchain {
-        languageVersion = JavaLanguageVersion.of(11)
+        languageVersion = JavaLanguageVersion.of(17)
       }
     }
 
@@ -20,6 +20,7 @@ subprojects {
 
     repositories {
       mavenCentral()
+      mavenLocal()
       // Uncomment to access snapshots
       // maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
@@ -29,8 +30,8 @@ subprojects {
     }
 
     dependencies {
-      implementation platform("io.opentelemetry:opentelemetry-bom:1.22.0")
-      implementation platform("io.opentelemetry:opentelemetry-bom-alpha:1.22.0-alpha")
+      implementation platform("io.opentelemetry:opentelemetry-bom:1.23.0-SNAPSHOT")
+      implementation platform("io.opentelemetry:opentelemetry-bom-alpha:1.23.0-alpha-SNAPSHOT")
       implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.22.1-alpha")
 
       testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
