@@ -1,6 +1,7 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
 plugins {
     id 'org.springframework.boot'
-    id 'io.spring.dependency-management'
     id 'java'
 }
 
@@ -9,5 +10,6 @@ bootRun {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+  implementation platform(SpringBootPlugin.BOM_COORDINATES)
+  implementation 'org.springframework.boot:spring-boot-starter-web'
 }
