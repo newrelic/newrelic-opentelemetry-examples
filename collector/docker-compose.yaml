@@ -1,10 +1,10 @@
 version: '3'
 services:
   collector:
-    image: otel/opentelemetry-collector-contrib:0.57.2
+    image: otel/opentelemetry-collector-contrib:0.69.0
     volumes:
     - ./otel-config.yaml:/otel-config.yaml
-    command: ["/otelcol-contrib", "--config=/otel-config.yaml", "${OTELCOL_ARGS}"]
+    command: ["--config=/otel-config.yaml", "${OTELCOL_ARGS}"]
     environment:
       LOG_EXPORTER_LOG_LEVEL: "DEBUG"
       NEW_RELIC_API_KEY: "${NEW_RELIC_API_KEY}"
