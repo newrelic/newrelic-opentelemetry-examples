@@ -21,29 +21,23 @@ public class Controller {
    * @param n must be >=1 and <= 90.
    */
   private long fibonacci(long n) {
-    try {
-      if (n < 1 || n > 90) {
-        throw new IllegalArgumentException("n must be 1 <= n <= 90.");
-      }
-      // Base cases
-      if (n == 1) {
-        return 1;
-      }
-      if (n == 2) {
-        return 1;
-      }
-
-      long lastLast = 1;
-      long last = 2;
-      for (long i = 4; i <= n; i++) {
-        long cur = last + lastLast;
-        lastLast = last;
-        last = cur;
-      }
-      return last;
-    } catch (IllegalArgumentException e) {
-      throw e;
+    if (n < 1 || n > 90) {
+      throw new IllegalArgumentException("n must be 1 <= n <= 90.");
     }
+
+    long result = 1;
+    if (n > 2) {
+      long a = 0;
+      long b = 1;
+
+      for (long i = 1; i < n; i++) {
+        result = a + b;
+        a = b;
+        b = result;
+      }
+    }
+
+    return result;
   }
 
   @ControllerAdvice

@@ -21,10 +21,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class Controller {
 
-  // Logger (note that this is not an OTel component)
   private static final Logger LOGGER = LogManager.getLogger(Controller.class);
 
-  // Attribute constants
   private static final AttributeKey<Long> ATTR_N = AttributeKey.longKey("fibonacci.n");
   private static final AttributeKey<Long> ATTR_RESULT = AttributeKey.longKey("fibonacci.result");
   private static final AttributeKey<Boolean> ATTR_VALID_N =
@@ -35,9 +33,7 @@ public class Controller {
 
   @Autowired
   Controller(OpenTelemetry openTelemetry) {
-    // Initialize tracer
     tracer = openTelemetry.getTracer(Controller.class.getName());
-    // Initialize instrument
     Meter meter = openTelemetry.getMeter(Controller.class.getName());
     fibonacciInvocations =
         meter
@@ -60,41 +56,31 @@ public class Controller {
     // Start a new span and set your first attribute
     var span = tracer.spanBuilder("fibonacci").setAttribute(ATTR_N, n).startSpan();
 
-    // Set the span as the current span
     try (var scope = span.makeCurrent()) {
       if (n < 1 || n > 90) {
         throw new IllegalArgumentException("n must be 1 <= n <= 90.");
       }
-      // Base cases
-      if (n == 1) {
-        span.setAttribute(ATTR_RESULT, 1);
-        return 1;
-      }
-      if (n == 2) {
-        span.setAttribute(ATTR_RESULT, 1);
-        return 1;
+
+      long result = 1;
+      if (n > 2) {
+        long a = 0;
+        long b = 1;
+
+        for (long i = 1; i < n; i++) {
+          result = a + b;
+          a = b;
+          b = result;
+        }
       }
 
-      long lastLast = 1;
-      long last = 2;
-      for (long i = 4; i <= n; i++) {
-        long cur = last + lastLast;
-        lastLast = last;
-        last = cur;
-      }
-      span.setAttribute(ATTR_RESULT, last);
-      // Counter to capture valid inputs and the number of times each occurs
+      span.setAttribute(ATTR_RESULT, result);
       fibonacciInvocations.add(1, Attributes.of(ATTR_VALID_N, true));
-      // Log the result of a valid input
-      LOGGER.info("An output of " + last + " was recorded");
-      return last;
+      LOGGER.info("Compute fibonacci(" + n + ") = " + result);
+      return result;
     } catch (IllegalArgumentException e) {
-      // Record the exception and set the span status
       span.recordException(e).setStatus(StatusCode.ERROR, e.getMessage());
-      // Counter to capture invalid inputs and the number of times each occurs
       fibonacciInvocations.add(1, Attributes.of(ATTR_VALID_N, false));
-      // Log when no output was recorded
-      LOGGER.info("An exception occurred and no output was recorded");
+      LOGGER.info("Failed to compute fibonacci(" + n + ")");
       throw e;
     } finally {
       // End the span
