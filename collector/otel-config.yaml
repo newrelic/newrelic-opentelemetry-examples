@@ -11,12 +11,14 @@ processors:
   # Will convert all monotonic, cumulative sums to monotonic, delta sums
   cumulativetodelta:
   transform:
-    traces:
-      queries:
+    trace_statements:
+      - context: span
+        statements:
         - truncate_all(attributes, 4095)
         - truncate_all(resource.attributes, 4095)
-    logs:
-      queries:
+    log_statements:
+      - context: log
+        statements:
         - truncate_all(attributes, 4095)
         - truncate_all(resource.attributes, 4095)
 exporters:
