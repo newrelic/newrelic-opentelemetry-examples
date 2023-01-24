@@ -21,8 +21,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class Controller {
 
+  // Logger (note that this is not an OTel component)
   private static final Logger LOGGER = LogManager.getLogger(Controller.class);
-
+  
+  // Attribute constants
   private static final AttributeKey<Long> ATTR_N = AttributeKey.longKey("fibonacci.n");
   private static final AttributeKey<Long> ATTR_RESULT = AttributeKey.longKey("fibonacci.result");
   private static final AttributeKey<Boolean> ATTR_VALID_N =
@@ -33,7 +35,9 @@ public class Controller {
 
   @Autowired
   Controller(OpenTelemetry openTelemetry) {
+    // Initialize tracer
     tracer = openTelemetry.getTracer(Controller.class.getName());
+    // Initialize instrument
     Meter meter = openTelemetry.getMeter(Controller.class.getName());
     fibonacciInvocations =
         meter
@@ -55,7 +59,8 @@ public class Controller {
   private long fibonacci(long n) {
     // Start a new span and set your first attribute
     var span = tracer.spanBuilder("fibonacci").setAttribute(ATTR_N, n).startSpan();
-
+    
+    // Set the span as the current span 
     try (var scope = span.makeCurrent()) {
       if (n < 1 || n > 90) {
         throw new IllegalArgumentException("n must be 1 <= n <= 90.");
@@ -72,14 +77,19 @@ public class Controller {
           b = result;
         }
       }
-
+      // Set a span attribute to capture information about successful requests
       span.setAttribute(ATTR_RESULT, result);
+      // Counter to increment when a valid input is recorded
       fibonacciInvocations.add(1, Attributes.of(ATTR_VALID_N, true));
+      // Log the result of a valid input
       LOGGER.info("Compute fibonacci(" + n + ") = " + result);
       return result;
     } catch (IllegalArgumentException e) {
+      // Record the exception and set the span status
       span.recordException(e).setStatus(StatusCode.ERROR, e.getMessage());
+      // Counter to increment when an invalid input is recorded
       fibonacciInvocations.add(1, Attributes.of(ATTR_VALID_N, false));
+      // Log when no output was recorded
       LOGGER.info("Failed to compute fibonacci(" + n + ")");
       throw e;
     } finally {
