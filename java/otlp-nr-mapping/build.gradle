@@ -30,6 +30,6 @@ dependencies {
   implementation "com.google.protobuf:protobuf-java-util:3.21.12"
   constraints {
     implementation "com.google.code.gson:gson:2.10.1"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.10"
   }
 }
