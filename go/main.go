@@ -15,7 +15,6 @@ import (
 	"go.opentelemetry.io/otel/metric/global"
 	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/metric/metricdata"
-	"go.opentelemetry.io/otel/sdk/metric/view"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
@@ -23,8 +22,8 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 )
 
-func NewRelicTemporalitySelector(kind view.InstrumentKind) metricdata.Temporality {
-	if kind == view.SyncUpDownCounter || kind == view.AsyncUpDownCounter {
+func NewRelicTemporalitySelector(kind metric.InstrumentKind) metricdata.Temporality {
+	if kind == metric.InstrumentKindUpDownCounter || kind == metric.InstrumentKindObservableUpDownCounter {
 		return metricdata.CumulativeTemporality
 	}
 	return metricdata.DeltaTemporality
@@ -44,7 +43,7 @@ func main() {
 	tracer := otel.GetTracerProvider().Tracer("my-tracer")
 	meter := global.Meter("my-meter")
 
-	responseTimeInstrument, err := meter.SyncInt64().Histogram("http.server.duration")
+	responseTimeInstrument, err := meter.Int64Histogram("http.server.duration")
 	if err != nil {
 		log.Panicf("failed to initialize instrument: %v", err)
 	}
@@ -98,14 +97,17 @@ func initTracerProvider(ctx context.Context, res *resource.Resource) {
 }
 
 func initMeterProvider(ctx context.Context, res *resource.Resource) {
-	exporter, err := otlpmetricgrpc.New(ctx)
+	exporter, err := otlpmetricgrpc.New(
+		ctx,
+		otlpmetricgrpc.WithTemporalitySelector(NewRelicTemporalitySelector),
+	)
+
 	if err != nil {
 		log.Fatalf("%s: %v", "failed to create metric exporter", err)
 	}
 
 	reader := metric.NewPeriodicReader(
 		exporter,
-		metric.WithTemporalitySelector(NewRelicTemporalitySelector),
 		metric.WithInterval(2*time.Second),
 	)
 
