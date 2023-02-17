@@ -18,13 +18,13 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.opentelemetry.sdk.metrics.internal.view.ExponentialHistogramAggregation;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanLimits;
@@ -110,7 +110,7 @@ public class Application {
             // data and compression
             .setDefaultAggregationSelector(
                 DefaultAggregationSelector.getDefault()
-                    .with(InstrumentType.HISTOGRAM, ExponentialHistogramAggregation.getDefault()));
+                    .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()));
     // Enable retry policy via unstable API
     RetryUtil.setRetryPolicyOnDelegate(metricExporterBuilder, RetryPolicy.getDefault());
     sdkMeterProviderBuilder.registerMetricReader(

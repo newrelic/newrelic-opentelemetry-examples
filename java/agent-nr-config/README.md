@@ -18,7 +18,7 @@ Set the following environment variables:
   * Optionally export metrics every 5000 ms instead of the default 60s.
 * `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=DELTA`
   * New Relic supports metrics in delta temporality, instead of the default cumulative.
-* `OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION=EXPONENTIAL_BUCKET_HISTOGRAM`
+* `OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION=BASE2_EXPONENTIAL_BUCKET_HISTOGRAM`
   * Use exponential histogram instead of default explicit bucket histogram for better data compression.
 * `OTEL_LOGS_EXPORTER=otlp`
   * Enable log export over OTLP. Log export is disabled by default.
@@ -44,7 +44,7 @@ Run the application from a shell in the [java root](../) via:
 export OTEL_EXPORTER_OTLP_HEADERS=api-key=your_license_key \
 && export OTEL_METRIC_EXPORT_INTERVAL=5000 \
 && export OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=DELTA \
-&& export OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION=EXPONENTIAL_BUCKET_HISTOGRAM \
+&& export OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION=BASE2_EXPONENTIAL_BUCKET_HISTOGRAM \
 && export OTEL_LOGS_EXPORTER=otlp \
 && export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317 \
 && export OTEL_EXPORTER_OTLP_COMPRESSION=gzip \
