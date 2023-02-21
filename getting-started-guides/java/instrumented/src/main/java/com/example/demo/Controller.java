@@ -23,7 +23,7 @@ public class Controller {
 
   // Logger (note that this is not an OTel component)
   private static final Logger LOGGER = LogManager.getLogger(Controller.class);
-  
+
   // Attribute constants
   private static final AttributeKey<Long> ATTR_N = AttributeKey.longKey("fibonacci.n");
   private static final AttributeKey<Long> ATTR_RESULT = AttributeKey.longKey("fibonacci.result");
@@ -59,8 +59,8 @@ public class Controller {
   private long fibonacci(long n) {
     // Start a new span and set your first attribute
     var span = tracer.spanBuilder("fibonacci").setAttribute(ATTR_N, n).startSpan();
-    
-    // Set the span as the current span 
+
+    // Set the span as the current span
     try (var scope = span.makeCurrent()) {
       if (n < 1 || n > 90) {
         throw new IllegalArgumentException("n must be 1 <= n <= 90.");
