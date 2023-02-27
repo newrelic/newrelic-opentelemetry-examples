@@ -3,7 +3,7 @@ package com.newrelic.otel.extension;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_INSTANCE_ID;
 
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.contrib.samplers.RuleBasedRoutingSampler;
+import io.opentelemetry.contrib.sampler.RuleBasedRoutingSampler;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.resources.Resource;
