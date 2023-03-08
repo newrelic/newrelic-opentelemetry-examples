@@ -33,7 +33,7 @@ $Env:OTEL_LOG_LEVEL="debug"
 $Env:OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp.nr-data.net:4317"
 $Env:OTEL_EXPORTER_OTLP_HEADERS="api-key=XXXX...NRAL"
 $Env:OTEL_SERVICE_NAME="otel-python-uninstrumented"
-$Env:OTEL_RESOURCE_ATTRIBUTES="service.instance.id=localhost-pc,tag.team=newrelic"
+$Env:OTEL_RESOURCE_ATTRIBUTES="service.instance.id=localhost-pc,tags.team=newrelic"
 ```
 
 Linux / macOS
@@ -44,7 +44,7 @@ export OTEL_LOG_LEVEL="debug"
 export OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp.nr-data.net:4317"
 export OTEL_EXPORTER_OTLP_HEADERS="api-key=XXXX...NRAL"
 export OTEL_SERVICE_NAME="otel-python-uninstrumented"
-export OTEL_RESOURCE_ATTRIBUTES="service.instance.id=localhost-pc,tag.team=newrelic"
+export OTEL_RESOURCE_ATTRIBUTES="service.instance.id=localhost-pc,tags.team=newrelic"
 ```
 
 2. Install the following packages to your virtual environment
