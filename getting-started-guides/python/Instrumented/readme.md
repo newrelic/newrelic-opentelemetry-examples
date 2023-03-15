@@ -18,7 +18,7 @@ cd ./getting-started-guides/python/Instrumented/
 | 4    | `python -m pip install --upgrade pip`    | `python3 -m pip install --upgrade pip`    |
 | 5    | `pip install -r requirements.txt`        | `pip install -r requirements.txt`         |
 | 6    | Set OTEL environment variables `$Env:`   | Set OTEL environment variables `export`   |
-| 7    | `opentelemetry-instrument python app.py` | `opentelemetry-instrument python3 app.py` |
+| 7    | `python app.py`                          | `python3 app.py`                          |
 
 Set the Application Name and New Relic Ingest - License Key.
 
@@ -32,7 +32,7 @@ $Env:OTEL_LOGS_EXPORTER="otlp"
 $Env:OTEL_LOG_LEVEL="debug"
 $Env:OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp.nr-data.net:4317"
 $Env:OTEL_EXPORTER_OTLP_HEADERS="api-key=XXXX...NRAL"
-$Env:OTEL_SERVICE_NAME="otel-python-uninstrumented"
+$Env:OTEL_SERVICE_NAME="otel-python-instrumented"
 $Env:OTEL_RESOURCE_ATTRIBUTES="service.instance.id=localhost-pc,tags.team=newrelic"
 ```
 
