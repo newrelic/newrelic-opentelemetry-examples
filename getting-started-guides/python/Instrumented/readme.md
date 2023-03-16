@@ -27,27 +27,17 @@ Set the Application Name and New Relic Ingest - License Key.
 
 Windows (PowerShell)
 ```
-$Env:OTEL_PYTHON_LOG_CORRELATION="true"
-$Env:OTEL_LOGS_EXPORTER="otlp"
-$Env:OTEL_LOG_LEVEL="debug"
 $Env:OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp.nr-data.net:4317"
 $Env:OTEL_EXPORTER_OTLP_HEADERS="api-key=XXXX...NRAL"
-$Env:OTEL_SERVICE_NAME="otel-python-instrumented"
-$Env:OTEL_RESOURCE_ATTRIBUTES="service.instance.id=localhost-pc,tags.team=newrelic"
 ```
 
 Linux / macOS
 ```
-export OTEL_PYTHON_LOG_CORRELATION="true"
-export OTEL_LOGS_EXPORTER="otlp"
-export OTEL_LOG_LEVEL="debug"
 export OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp.nr-data.net:4317"
 export OTEL_EXPORTER_OTLP_HEADERS="api-key=XXXX...NRAL"
-export OTEL_SERVICE_NAME="otel-python-uninstrumented"
-export OTEL_RESOURCE_ATTRIBUTES="service.instance.id=localhost-pc,tags.team=newrelic"
 ```
 
-2. Install the following packages to your virtual environment
+2. Install the following packages to your virtual environment or install everything in `requirements.txt`
 ```
 pip install flask
 pip install opentelemetry-instrumentation-logging
@@ -56,4 +46,4 @@ pip install opentelemetry-exporter-otlp
 pip install opentelemetry-distro
 ```
 
-3. Make the following changes to `app.py` to instrument manually.
+3. Run the application with `python app.py` (Windows) or `python3 app.py` (Linux/Mac)
