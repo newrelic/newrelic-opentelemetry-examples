@@ -1,5 +1,7 @@
-# Initialize Flask Application
 from flask import Flask, jsonify
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 app = Flask(__name__)
 
 ##########################
@@ -42,11 +44,8 @@ metrics.set_meter_provider(MeterProvider(resource=Resource.create(OTEL_RESOURCE_
 metrics.get_meter_provider()
 
 ########
-# Logs #
+# Logs # - OpenTelemetry Logs are still in the "experimental" state, so function names may change in the future
 ########
-import logging
-logging.basicConfig(level=logging.DEBUG)
-
 from opentelemetry import _logs
 from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
