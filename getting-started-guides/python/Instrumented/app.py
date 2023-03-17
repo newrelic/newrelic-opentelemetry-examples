@@ -66,20 +66,29 @@ from opentelemetry.instrumentation.logging import LoggingInstrumentor
 FlaskInstrumentor().instrument_app(app)
 LoggingInstrumentor().instrument() 
 
+# Everything Else
+from opentelemetry.trace.status import Status, StatusCode
+
 # The rest of the Flask application
 @app.route("/fibonacci/<int:x>", strict_slashes=False)
 def fibonacci(x):
-    array = [0, 1]
-    try:
-        if x < 1 or x > 90:
-            raise ValueError("x must be 1 <= x <= 90.")
+    with trace.get_tracer("opentelemetry.instrumentation.custom").start_as_current_span("fibonacci") as span:
+        span.set_attribute("oteldemo.n", x)
 
-        for n in range(2, x + 1):
-            array.append(array[n - 1] + array[n - 2])
-        logging.info("Compute fibonacci(" + str(x) + ") = " + str(array[x]))
-        return jsonify(fibonacci_index=x, fibonacci_number=array[x])
-    
-    except:
-        logging.error("Failed to compute fibonacci(" + str(x) + ")")
+        array = [0, 1] 
+        try:
+            assert 1 <= x <= 90
+
+            for n in range(2, x + 1):
+                array.append(array[n - 1] + array[n - 2])
+
+            span.set_attribute("oteldemo.result", array[x])
+            logging.info("Compute fibonacci(" + str(x) + ") = " + str(array[x]))
+            return jsonify(fibonacci_index=x, fibonacci_number=array[x])
+
+        except (ValueError, AssertionError):
+            span.set_status(Status(StatusCode.ERROR, "Number outside of accepted range."))
+            logging.error("Failed to compute fibonacci(" + str(x) + ")")
+            raise ValueError("x must be 1 <= x <= 90.")
 
 app.run(host='0.0.0.0', port=5000)
