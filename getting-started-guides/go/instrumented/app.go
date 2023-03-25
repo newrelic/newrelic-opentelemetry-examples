@@ -6,6 +6,16 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+
+	"go.opentelemetry.io/otel/attribute"
+	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
+	"go.opentelemetry.io/otel/trace"
+)
+
+const (
+	INPUT_COULD_NOT_BE_PARSED = "Input could not be parsed."
+	INPUT_IS_OUTSIDE_OF_RANGE = "Input is outside of the range [1,90]."
+	CALCULATION_SUCCEEDED     = "Fibonacci is calculated successfully."
 )
 
 type responseObject struct {
@@ -14,32 +24,34 @@ type responseObject struct {
 	Output  *uint64 `json:"output"`
 }
 
+// HTTP handler for Fibonacci calculation
 func handler(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+
+	// Parse input number
 	num, err := parseNum(r)
 	if err != nil {
-		log.Print(err.Error())
 		createHttpResponse(
-			&w,
+			w,
 			http.StatusBadRequest,
 			&responseObject{
-				Message: "Input is invalid. Provide your number as request parameter (...?num=x)",
+				Message: INPUT_COULD_NOT_BE_PARSED,
 				Input:   &num,
 				Output:  nil,
 			})
 		return
 	}
 
-	out, err := fibonacci(num)
+	// Calculate Fibonacci
+	out, err := calculateFibonacci(r, num)
 	if err != nil {
-		log.Printf("Given number [%d] is outside of the range -> 1 <= x <= 90", num)
 		createHttpResponse(
-			&w,
+			w,
 			http.StatusBadRequest,
 			&responseObject{
-				Message: "Input is outside of the range [1,90]",
+				Message: INPUT_IS_OUTSIDE_OF_RANGE,
 				Input:   &num,
 				Output:  nil,
 			})
@@ -47,10 +59,10 @@ func handler(
 	}
 
 	createHttpResponse(
-		&w,
+		w,
 		http.StatusOK,
 		&responseObject{
-			Message: "Fibonacci is calculated successfully.",
+			Message: CALCULATION_SUCCEEDED,
 			Input:   &num,
 			Output:  &out,
 		})
@@ -62,19 +74,48 @@ func parseNum(
 	uint64,
 	error,
 ) {
-	return strconv.ParseUint(r.URL.Query().Get("num"), 10, 64)
+	num, err := strconv.ParseUint(r.URL.Query().Get("num"), 10, 64)
+	if err != nil {
+		log.Print(err.Error())
+	}
+	return num, err
 }
 
-func fibonacci(
+// Calculate Fibonacci per given input number
+func calculateFibonacci(
+	r *http.Request,
 	n uint64,
 ) (
 	uint64,
 	error,
 ) {
+
+	// Start an internal child span for Fibonacci calculation
+	_, span := trace.SpanFromContext(r.Context()).
+		TracerProvider().
+		Tracer("Fibonacci").
+		Start(
+			r.Context(),
+			"fibonacci",
+			trace.WithSpanKind(trace.SpanKindInternal),
+		)
+	defer span.End()
+
+	// Check input
 	if n <= 1 || n > 90 {
+		log.Print(INPUT_IS_OUTSIDE_OF_RANGE)
+
+		// Set error span attributes
+		fibonacciSpanAttrs := []attribute.KeyValue{
+			semconv.OtelStatusCodeError,
+			semconv.OtelStatusDescriptionKey.String(INPUT_IS_OUTSIDE_OF_RANGE),
+		}
+		span.SetAttributes(fibonacciSpanAttrs...)
+
 		return 0, errors.New("invalid input")
 	}
 
+	// Calculate Fibonacci
 	var n2, n1 uint64 = 0, 1
 	for i := uint64(2); i < n; i++ {
 		n2, n1 = n1, n1+n2
@@ -84,11 +125,11 @@ func fibonacci(
 }
 
 func createHttpResponse(
-	w *http.ResponseWriter,
+	w http.ResponseWriter,
 	statusCode int,
 	res *responseObject,
 ) {
-	(*w).WriteHeader(statusCode)
+	w.WriteHeader(statusCode)
 	payload, _ := json.Marshal(res)
-	(*w).Write(payload)
+	w.Write(payload)
 }
