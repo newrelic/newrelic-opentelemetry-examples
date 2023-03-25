@@ -19,9 +19,9 @@ const (
 )
 
 type responseObject struct {
-	Message string  `json:"message"`
-	Input   *uint64 `json:"input"`
-	Output  *uint64 `json:"output"`
+	Message string `json:"message"`
+	Input   *int64 `json:"input"`
+	Output  *int64 `json:"output"`
 }
 
 // HTTP handler for Fibonacci calculation
@@ -71,10 +71,10 @@ func handler(
 func parseNum(
 	r *http.Request,
 ) (
-	uint64,
+	int64,
 	error,
 ) {
-	num, err := strconv.ParseUint(r.URL.Query().Get("num"), 10, 64)
+	num, err := strconv.ParseInt(r.URL.Query().Get("num"), 10, 64)
 	if err != nil {
 		log.Print(err.Error())
 	}
@@ -84,9 +84,9 @@ func parseNum(
 // Calculate Fibonacci per given input number
 func calculateFibonacci(
 	r *http.Request,
-	n uint64,
+	n int64,
 ) (
-	uint64,
+	int64,
 	error,
 ) {
 
@@ -101,27 +101,38 @@ func calculateFibonacci(
 		)
 	defer span.End()
 
+	fibonacciSpanAttrs := []attribute.KeyValue{
+		attribute.Int64("fibonacci.n", n),
+	}
+
 	// Check input
 	if n <= 1 || n > 90 {
 		log.Print(INPUT_IS_OUTSIDE_OF_RANGE)
 
 		// Set error span attributes
-		fibonacciSpanAttrs := []attribute.KeyValue{
+		fibonacciSpanAttrs = append(fibonacciSpanAttrs,
 			semconv.OtelStatusCodeError,
 			semconv.OtelStatusDescriptionKey.String(INPUT_IS_OUTSIDE_OF_RANGE),
-		}
+		)
 		span.SetAttributes(fibonacciSpanAttrs...)
 
 		return 0, errors.New("invalid input")
 	}
 
 	// Calculate Fibonacci
-	var n2, n1 uint64 = 0, 1
-	for i := uint64(2); i < n; i++ {
+	var n2, n1 int64 = 0, 1
+	for i := int64(2); i < n; i++ {
 		n2, n1 = n1, n1+n2
 	}
+	res := n2 + n1
 
-	return n2 + n1, nil
+	// Set calculation result into span
+	fibonacciSpanAttrs = append(fibonacciSpanAttrs,
+		attribute.Int64("fibonacci.result", res),
+	)
+	span.SetAttributes(fibonacciSpanAttrs...)
+
+	return res, nil
 }
 
 func createHttpResponse(
