@@ -48,7 +48,7 @@ func handler(
 
 	createHttpResponse(
 		&w,
-		http.StatusBadRequest,
+		http.StatusOK,
 		&responseObject{
 			Message: "Fibonacci is calculated successfully.",
 			Input:   &num,
