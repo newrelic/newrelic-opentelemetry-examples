@@ -172,7 +172,7 @@ func (h *HttpWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Start the server span
 	ctx, span := otel.GetTracerProvider().
 		Tracer("Fibonacci").
-		Start(ctx, "HTTP "+r.Method, startSpanAttributes...)
+		Start(ctx, r.Method+" /fibonacci", startSpanAttributes...)
 	defer span.End()
 
 	// Create response writer wrapper

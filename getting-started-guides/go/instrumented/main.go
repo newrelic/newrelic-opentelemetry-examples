@@ -18,6 +18,6 @@ func main() {
 	defer shutdownTraceProvider(ctx, tp)
 
 	// Serve
-	http.Handle("/", NewHttpWrapper(http.HandlerFunc(handler), "fibonacci"))
+	http.Handle("/fibonacci", NewHttpWrapper(http.HandlerFunc(handler), "fibonacci"))
 	http.ListenAndServe(":5000", nil)
 }
