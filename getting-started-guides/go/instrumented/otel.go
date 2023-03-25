@@ -121,10 +121,11 @@ func shutdownTraceProvider(
 }
 
 type HttpWrapper struct {
-	operation          string
-	serverName         string
-	handler            http.Handler
-	httpServerDuration instrument.Float64Histogram
+	operation            string
+	serverName           string
+	handler              http.Handler
+	httpServerDuration   instrument.Float64Histogram
+	fibonacciInvocations instrument.Int64Counter
 }
 
 func NewHttpWrapper(
@@ -144,12 +145,22 @@ func NewHttpWrapper(
 		panic(err.Error())
 	}
 
+	// Create Fibonacci invocation counter
+	fibonacciInvocations, err := otel.GetMeterProvider().
+		Meter(serverName).
+		Int64Counter("fibonacci.invocations")
+	if err != nil {
+		log.Print(err.Error())
+		panic(err.Error())
+	}
+
 	// Initialize custom HTTP handler wrapper
 	w := HttpWrapper{
-		serverName:         serverName,
-		handler:            handler,
-		operation:          operation,
-		httpServerDuration: httpServerDuration,
+		serverName:           serverName,
+		handler:              handler,
+		operation:            operation,
+		httpServerDuration:   httpServerDuration,
+		fibonacciInvocations: fibonacciInvocations,
 	}
 
 	return &w
@@ -180,11 +191,26 @@ func (h *HttpWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.handler.ServeHTTP(rww, r.WithContext(ctx))
 
 	// Set up metric attributes
-	metricAttributes := httpconv.ServerRequest(h.serverName, r)
+	httpServerMetricAttributes := httpconv.ServerRequest(h.serverName, r)
+	fibonacciInvocationMetricAttributes := []attribute.KeyValue{}
 
 	if rww.statusCode > 0 {
 		// Add status code to metric attributes
-		metricAttributes = append(metricAttributes, semconv.HTTPStatusCode(rww.statusCode))
+		httpServerMetricAttributes = append(
+			httpServerMetricAttributes,
+			semconv.HTTPStatusCode(rww.statusCode),
+		)
+		if rww.statusCode == 200 {
+			fibonacciInvocationMetricAttributes = append(
+				fibonacciInvocationMetricAttributes,
+				attribute.Bool("fibonacci.valid.n", true),
+			)
+		} else {
+			fibonacciInvocationMetricAttributes = append(
+				fibonacciInvocationMetricAttributes,
+				attribute.Bool("fibonacci.valid.n", false),
+			)
+		}
 
 		// Add status code to span attributes
 		endSpanAttributes := []attribute.KeyValue{semconv.HTTPStatusCode(rww.statusCode)}
@@ -194,7 +220,8 @@ func (h *HttpWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Use floating point division here for higher precision (instead of Millisecond method).
 	elapsedTime := float64(time.Since(requestStartTime)) / float64(time.Millisecond)
 
-	h.httpServerDuration.Record(ctx, elapsedTime, metricAttributes...)
+	h.fibonacciInvocations.Add(ctx, 1, fibonacciInvocationMetricAttributes...)
+	h.httpServerDuration.Record(ctx, elapsedTime, httpServerMetricAttributes...)
 }
 
 // Wrapper for response writer in order to retrieve the status code of the HTTP call
