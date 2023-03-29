@@ -369,12 +369,18 @@ As mentioned before, the context should be passed to your application code! That
 h.handler.ServeHTTP(rww, r.WithContext(ctx))
 ```
 
-Last but not least, you can add the HTTP status code to your server span:
+Just like you have done with metrics, you can also add the HTTP status code to your server span:
 
 ```go
 // Add status code to span attributes
 endSpanAttributes := []attribute.KeyValue{semconv.HTTPStatusCode(rww.statusCode)}
 span.SetAttributes(endSpanAttributes...)
+```
+
+Finally, you need to wrap your HTTP handler with your brand new custom wrapper in `main.go`:
+
+```go
+http.Handle("/fibonacci", NewHttpWrapper(http.HandlerFunc(handler), "fibonacci"))
 ```
 
 Now, you can extend your instrumentation to your application code which is the Fibonacci calculation (method `calculateFibonacci`in `app.go`). Since your calculation is an inner step within the entire server request, it corresponds to a `span.kind` of `internal`:
