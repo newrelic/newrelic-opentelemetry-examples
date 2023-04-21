@@ -5,13 +5,16 @@ require 'sinatra/base'
 require_relative 'fibonacci'
 
 class MyApp < Sinatra::Base
+  MIN = 1
+  MAX = 90
   set :show_exceptions, :after_handler
 
   get '/fibonacci' do
     content_type :json
-    n = params['n'].to_i
 
-    if n.between?(1, 90)
+    n = params['n'].nil? ? rand(MIN..MAX) : params['n'].to_i
+
+    if n.between?(MIN, MAX)
       result = Fibonacci.calculate(n)
     else
       raise Fibonacci::RangeError
