@@ -1,0 +1,23 @@
+node_modules
+
+# lock files
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
+
+# IDE files
+.idea
+.vscode
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# misc
+*.log
+*.out
+*.pid
+npm-debug.log.*
+yarn-debug.log.*
+yarn-error.log.*

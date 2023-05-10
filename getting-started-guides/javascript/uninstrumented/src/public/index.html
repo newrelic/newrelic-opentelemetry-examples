@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Relic Open Telemetry JavaScript</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h3>New Relic Open Telemetry JavaScript - Fibonacci App</h3>
+  <p>
+    Enter a number (n) between 1 and 90, and click "Calculate" to get the nth Fibonacci number.
+  </p>
+  <input id="input-n" type="number" min="1" max="90" value="1" oninput="clearErrorMessage()" />
+  <button onclick="getFibonacci()">Calculate</button>
+  <div id="error-message" style="color: red;"></div>
+  <p>
+    Result: <span id="result"></span>
+  </p>
+  <canvas id="chart"></canvas>
+  <script>
+    // Call the getFibonacci function when the page is loaded.
+    window.addEventListener("DOMContentLoaded", getFibonacci);
+  </script>
+</body>
+</html>

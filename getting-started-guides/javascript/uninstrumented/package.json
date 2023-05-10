@@ -1,0 +1,19 @@
+{
+  "name": "getting-started-newrelic-otel-js",
+  "version": "1.0.0",
+  "description": "Getting started guide newrelic otel javascript",
+  "main": "server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "keywords": [
+    "otel",
+    "newrelic",
+    "javascript"
+  ],
+  "author": "matewilk",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
