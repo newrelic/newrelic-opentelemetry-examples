@@ -11,7 +11,7 @@ from opentelemetry.sdk.resources import Resource
 import uuid
 
 OTEL_RESOURCE_ATTRIBUTES = {
-    "service.name": "otel-python-instrumented", 
+    "service.name": "getting-started-python", 
     "service.instance.id": str(uuid.uuid1()), 
     "environment": "local",
     "tags.team": "newrelic"
@@ -68,13 +68,13 @@ LoggingInstrumentor().instrument()
 
 # Everything Else
 from opentelemetry.trace.status import Status, StatusCode
-fib_counter = metrics.get_meter("opentelemetry.instrumentation.custom").create_counter("work.counter", unit="1", description="Counts the number of times this function runs")
+fib_counter = metrics.get_meter("opentelemetry.instrumentation.custom").create_counter("fibonacci.invocations", unit="1", description="Counts the number of times this function runs")
 
 # The rest of the Flask application
 @app.route("/fibonacci/<int:x>", strict_slashes=False)
 @trace.get_tracer("opentelemetry.instrumentation.custom").start_as_current_span("fibonacci", kind=trace.SpanKind.SERVER)
 def fibonacci(x):
-    trace.get_current_span().set_attribute("oteldemo.n", x)
+    trace.get_current_span().set_attribute("fibonacci.n", x)
     
     try:
         assert 1 <= x <= 90
@@ -82,15 +82,15 @@ def fibonacci(x):
         for n in range(2, x + 1):
             array.append(array[n - 1] + array[n - 2])
 
-        trace.get_current_span().set_attribute("oteldemo.result", array[x])
-        fib_counter.add(1, {"work.type": "pass"})
+        trace.get_current_span().set_attribute("fibonacci.result", array[x])
+        fib_counter.add(1, {"fibonacci.valid.n": "true"})
         logging.info("Compute fibonacci(" + str(x) + ") = " + str(array[x]))
         return jsonify(fibonacci_index=x, fibonacci_number=array[x])
 
     except (ValueError, AssertionError):
         trace.get_current_span().set_status(Status(StatusCode.ERROR, "Number outside of accepted range."))
-        fib_counter.add(1, {"work.type": "fail"})
+        fib_counter.add(1, {"fibonacci.valid.n": "false"})
         logging.error("Failed to compute fibonacci(" + str(x) + ")")
         raise ValueError("x must be 1 <= x <= 90.")
 
-app.run(host='0.0.0.0', port=5000)
+app.run(host='0.0.0.0', port=8080)
