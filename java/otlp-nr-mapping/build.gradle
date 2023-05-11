@@ -12,7 +12,7 @@ dependencies {
   implementation 'io.opentelemetry:opentelemetry-sdk'
   implementation "io.opentelemetry.proto:opentelemetry-proto:0.19.0-alpha"
 
-  implementation platform("com.squareup.okhttp3:okhttp-bom:4.10.0")
+  implementation platform("com.squareup.okhttp3:okhttp-bom:4.11.0")
   implementation 'com.squareup.okhttp3:okhttp'
 
   implementation "org.apache.commons:commons-text:1.10.0"
