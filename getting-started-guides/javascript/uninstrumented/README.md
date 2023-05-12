@@ -15,6 +15,24 @@ Requires:
 - Display the calculated Fibonacci number
 - Visualize the Fibonacci sequence up to the nth number using a line chart
 
+## Architecture
+
+The application is divided into two main parts:
+
+1. **Backend**: A Node.js/Express server that exposes a REST API to calculate Fibonacci numbers.
+2. **Frontend**: A browser-based single-page application that utilizes the REST API to fetch Fibonacci numbers and visualize the sequence using Chart.js.
+
+The server-side code is organized in the following manner:
+
+- `server.js`: The main entry point of the server that sets up the Express app and listens for incoming connections.
+- `routes.js`: A separate module containing the Express routes for handling the Fibonacci REST API.
+
+The frontend code is organized in the following manner:
+
+- `index.html`: The HTML structure of the single-page application.
+- `app.js`: The JavaScript code responsible for handling user input, interacting with the backend REST API, and updating the chart.
+- `styles.css`: The CSS file containing the styles for the frontend.
+
 ## Installation
 
 1. Clone the repository or download the source code:
