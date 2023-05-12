@@ -4,7 +4,7 @@ const router = express.Router();
 
 const fibonacci = (n) => {
   if (n < 1 || n > 90) {
-    throw new Error("API Error: n must be 1 <= n <= 90.");
+    throw new Error("n must be 1 <= n <= 90");
   }
 
   const sequence = [1, 1];
@@ -29,7 +29,7 @@ router.get("/fibonacci/:n", (req, res) => {
 
 // Catch-all route handler
 router.use("*", (req, res) => {
-  res.status(404).json({ error: "Route not found" });
+  res.status(404).json({ error: "Route not found!" });
 });
 
 module.exports = router;

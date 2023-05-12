@@ -5,21 +5,16 @@ let fibonacciChart;
 async function getFibonacci() {
   const n = parseInt(document.getElementById("input-n").value);
   if (isNaN(n) || n < 1 || n > 90) {
-    setError("n must be 1 <= n <= 90.");
+    setError("invalid value: n must be 1 <= n <= 90");
   }
 
   const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
   const response = await fetch(`${apiBaseUrl}/fibonacci/${n}`);
 
-  if (response.status === 404) {
-    alert("Route not found");
-    return;
-  }
-
   const data = await response.json();
 
   if (data.error) {
-    alert(data.error);
+    throw new Error(data.error);
   } else {
     document.getElementById("result").innerText = data.result[n - 1];
     initializeChart(data.result);
