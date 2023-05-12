@@ -61,7 +61,7 @@ npm install
 npm start
 ```
 
-2. Open your browser and navigate to [http://localhost:3000](http://localhost:8080) to access the app.
+2. Open your browser and navigate to [http://localhost:8080](http://localhost:8080) to access the app.
 
 ## License
 
