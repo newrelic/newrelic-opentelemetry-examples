@@ -30,10 +30,9 @@ go run *.go
 
 ## Generate traffic
 
-Switch to the loadgenerator directory and run the following command in a new terminal tab:
+Run the following command in a new terminal tab:
 
 ```shell
-cd ../loadgenerator
 bash ./load-generator.sh
 ```
 
