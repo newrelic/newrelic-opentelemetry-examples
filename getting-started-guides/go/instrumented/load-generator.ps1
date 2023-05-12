@@ -1,4 +1,4 @@
-$ENDPOINT="http://localhost:5000"
+$ENDPOINT="http://localhost:8080"
 
 while ($true) {
     Write-Output "Calling fibonacci-java"

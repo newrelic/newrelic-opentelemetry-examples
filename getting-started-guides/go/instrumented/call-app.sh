@@ -4,7 +4,7 @@ echo "GET ${1}/fibonacci?num=5"
 curl "${1}/fibonacci?num=5" || true
 echo
 
-echo "GET ${1}/fibonacci?n=283"
+echo "GET ${1}/fibonacci?num=283"
 curl "${1}/fibonacci?num=283" || true
 echo
 
