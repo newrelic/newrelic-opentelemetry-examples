@@ -1,5 +1,14 @@
 node_modules
 
+# env files
+.env*
+
+# build files
+dist
+
+# parcel cache
+.parcel-cache
+
 # lock files
 yarn.lock
 package-lock.json

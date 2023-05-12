@@ -1,3 +1,5 @@
+import Chart from "chart.js/auto";
+
 // stores the chart instance globally
 // so we can destroy it when we need to
 let fibonacciChart;
@@ -9,7 +11,7 @@ async function getFibonacci() {
   }
 
   const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
-  const response = await fetch(`${apiBaseUrl}/fibonacci/${n}`);
+  const response = await fetch(`${apiBaseUrl}/api/fibonacci/${n}`);
 
   const data = await response.json();
 
@@ -20,6 +22,19 @@ async function getFibonacci() {
     initializeChart(data.result);
   }
 }
+
+// call getFibonacci() when the page loads
+window.addEventListener("DOMContentLoaded", getFibonacci);
+
+document.addEventListener("DOMContentLoaded", () => {
+  // call getFibonacci() when the button is clicked
+  const calculateButton = document.getElementById("calculate-button");
+  calculateButton.addEventListener("click", getFibonacci);
+
+  // clear the error message when the input changes
+  const inputElement = document.getElementById("input-n");
+  inputElement.addEventListener("input", clearErrorMessage);
+});
 
 function setError(message) {
   const inputElement = document.getElementById("input-n");
