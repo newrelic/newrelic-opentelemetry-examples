@@ -5,7 +5,7 @@ import {
 import { WebTracerProvider } from "@opentelemetry/sdk-trace-web";
 import { DocumentLoadInstrumentation } from "@opentelemetry/instrumentation-document-load";
 import { UserInteractionInstrumentation } from "@opentelemetry/instrumentation-user-interaction";
-import { XMLHttpRequestInstrumentation } from "@opentelemetry/instrumentation-xml-http-request";
+import { FetchInstrumentation } from "@opentelemetry/instrumentation-fetch";
 import { ZoneContextManager } from "@opentelemetry/context-zone";
 import { registerInstrumentations } from "@opentelemetry/instrumentation";
 
@@ -22,6 +22,6 @@ registerInstrumentations({
   instrumentations: [
     new DocumentLoadInstrumentation(),
     new UserInteractionInstrumentation(),
-    new XMLHttpRequestInstrumentation(),
+    new FetchInstrumentation(),
   ],
 });

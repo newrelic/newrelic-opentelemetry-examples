@@ -74,7 +74,7 @@ npm install @opentelemetry/api \
   @opentelemetry/instrumentation \
   @opentelemetry/instrumentation-document-load \
   @opentelemetry/instrumentation-user-interaction \
-  @opentelemetry/instrumentation-xml-http-request \
+  @opentelemetry/instrumentation-fetch \
   @opentelemetry/context-zone
 ```
 
