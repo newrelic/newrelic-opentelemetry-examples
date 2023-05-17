@@ -9,8 +9,10 @@ import { FetchInstrumentation } from "@opentelemetry/instrumentation-fetch";
 import { ZoneContextManager } from "@opentelemetry/context-zone";
 import { registerInstrumentations } from "@opentelemetry/instrumentation";
 
+const exporter = new ConsoleSpanExporter();
+
 const provider = new WebTracerProvider();
-provider.addSpanProcessor(new SimpleSpanProcessor(new ConsoleSpanExporter()));
+provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
 
 provider.register({
   // Changing default contextManager to use ZoneContextManager - supports asynchronous operations - optional

@@ -22,16 +22,16 @@ The application is divided into two main parts:
 1. **Backend**: A Node.js/Express server that exposes a REST API to calculate Fibonacci numbers.
 2. **Frontend**: A browser-based single-page application that utilizes the REST API to fetch Fibonacci numbers and visualize the sequence using Chart.js.
 
-The server-side code is organized in the following manner:
-
-- `server.js`: The main entry point of the server that sets up the Express app and listens for incoming connections.
-- `routes.js`: A separate module containing the Express routes for handling the Fibonacci REST API.
-
-The frontend code is organized in the following manner:
+The **frontend** code is organized in the following manner:
 
 - `index.html`: The HTML structure of the single-page application.
 - `app.js`: The JavaScript code responsible for handling user input, interacting with the backend REST API, and updating the chart.
 - `styles.css`: The CSS file containing the styles for the frontend.
+
+The **server-side** code is organized in the following manner:
+
+- `server.js`: The main entry point of the server that sets up the Express app and listens for incoming connections.
+- `routes.js`: A separate module containing the Express routes for handling the Fibonacci REST API.
 
 ## Installation
 
@@ -55,15 +55,30 @@ npm install
 
 ## Usage
 
-1. Start the server:
+1. Start the app:
 
 ```bash
 npm start
 ```
+The above command will use [parcel]([https://](https://parceljs.org/)) to build the frontend and start the server. 
 
 2. Open your browser and navigate to [http://localhost:8080](http://localhost:8080) to access the app.
 
-## Open Telemetry for Web
+## Open Telemetry Auto Instrumentation for Web
+
+To enable OpenTelemetry auto instrumentation for the web, the following modules have been installed:
+
+```
+npm install @opentelemetry/auto-instrumentations-web \
+  @opentelemetry/sdk-trace-web \
+  @opentelemetry/sdk-trace-base \
+  @opentelemetry/instrumentation \
+  @opentelemetry/context-zone
+```
+
+Refer to the [auto-otel-web.js](./src/public/auto-otel-web.js) file for the implementation details.
+
+## Open Telemetry custom instrumentation for Web
 
 To enable OpenTelemetry instrumentation for the web, the following modules have been installed:
 
@@ -72,12 +87,12 @@ npm install @opentelemetry/api \
   @opentelemetry/sdk-trace-web \
   @opentelemetry/sdk-trace-base \
   @opentelemetry/instrumentation \
+  @opentelemetry/context-zone \
   @opentelemetry/instrumentation-document-load \
   @opentelemetry/instrumentation-user-interaction \
-  @opentelemetry/instrumentation-fetch \
-  @opentelemetry/context-zone
+  @opentelemetry/instrumentation-fetch
 ```
-
+Refer to the [custom-otel-web.js](./src/public/custom-otel-web.js) file for the implementation details.
 
 ## License
 

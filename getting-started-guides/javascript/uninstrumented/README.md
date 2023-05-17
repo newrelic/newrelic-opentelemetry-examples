@@ -1,4 +1,4 @@
-# Uninstrumented JavaScript Demo Fibonacci App
+# Instrumented JavaScript Demo Fibonacci App
 
 This is a simple web application that calculates and visualizes Fibonacci numbers. The app is built using Node.js, Express, and Chart.js.
 
@@ -22,16 +22,16 @@ The application is divided into two main parts:
 1. **Backend**: A Node.js/Express server that exposes a REST API to calculate Fibonacci numbers.
 2. **Frontend**: A browser-based single-page application that utilizes the REST API to fetch Fibonacci numbers and visualize the sequence using Chart.js.
 
-The server-side code is organized in the following manner:
-
-- `server.js`: The main entry point of the server that sets up the Express app and listens for incoming connections.
-- `routes.js`: A separate module containing the Express routes for handling the Fibonacci REST API.
-
-The frontend code is organized in the following manner:
+The **frontend** code is organized in the following manner:
 
 - `index.html`: The HTML structure of the single-page application.
 - `app.js`: The JavaScript code responsible for handling user input, interacting with the backend REST API, and updating the chart.
 - `styles.css`: The CSS file containing the styles for the frontend.
+
+The **server-side** code is organized in the following manner:
+
+- `server.js`: The main entry point of the server that sets up the Express app and listens for incoming connections.
+- `routes.js`: A separate module containing the Express routes for handling the Fibonacci REST API.
 
 ## Installation
 
@@ -44,7 +44,7 @@ git clone https://github.com/newrelic/newrelic-opentelemetry-examples.git
 2. Navigate to the project folder:
 
 ```bash
-cd getting-started-guides/javascript/uninstrumented
+cd getting-started-guides/javascript/instrumented
 ```
 
 3. Install the required dependencies:
@@ -55,11 +55,12 @@ npm install
 
 ## Usage
 
-1. Start the server:
+1. Start the app:
 
 ```bash
 npm start
 ```
+The above command will use [parcel]([https://](https://parceljs.org/)) to build the frontend and start the server. 
 
 2. Open your browser and navigate to [http://localhost:8080](http://localhost:8080) to access the app.
 
