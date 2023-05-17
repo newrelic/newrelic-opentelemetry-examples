@@ -94,6 +94,32 @@ npm install @opentelemetry/api \
 ```
 Refer to the [custom-otel-web.js](./src/public/custom-otel-web.js) file for the implementation details.
 
+## Open Telemetry Auto Instrumentation for Backend (Node.js)
+
+To enable OpenTelemetry auto instrumentation for the backend, the following modules have been installed:
+
+```
+npm install @opentelemetry/auto-instrumentations-node \
+  @opentelemetry/sdk-node \
+  @opentelemetry/sdk-trace-node \
+  @opentelemetry/sdk-metrics
+```
+
+Refer to the [auto-otel-node.js](./src/auto-otel-node.js) file for the implementation details.
+Notice the `npm server` command has been updated to include the `-r` option to load the `auto-otel-node.js` file.
+
+```json
+// package.json
+"scripts": {
+    ...
+    "server": "node -r ./src/auto-otel-node.js src/server.js",
+    ...
+  },
+```
+
+
+Refer to the [auto-otel-node.js](./src/auto-otel-node.js) file for the implementation details.
+
 ## License
 
 This project is [MIT](https://opensource.org/licenses/MIT) licensed.
