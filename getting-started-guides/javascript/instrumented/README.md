@@ -68,7 +68,7 @@ The above command will use [parcel]([https://](https://parceljs.org/)) to build 
 
 To enable OpenTelemetry auto instrumentation for the web, the following modules have been installed:
 
-```
+```bash
 npm install @opentelemetry/auto-instrumentations-web \
   @opentelemetry/sdk-trace-web \
   @opentelemetry/sdk-trace-base \
@@ -78,11 +78,11 @@ npm install @opentelemetry/auto-instrumentations-web \
 
 Refer to the [auto-otel-web.js](./src/public/auto-otel-web.js) file for the implementation details.
 
-## Open Telemetry custom instrumentation for Web
+## Open Telemetry manual instrumentation for Web
 
-To enable OpenTelemetry instrumentation for the web, the following modules have been installed:
+To enable OpenTelemetry custom/manual instrumentation for the web, the following modules have been installed:
 
-```
+```bash
 npm install @opentelemetry/api \
   @opentelemetry/sdk-trace-web \
   @opentelemetry/sdk-trace-base \
@@ -92,13 +92,13 @@ npm install @opentelemetry/api \
   @opentelemetry/instrumentation-user-interaction \
   @opentelemetry/instrumentation-fetch
 ```
-Refer to the [custom-otel-web.js](./src/public/custom-otel-web.js) file for the implementation details.
+Refer to the [manual-otel-web.js](./src/public/custom-otel-web.js) file for the implementation details.
 
 ## Open Telemetry Auto Instrumentation for Backend (Node.js)
 
 To enable OpenTelemetry auto instrumentation for the backend, the following modules have been installed:
 
-```
+```bash
 npm install @opentelemetry/auto-instrumentations-node \
   @opentelemetry/sdk-node \
   @opentelemetry/sdk-trace-node \
@@ -106,6 +106,7 @@ npm install @opentelemetry/auto-instrumentations-node \
 ```
 
 Refer to the [auto-otel-node.js](./src/auto-otel-node.js) file for the implementation details.
+
 Notice the `npm server` command has been updated to include the `-r` option to load the `auto-otel-node.js` file.
 
 ```json
@@ -117,8 +118,33 @@ Notice the `npm server` command has been updated to include the `-r` option to l
   },
 ```
 
+## Open Telemetry manual instrumentation for Backend (Node.js)
 
-Refer to the [auto-otel-node.js](./src/auto-otel-node.js) file for the implementation details.
+To enable OpenTelemetry custom/manual instrumentation for the backend, the following modules have been installed:
+
+```bash
+npm install @opentelemetry/api \
+  @opentelemetry/resources \
+  @opentelemetry/semantic-conventions \
+  @opentelemetry/sdk-trace-node \
+  @opentelemetry/instrumentation
+```
+
+Refer to the [manual-otel-node.js](./src/manual-otel-node.js) file for the implementation details.
+
+Notice the `npm server` command has been updated to include the `-r` option to load the `manual-otel-node.js` file.
+
+```json
+// package.json
+"scripts": {
+    ...
+    "server": "node -r ./src/manual-otel-node.js src/server.js",
+    ...
+  },
+```
+
+## Further reading
+Custom Instrumentation for the backend logic can be found in the [API README.md file](./src/api/README.md)
 
 ## License
 
