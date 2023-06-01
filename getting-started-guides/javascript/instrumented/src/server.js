@@ -4,11 +4,11 @@ const routes = require("./api/routes");
 
 const app = express();
 
-// Serve static files from the public folder
-app.use(express.static(path.join(__dirname, "../dist")));
-
 // Use the API routes before serving the static files
 app.use("/api", routes);
+
+// Serve static files from the public folder
+app.use(express.static(path.join(__dirname, "../dist")));
 
 app.get("*", (_, res) => {
   res.sendFile(path.join(__dirname, "../dist", "index.html"));

@@ -102,7 +102,22 @@ To enable OpenTelemetry auto instrumentation for the backend, the following modu
 npm install @opentelemetry/auto-instrumentations-node \
   @opentelemetry/sdk-node \
   @opentelemetry/sdk-trace-node \
-  @opentelemetry/sdk-metrics
+  @opentelemetry/sdk-metrics \
+  @opentelemetry/resources \
+  @opentelemetry/semantic-conventions
+```
+
+To be able to send traces and metrics to New Relic, exporter modules have to be installed:
+
+```bash
+npm install @opentelemetry/exporter-trace-otlp-proto \
+  @opentelemetry/exporter-metrics-otlp-proto
+```
+
+And the New Relic Api Key has been added to the `.env` file:
+
+```bash
+NEW_RELIC_LICENSE_INGEST_KEY=<NEW_RELIC_LICENSE_INGEST_KEY>
 ```
 
 Refer to the [auto-otel-node.js](./src/auto-otel-node.js) file for the implementation details.
@@ -124,10 +139,24 @@ To enable OpenTelemetry custom/manual instrumentation for the backend, the follo
 
 ```bash
 npm install @opentelemetry/api \
-  @opentelemetry/resources \
-  @opentelemetry/semantic-conventions \
   @opentelemetry/sdk-trace-node \
-  @opentelemetry/instrumentation
+  @opentelemetry/sdk-metrics \
+  @opentelemetry/instrumentation \
+  @opentelemetry/resources \
+  @opentelemetry/semantic-conventions
+```
+
+To be able to send traces and metrics to New Relic, exporter modules have to be installed:
+
+```bash
+npm install @opentelemetry/exporter-trace-otlp-proto \
+  @opentelemetry/exporter-metrics-otlp-proto
+```
+
+And the New Relic Api Key has been added to the `.env` file:
+
+```bash
+NEW_RELIC_LICENSE_INGEST_KEY=<NEW_RELIC_LICENSE_INGEST_KEY>
 ```
 
 Refer to the [manual-otel-node.js](./src/manual-otel-node.js) file for the implementation details.
