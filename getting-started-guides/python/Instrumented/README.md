@@ -26,7 +26,7 @@ OTEL_EXPORTER_OTLP_HEADERS="api-key=[YOUR_INGEST_KEY]"
 * If your account is based in the EU, set the endpoint to: https://otlp.eu01.nr-data.net:4317
 8. Set this environment variable to name the demo app:
 ```shell
-export OTEL_SERVICE_NAME=getting-started-python
+OTEL_SERVICE_NAME=getting-started-python
 ```
 9. Run the app
 10. To generate traffic, in a new terminal tab run the load generator
