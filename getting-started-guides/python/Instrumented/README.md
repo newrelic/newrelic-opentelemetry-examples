@@ -43,4 +43,4 @@ OTEL_SERVICE_NAME=getting-started-python
 | 6    | `pip install -r requirements.txt`        | `pip install -r requirements.txt`         |
 | 7-8  | Set OTEL environment variables `$Env:`   | Set OTEL environment variables `export`   |
 | 9    | `python app.py`                          | `python3 app.py`                          |
-| 10   | `./load-generator.ps1`                   | `./load-generator.sh`                     |
+| 10   | `.\load-generator.ps1`                   | `./load-generator.sh`                     |
