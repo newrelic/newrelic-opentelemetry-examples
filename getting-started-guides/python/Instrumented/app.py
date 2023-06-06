@@ -1,9 +1,3 @@
-from flask import Flask, jsonify
-import logging
-logging.basicConfig(level=logging.DEBUG)
-
-app = Flask(__name__)
-
 ##########################
 # OpenTelemetry Settings #
 ##########################
@@ -46,6 +40,9 @@ fib_counter = metrics.get_meter("opentelemetry.instrumentation.custom").create_c
 ########
 # Logs # - OpenTelemetry Logs are still in the "experimental" state, so function names may change in the future
 ########
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 from opentelemetry import _logs
 from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
@@ -56,20 +53,21 @@ from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
 _logs.set_logger_provider(LoggerProvider(resource=Resource.create(OTEL_RESOURCE_ATTRIBUTES)))
 logging.getLogger().addHandler(LoggingHandler(logger_provider=_logs.get_logger_provider().add_log_record_processor(BatchLogRecordProcessor(OTLPLogExporter()))))
 
-########################
-# Auto-Instrumentation #
-########################
+#####################
+# Flask Application #
+#####################
+from flask import Flask, jsonify, request
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
-from opentelemetry.instrumentation.logging import LoggingInstrumentor
 
-# No OTEL SpanID/TraceID for spans/logs if you leave this out
+app = Flask(__name__)
 FlaskInstrumentor().instrument_app(app)
-LoggingInstrumentor().instrument() 
 
-# The rest of the Flask application
-@app.route("/fibonacci/<int:x>", strict_slashes=False)
-@trace.get_tracer("opentelemetry.instrumentation.custom").start_as_current_span("fibonacci", kind=trace.SpanKind.SERVER)
-def fibonacci(x):
+@app.route("/fibonacci")
+@trace.get_tracer("opentelemetry.instrumentation.custom").start_as_current_span("/fibonacci")
+def fibonacci():
+    args = request.args
+    x = int(args.get("n"))
+
     trace.get_current_span().set_attribute("fibonacci.n", x)
     
     try:
@@ -84,9 +82,9 @@ def fibonacci(x):
         return jsonify(n=x, result=array[x])
 
     except (ValueError, AssertionError):
-        trace.get_current_span().set_status(Status(StatusCode.ERROR, "Number outside of accepted range."))
+        trace.get_current_span().set_status(Status(StatusCode.ERROR, "n must be 1 <= n <= 90."))
         fib_counter.add(1, {"fibonacci.valid.n": "false"})
         logging.error("Failed to compute fibonacci(" + str(x) + ")")
-        raise ValueError("n must be 1 <= n <= 90.")
+        return jsonify({"message": "n must be 1 <= n <= 90."})
 
 app.run(host='0.0.0.0', port=8080)
