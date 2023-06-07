@@ -9,4 +9,4 @@ require './opentelemetry'
 require './fibonacci'
 require './myapp'
 
-run MyApp
+Rack::Handler.default.run(MyApp, :Port => 8080)
