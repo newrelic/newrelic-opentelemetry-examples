@@ -25,8 +25,8 @@ module Fibonacci
 
       current_span = OpenTelemetry::Trace.current_span
       current_span.add_attributes({
-        'n' => n,
-        'result' => first_num
+        'fibonacci.n' => n,
+        'fibonacci.result' => first_num
       })
 
       first_num
