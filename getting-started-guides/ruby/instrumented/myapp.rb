@@ -7,7 +7,12 @@ require_relative 'fibonacci'
 class MyApp < Sinatra::Base
   MIN = 1
   MAX = 90
+
   set :show_exceptions, :after_handler
+
+  get '/' do
+    redirect '/fibonacci'
+  end
 
   get '/fibonacci' do
     content_type :json
