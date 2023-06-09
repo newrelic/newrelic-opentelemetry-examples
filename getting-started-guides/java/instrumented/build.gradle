@@ -20,7 +20,7 @@ dependencies {
 
   // OpenTelemetry core
   implementation platform('io.opentelemetry:opentelemetry-bom:1.26.0')
-  implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.26.0-alpha')
+  implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.27.0-alpha')
   implementation 'io.opentelemetry:opentelemetry-api'
   implementation 'io.opentelemetry:opentelemetry-sdk'
   implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
