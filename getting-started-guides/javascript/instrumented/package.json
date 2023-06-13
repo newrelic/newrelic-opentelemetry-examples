@@ -4,7 +4,7 @@
   "description": "Getting started guide newrelic otel javascript",
   "scripts": {
     "build": "parcel build src/public/index.html",
-    "server": "node -r dotenv/config -r ./src/manual-otel-node.js src/server.js",
+    "server": "node -r dotenv/config -r ./src/auto-otel-node.js src/server.js",
     "start": "npm run build && npm run server"
   },
   "keywords": [

@@ -73,7 +73,10 @@ npm install @opentelemetry/auto-instrumentations-web \
   @opentelemetry/sdk-trace-web \
   @opentelemetry/sdk-trace-base \
   @opentelemetry/instrumentation \
-  @opentelemetry/context-zone
+  @opentelemetry/context-zone \
+  @opentelemetry/exporter-trace-otlp-proto \
+  @opentelemetry/resources \
+  @opentelemetry/semantic-conventions
 ```
 
 Refer to the [auto-otel-web.js](./src/public/auto-otel-web.js) file for the implementation details.
@@ -90,7 +93,10 @@ npm install @opentelemetry/api \
   @opentelemetry/context-zone \
   @opentelemetry/instrumentation-document-load \
   @opentelemetry/instrumentation-user-interaction \
-  @opentelemetry/instrumentation-fetch
+  @opentelemetry/instrumentation-fetch \
+  @opentelemetry/exporter-trace-otlp-proto \
+  @opentelemetry/resources \
+  @opentelemetry/semantic-conventions
 ```
 Refer to the [manual-otel-web.js](./src/public/custom-otel-web.js) file for the implementation details.
 

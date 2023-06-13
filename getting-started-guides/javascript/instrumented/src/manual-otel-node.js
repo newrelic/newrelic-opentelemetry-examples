@@ -26,9 +26,8 @@ registerInstrumentations({
 
 const resource = Resource.default().merge(
   new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: "otel-node-server-manual",
-    [SemanticResourceAttributes.SERVICE_INSTANCE_ID]:
-      "otel-node-server-manual-instance",
+    [SemanticResourceAttributes.SERVICE_NAME]: `${process.env.OTEL_SERICE_NAME_NODE}-manual`, // getting-started-js-node-manual
+    [SemanticResourceAttributes.SERVICE_INSTANCE_ID]: `${process.env.OTEL_SERICE_NAME_NODE}-manual-instance`, // getting-started-js-node-manual-instance
     [SemanticResourceAttributes.SERVICE_VERSION]: "1.0.0",
   })
 );
@@ -38,7 +37,7 @@ const provider = new NodeTracerProvider({
   resource: resource,
 });
 const exporter = new OTLPTraceExporter({
-  url: "https://otlp.nr-data.net:4318/v1/traces", // https://otlp.eu01.nr-data.net:4318/v1/traces for EU
+  url: `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces`,
   headers: {
     "api-key": `${process.env.NEW_RELIC_LICENSE_INGEST_KEY}`,
   },
@@ -49,7 +48,7 @@ provider.register();
 
 // Metric Exporter
 const metricExporter = new OTLPMetricExporter({
-  url: "https://otlp.nr-data.net:4318/v1/metrics", // https://otlp.eu01.nr-data.net:4318/v1/metrics for EU
+  url: `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/metrics`,
   headers: {
     "api-key": `${process.env.NEW_RELIC_LICENSE_INGEST_KEY}`,
   },

@@ -9,7 +9,6 @@ const {
   getNodeAutoInstrumentations,
 } = require("@opentelemetry/auto-instrumentations-node");
 const { PeriodicExportingMetricReader } = require("@opentelemetry/sdk-metrics");
-
 const { Resource } = require("@opentelemetry/resources");
 const {
   SemanticResourceAttributes,
@@ -17,20 +16,19 @@ const {
 
 const sdk = new NodeSDK({
   resource: new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: "otel-node-server-auto",
-    [SemanticResourceAttributes.SERVICE_INSTANCE_ID]:
-      "otel-node-server-auto-instance",
+    [SemanticResourceAttributes.SERVICE_NAME]: `${process.env.OTEL_SERICE_NAME_NODE}-auto`, // getting-started-js-node-auto
+    [SemanticResourceAttributes.SERVICE_INSTANCE_ID]: `${process.env.OTEL_SERICE_NAME_NODE}-auto-instance`, // getting-started-js-node-auto-instance
     [SemanticResourceAttributes.SERVICE_VERSION]: "1.0.0",
   }),
   traceExporter: new OTLPTraceExporter({
-    url: "https://otlp.nr-data.net:4318/v1/traces", // https://otlp.eu01.nr-data.net:4318/v1/traces for EU
+    url: `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces`,
     headers: {
       "api-key": `${process.env.NEW_RELIC_LICENSE_INGEST_KEY}`,
     },
   }),
   metricReader: new PeriodicExportingMetricReader({
     exporter: new OTLPMetricExporter({
-      url: "https://otlp.nr-data.net:4318/v1/metrics", // https://otlp.eu01.nr-data.net:4318/v1/traces for EU
+      url: `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/metrics`,
       headers: {
         "api-key": `${process.env.NEW_RELIC_LICENSE_INGEST_KEY}`,
       },
