@@ -3,22 +3,38 @@ const express = require("express");
 const router = express.Router();
 
 const opentelemetry = require("@opentelemetry/api");
-const tracer = opentelemetry.trace.getTracer("otel-node-server");
+// const { meterProvider } = require("../auto-otel-node");
+const { meterProvider } = require("../manual-otel-node");
+
+const tracer = opentelemetry.trace.getTracer(
+  process.env.OTEL_SERVICE_NAME_NODE
+);
+
+const meter = meterProvider.getMeter(process.env.OTEL_SERVICE_NAME_NODE);
+const fibonacciInvocations = meter.createCounter("fibonacci.invocations", {
+  description: "Measures the number of times the fibonacci method is invoked.",
+});
 
 const fibonacci = (n, parentSpan) => {
   const span = tracer.startSpan("fibonacci", {
     parent: parentSpan,
-    attributes: { n },
+    attributes: { "fibonacci.n": n },
+    kind: opentelemetry.SpanKind.INTERNAL,
   });
 
+  let isValidN = true;
   if (n < 1 || n > 90) {
+    isValidN = false;
     span.setStatus({
       code: opentelemetry.SpanStatusCode.ERROR,
       message: "n must be 1 <= n <= 90",
     });
+    span.recordException(new Error("n must be 1 <= n <= 90"));
     span.end();
     throw new Error("n must be 1 <= n <= 90");
   }
+
+  fibonacciInvocations.add(1, { "fibonacci.valid.n": isValidN });
 
   const sequence = [1, 1];
   if (n > 2) {
@@ -31,6 +47,7 @@ const fibonacci = (n, parentSpan) => {
     }
   }
 
+  span.setAttribute("fibonacci.result", sequence.slice(0, n));
   span.end();
   return sequence.slice(0, n);
 };

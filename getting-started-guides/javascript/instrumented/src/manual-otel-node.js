@@ -26,8 +26,8 @@ registerInstrumentations({
 
 const resource = Resource.default().merge(
   new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: `${process.env.OTEL_SERICE_NAME_NODE}-manual`, // getting-started-js-node-manual
-    [SemanticResourceAttributes.SERVICE_INSTANCE_ID]: `${process.env.OTEL_SERICE_NAME_NODE}-manual-instance`, // getting-started-js-node-manual-instance
+    [SemanticResourceAttributes.SERVICE_NAME]: `${process.env.OTEL_SERVICE_NAME_NODE}`, // getting-started-js-node
+    [SemanticResourceAttributes.SERVICE_INSTANCE_ID]: `${process.env.OTEL_SERVICE_NAME_NODE}-instance`, // getting-started-js-node-instance
     [SemanticResourceAttributes.SERVICE_VERSION]: "1.0.0",
   })
 );
@@ -60,5 +60,7 @@ const meterProvider = new MeterProvider({
   metricReader,
   resource,
 });
-meterProvider.getMeter("otel-node-server-manual");
-metricReader.forceFlush();
+
+module.exports = {
+  meterProvider,
+};
