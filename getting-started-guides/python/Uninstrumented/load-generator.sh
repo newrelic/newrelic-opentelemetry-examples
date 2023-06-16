@@ -2,7 +2,7 @@
 
 while :
 do
-  echo "Calling fibonacci-java"
+  echo "Calling getting-started-python"
   ./call-app.sh http://localhost:8080 || true
   echo
 
