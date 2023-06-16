@@ -67,7 +67,7 @@ FlaskInstrumentor().instrument_app(app)
 def fibonacci():
     args = request.args
     x = int(args.get("n"))
-
+    error_message = "n must be 1 <= n <= 90."
     trace.get_current_span().set_attribute("fibonacci.n", x)
     
     try:
@@ -81,10 +81,11 @@ def fibonacci():
         logging.info("Compute fibonacci(" + str(x) + ") = " + str(array[x]))
         return jsonify(n=x, result=array[x])
 
-    except (ValueError, AssertionError):
-        trace.get_current_span().set_status(Status(StatusCode.ERROR, "n must be 1 <= n <= 90."))
+    except AssertionError:
+        trace.get_current_span().record_exception(exception=Exception, attributes={"exception.type": "AssertionError", "exception.message": error_message})
+        trace.get_current_span().set_status(Status(StatusCode.ERROR, error_message))
         fib_counter.add(1, {"fibonacci.valid.n": "false"})
         logging.error("Failed to compute fibonacci(" + str(x) + ")")
-        return jsonify({"message": "n must be 1 <= n <= 90."})
-
+        return jsonify({"message": error_message})
+    
 app.run(host='0.0.0.0', port=8080)
