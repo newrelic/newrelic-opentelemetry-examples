@@ -27,7 +27,7 @@ cd ./getting-started-guides/python/Uninstrumented/
 | 2    | `python -m venv venv`                    | `python3 -m venv venv`                    |
 | 3    | `.\venv\Scripts\Activate.ps1`            | `source venv/bin/activate`                |
 | 4    | `python -m pip install --upgrade pip`    | `python3 -m pip install --upgrade pip`    |
-| 5    | `pip install -r requirements.txt`        | `pip install -r requirements.txt`         |
+| 5    | `pip install flask`<br>`pip install opentelemetry-instrumentation-flask`<br>`pip install opentelemetry-exporter-otlp`<br>`pip install opentelemetry-distro` | `pip install flask`<br>`pip install opentelemetry-instrumentation-flask`<br>`pip install opentelemetry-exporter-otlp`<br>`pip install opentelemetry-distro` |
 | 6    | Set environment variables with `$Env:`   | Set environment variables with `export`   |
 | 7    | `opentelemetry-instrument python app.py` | `opentelemetry-instrument python3 app.py` |
 | 8    | `.\load-generator.ps1`                   | `./load-generator.sh`                     |
@@ -53,7 +53,7 @@ Set the Application Name and New Relic [Ingest - License Key](https://docs.newre
     export OTEL_RESOURCE_ATTRIBUTES="service.instance.id=localhost"
     ```
 
-2. Install the following packages to your virtual environment or install from the  `requirements.txt` file.
+2. Install the following packages to your virtual environment.
     ```
     pip install flask
     pip install opentelemetry-instrumentation-flask
@@ -61,7 +61,11 @@ Set the Application Name and New Relic [Ingest - License Key](https://docs.newre
     pip install opentelemetry-distro
     ```
 
-3. No changes to the code is needed, just run the app as usual but with `opentelemetry-instrument` before the command to start the application.
+3. No changes to the code is needed, just run the app as usual but with `opentelemetry-instrument` before the command to start the application. For example:
+
+    ```
+    opentelemetry-instrument python app.py
+    ```
    
 4. To generate traffic, in a new terminal tab, run the following command:
    PowerShell:
