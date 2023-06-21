@@ -2,10 +2,7 @@
 
 module Fibonacci
   class RangeError < StandardError
-    MESSAGE = <<~MSG
-      Please select a number between 1 and 90.
-      Example URL: http://localhost:9292/fibonacci?n=1
-    MSG
+    MESSAGE = JSON.generate(message: 'n must be 1 <= n <= 90.')
 
     def initialize(msg = MESSAGE)
       current_span = OpenTelemetry::Trace.current_span
@@ -16,7 +13,7 @@ module Fibonacci
   end
 
   def self.calculate(n)
-    MY_APP_TRACER.in_span('Fibonacci.calculate') do
+    APP_TRACER.in_span('fibonacci', kind: :internal) do
       first_num, second_num = [0, 1]
 
       (n - 1).times do

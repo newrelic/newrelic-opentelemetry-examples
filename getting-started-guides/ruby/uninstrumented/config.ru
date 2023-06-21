@@ -4,8 +4,7 @@ require 'bundler'
 
 Bundler.require
 
-require 'dotenv/load'
 require './fibonacci'
-require './myapp'
+require './app'
 
-Rack::Handler.default.run(MyApp, :Port => 8080)
+Rack::Handler.default.run(App, :Port => 8080)

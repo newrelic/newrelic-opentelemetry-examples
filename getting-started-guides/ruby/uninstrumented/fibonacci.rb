@@ -2,10 +2,7 @@
 
 module Fibonacci
   class RangeError < StandardError
-    MESSAGE = <<~MSG
-      Please select a number between 1 and 90.
-      Example URL: http://localhost:9292/fibonacci?n=1
-    MSG
+    MESSAGE = JSON.generate(message: 'n must be 1 <= n <= 90.')
 
     def initialize(msg = MESSAGE)
       super

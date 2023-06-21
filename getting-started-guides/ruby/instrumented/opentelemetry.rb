@@ -5,8 +5,10 @@ require 'opentelemetry/exporter/otlp'
 require 'opentelemetry/instrumentation/all'
 
 OpenTelemetry::SDK.configure do |c|
-  c.service_name = 'getting-started-ruby'
-  c.use_all() # enables all instrumentation!
+  # c.use_all() # enables all instrumentation!
+  c.use 'OpenTelemetry::Instrumentation::Sinatra'
+  c.use 'OpenTelemetry::Instrumentation::Rack'
+  c.use 'OpenTelemetry::Instrumentation::Net::HTTP'
 end
 
-MY_APP_TRACER = OpenTelemetry.tracer_provider.tracer('MyAppTracer')
+APP_TRACER = OpenTelemetry.tracer_provider.tracer('AppTracer')

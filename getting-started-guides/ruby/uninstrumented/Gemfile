@@ -2,6 +2,7 @@
 
 source 'https://rubygems.org'
 
-gem 'sinatra'
-gem 'thin'
-gem 'dotenv'
+ruby '3.2.2'
+
+gem 'sinatra', '~> 3.0.6'
+gem 'thin', '~> 1.8.2'
