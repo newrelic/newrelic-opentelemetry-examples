@@ -1,4 +1,4 @@
-# Getting Started Guide - Ruuby
+# Getting Started Guide - Ruby
 
 This is the solution (completely instrumented with OpenTelemetry) for the Ruby demo application used in the Getting Started Guide - Ruby doc.
 
