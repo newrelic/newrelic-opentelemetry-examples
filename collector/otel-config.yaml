@@ -23,7 +23,7 @@ processors:
         - truncate_all(resource.attributes, 4095)
 exporters:
   logging:
-    logLevel: $LOG_EXPORTER_LOG_LEVEL
+    verbosity: $LOG_EXPORTER_LOG_VERBOSITY
   otlp:
     endpoint: https://otlp.nr-data.net:4317
     headers:
