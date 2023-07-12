@@ -16,13 +16,11 @@ configurations.all {
 dependencies {
   implementation 'io.opentelemetry:opentelemetry-sdk'
   implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
-  implementation 'io.opentelemetry:opentelemetry-exporter-otlp-logs'
-  implementation 'io.opentelemetry:opentelemetry-exporter-otlp-common'
   implementation 'io.opentelemetry:opentelemetry-exporter-logging'
   implementation 'io.opentelemetry:opentelemetry-semconv'
 
   implementation platform(SpringBootPlugin.BOM_COORDINATES)
-  implementation 'io.opentelemetry.instrumentation:opentelemetry-runtime-metrics'
+  implementation 'io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java8'
   implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-6.0'
   implementation 'io.opentelemetry.instrumentation:opentelemetry-log4j-appender-2.17'
 
