@@ -1,8 +1,13 @@
 package com.example.demo;
 
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.logs.GlobalLoggerProvider;
-import io.opentelemetry.instrumentation.runtimemetrics.*;
+import io.opentelemetry.instrumentation.log4j.appender.v2_17.OpenTelemetryAppender;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.BufferPools;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.Classes;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.Cpu;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.GarbageCollector;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.MemoryPools;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.Threads;
 import io.opentelemetry.instrumentation.spring.webmvc.v6_0.SpringWebMvcTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
@@ -19,14 +24,8 @@ public class Application {
   public static void main(String[] args) {
     // Build the SDK auto-configuration extension module
     OpenTelemetrySdk openTelemetrySdk =
-        AutoConfiguredOpenTelemetrySdk.builder()
-            .setResultAsGlobal(false)
-            .build()
-            .getOpenTelemetrySdk();
+        AutoConfiguredOpenTelemetrySdk.builder().build().getOpenTelemetrySdk();
     Application.openTelemetry = openTelemetrySdk;
-
-    // Set GlobalLoggerProvider, which is used by Log4j2 appender
-    GlobalLoggerProvider.set(openTelemetrySdk.getSdkLoggerProvider());
 
     // Register runtime metrics instrumentation
     BufferPools.registerObservers(openTelemetrySdk);
@@ -37,6 +36,13 @@ public class Application {
     Threads.registerObservers(openTelemetrySdk);
 
     SpringApplication.run(Application.class, args);
+
+    // Setup log4j OpenTelemetryAppender
+    // Normally this is done before the framework (Spring) is initialized. However, spring boot
+    // erases any programmatic log configuration so we must initialize after Spring. Unfortunately,
+    // this means that Spring startup logs do not make it to the OpenTelemetry.
+    // See this issue for tracking: https://github.com/spring-projects/spring-boot/issues/25847
+    OpenTelemetryAppender.install(openTelemetrySdk);
   }
 
   @Bean

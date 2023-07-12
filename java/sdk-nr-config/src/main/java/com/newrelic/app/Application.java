@@ -1,20 +1,23 @@
 package com.newrelic.app;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.exporter.internal.retry.RetryPolicy;
-import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
-import io.opentelemetry.instrumentation.runtimemetrics.GarbageCollector;
-import io.opentelemetry.instrumentation.runtimemetrics.MemoryPools;
+import io.opentelemetry.instrumentation.log4j.appender.v2_17.OpenTelemetryAppender;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.BufferPools;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.Classes;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.Cpu;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.GarbageCollector;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.MemoryPools;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.Threads;
 import io.opentelemetry.instrumentation.spring.webmvc.v6_0.SpringWebMvcTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
@@ -46,14 +49,22 @@ public class Application {
     // Configure OpenTelemetry as early as possible
     var openTelemetrySdk = openTelemetrySdk();
 
-    // Set GlobalLoggerProvider, which is used by Log4j2 appender
-    GlobalLoggerProvider.set(openTelemetrySdk.getSdkLoggerProvider());
-
     // Register runtime metrics instrumentation
-    MemoryPools.registerObservers(openTelemetrySdk);
+    BufferPools.registerObservers(openTelemetrySdk);
+    Classes.registerObservers(openTelemetrySdk);
+    Cpu.registerObservers(openTelemetrySdk);
     GarbageCollector.registerObservers(openTelemetrySdk);
+    MemoryPools.registerObservers(openTelemetrySdk);
+    Threads.registerObservers(openTelemetrySdk);
 
     SpringApplication.run(Application.class, args);
+
+    // Setup log4j OpenTelemetryAppender
+    // Normally this is done before the framework (Spring) is initialized. However, spring boot
+    // erases any programmatic log configuration so we must initialize after Spring. Unfortunately,
+    // this means that Spring startup logs do not make it to the OpenTelemetry.
+    // See this issue for tracking: https://github.com/spring-projects/spring-boot/issues/25847
+    OpenTelemetryAppender.install(openTelemetrySdk);
   }
 
   private static OpenTelemetrySdk openTelemetrySdk() {
@@ -79,17 +90,17 @@ public class Application {
             .setResource(resource)
             // New Relic's max attribute length is 4095 characters
             .setSpanLimits(
-                SpanLimits.getDefault().toBuilder().setMaxAttributeValueLength(4095).build());
-    // Add otlp span exporter
-    var spanExporterBuilder =
-        OtlpGrpcSpanExporter.builder()
-            .setEndpoint(newrelicOtlpEndpoint)
-            .setCompression("gzip")
-            .addHeader("api-key", newrelicApiOrLicenseKey);
-    // Enable retry policy via unstable API
-    RetryUtil.setRetryPolicyOnDelegate(spanExporterBuilder, RetryPolicy.getDefault());
-    sdkTracerProviderBuilder.addSpanProcessor(
-        BatchSpanProcessor.builder(spanExporterBuilder.build()).build());
+                SpanLimits.getDefault().toBuilder().setMaxAttributeValueLength(4095).build())
+            // Add batch processor with otlp span exporter
+            .addSpanProcessor(
+                BatchSpanProcessor.builder(
+                        OtlpGrpcSpanExporter.builder()
+                            .setEndpoint(newrelicOtlpEndpoint)
+                            .setCompression("gzip")
+                            .addHeader("api-key", newrelicApiOrLicenseKey)
+                            .setRetryPolicy(RetryPolicy.getDefault())
+                            .build())
+                    .build());
     // Maybe add log exporter
     if (logExporterEnabled) {
       sdkTracerProviderBuilder.addSpanProcessor(
@@ -97,24 +108,29 @@ public class Application {
     }
 
     // Configure meter provider
-    var sdkMeterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
-    // Add otlp metric exporter
-    var metricExporterBuilder =
-        OtlpGrpcMetricExporter.builder()
-            .setEndpoint(newrelicOtlpEndpoint)
-            .setCompression("gzip")
-            .addHeader("api-key", newrelicApiOrLicenseKey)
-            // IMPORTANT: New Relic requires metrics to be delta temporality
-            .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred())
-            // Use exponential histogram aggregation for histogram instruments to produce better
-            // data and compression
-            .setDefaultAggregationSelector(
-                DefaultAggregationSelector.getDefault()
-                    .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()));
-    // Enable retry policy via unstable API
-    RetryUtil.setRetryPolicyOnDelegate(metricExporterBuilder, RetryPolicy.getDefault());
-    sdkMeterProviderBuilder.registerMetricReader(
-        PeriodicMetricReader.builder(metricExporterBuilder.build()).build());
+    var sdkMeterProviderBuilder =
+        SdkMeterProvider.builder()
+            .setResource(resource)
+            // Add periodic metric reader with otlp metric exporter
+            .registerMetricReader(
+                PeriodicMetricReader.builder(
+                        OtlpGrpcMetricExporter.builder()
+                            .setEndpoint(newrelicOtlpEndpoint)
+                            .setCompression("gzip")
+                            .addHeader("api-key", newrelicApiOrLicenseKey)
+                            // IMPORTANT: New Relic requires metrics to be delta temporality
+                            .setAggregationTemporalitySelector(
+                                AggregationTemporalitySelector.deltaPreferred())
+                            // Use exponential histogram aggregation for histogram instruments to
+                            // produce better data and compression
+                            .setDefaultAggregationSelector(
+                                DefaultAggregationSelector.getDefault()
+                                    .with(
+                                        InstrumentType.HISTOGRAM,
+                                        Aggregation.base2ExponentialBucketHistogram()))
+                            .setRetryPolicy(RetryPolicy.getDefault())
+                            .build())
+                    .build());
     // Maybe add log exporter
     if (logExporterEnabled) {
       sdkMeterProviderBuilder.registerMetricReader(
@@ -128,17 +144,16 @@ public class Application {
             // New Relic's max attribute length is 4095 characters
             .setLogLimits(
                 () -> LogLimits.getDefault().toBuilder().setMaxAttributeValueLength(4095).build())
-            .setResource(resource);
-    // Add otlp log exporter
-    var logRecordExporterBuilder =
-        OtlpGrpcLogRecordExporter.builder()
-            .setEndpoint(newrelicOtlpEndpoint)
-            .setCompression("gzip")
-            .addHeader("api-key", newrelicApiOrLicenseKey);
-    // Enable retry policy via unstable API
-    RetryUtil.setRetryPolicyOnDelegate(logRecordExporterBuilder, RetryPolicy.getDefault());
-    sdkLoggerProvider.addLogRecordProcessor(
-        BatchLogRecordProcessor.builder(logRecordExporterBuilder.build()).build());
+            .setResource(resource)
+            // Add batch processor with otlp log record exporter
+            .addLogRecordProcessor(
+                BatchLogRecordProcessor.builder(
+                        OtlpGrpcLogRecordExporter.builder()
+                            .setEndpoint(newrelicOtlpEndpoint)
+                            .setCompression("gzip")
+                            .addHeader("api-key", newrelicApiOrLicenseKey)
+                            .build())
+                    .build());
 
     // Bring it all together
     return OpenTelemetrySdk.builder()

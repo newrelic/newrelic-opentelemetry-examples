@@ -17,6 +17,7 @@ public class Application {
                     Resource.builder()
                         .put("service.instance.id", UUID.randomUUID().toString())
                         .build()))
+        .setResultAsGlobal()
         .build();
 
     SpringApplication.run(Application.class, args);
