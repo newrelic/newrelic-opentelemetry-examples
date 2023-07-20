@@ -3,14 +3,14 @@ const express = require("express");
 const router = express.Router();
 
 const opentelemetry = require("@opentelemetry/api");
-// const { meterProvider } = require("../auto-otel-node");
-const { meterProvider } = require("../manual-otel-node");
 
 const tracer = opentelemetry.trace.getTracer(
   process.env.OTEL_SERVICE_NAME_NODE
 );
 
-const meter = meterProvider.getMeter(process.env.OTEL_SERVICE_NAME_NODE);
+const meter = opentelemetry.metrics.getMeter(
+  `${process.env.OTEL_SERVICE_NAME_NODE}`
+);
 const fibonacciInvocations = meter.createCounter("fibonacci.invocations", {
   description: "Measures the number of times the fibonacci method is invoked.",
 });
