@@ -32,12 +32,12 @@ const metricsExporter = new OTLPMetricExporter({
   },
 });
 
-const metricsReader = new PeriodicExportingMetricReader({
+const metricReader = new PeriodicExportingMetricReader({
   exporter: metricsExporter,
   exportIntervalMillis: 10000,
 });
 
-meterProvider.addMetricReader(metricsReader);
+meterProvider.addMetricReader(metricReader);
 opentelemetry.metrics.setGlobalMeterProvider(meterProvider);
 
 const sdk = new NodeSDK({

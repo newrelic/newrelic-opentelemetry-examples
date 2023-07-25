@@ -9,19 +9,17 @@ const {
 } = require("@opentelemetry/exporter-trace-otlp-proto");
 const { BatchSpanProcessor } = require("@opentelemetry/sdk-trace-base");
 const {
-  getNodeAutoInstrumentations,
-} = require("@opentelemetry/auto-instrumentations-node");
-const {
   MeterProvider,
   PeriodicExportingMetricReader,
 } = require("@opentelemetry/sdk-metrics");
 const {
   OTLPMetricExporter,
 } = require("@opentelemetry/exporter-metrics-otlp-proto");
+const opentelemetry = require("@opentelemetry/api");
 
 // Optionally register instrumentation libraries
 registerInstrumentations({
-  instrumentations: [getNodeAutoInstrumentations()],
+  instrumentations: [],
 });
 
 const resource = Resource.default().merge(
@@ -32,21 +30,24 @@ const resource = Resource.default().merge(
   })
 );
 
-// Tracer Exporter
-const provider = new NodeTracerProvider({
+// Traces
+const traceProvider = new NodeTracerProvider({
   resource: resource,
 });
-const exporter = new OTLPTraceExporter({
+const traceExporter = new OTLPTraceExporter({
   url: `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces`,
   headers: {
     "api-key": `${process.env.NEW_RELIC_LICENSE_INGEST_KEY}`,
   },
 });
-const processor = new BatchSpanProcessor(exporter);
-provider.addSpanProcessor(processor);
-provider.register();
+const spanProcessor = new BatchSpanProcessor(traceExporter);
+traceProvider.addSpanProcessor(spanProcessor);
+traceProvider.register();
 
-// Metric Exporter
+// Metrics
+const meterProvider = new MeterProvider({
+  resource,
+});
 const metricExporter = new OTLPMetricExporter({
   url: `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/metrics`,
   headers: {
@@ -55,12 +56,7 @@ const metricExporter = new OTLPMetricExporter({
 });
 const metricReader = new PeriodicExportingMetricReader({
   exporter: metricExporter,
+  exportIntervalMillis: 10000,
 });
-const meterProvider = new MeterProvider({
-  metricReader,
-  resource,
-});
-
-module.exports = {
-  meterProvider,
-};
+meterProvider.addMetricReader(metricReader);
+opentelemetry.metrics.setGlobalMeterProvider(meterProvider);
