@@ -31,6 +31,7 @@ const fibonacci = (n, parentSpan) => {
     });
     span.recordException(new Error("n must be 1 <= n <= 90"));
     span.end();
+    fibonacciInvocations.add(1, { "fibonacci.valid.n": isValidN });
     throw new Error("n must be 1 <= n <= 90");
   }
 
