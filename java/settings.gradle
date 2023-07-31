@@ -11,5 +11,6 @@ rootProject.name = "newrelic-opentelemetry-examples-java"
 include 'agent-nr-config:application'
 include 'agent-nr-config:config-extension'
 include 'logs-in-context-log4j2'
+include 'micrometer-shim'
 include 'otlp-nr-mapping'
 include 'sdk-nr-config'
