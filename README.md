@@ -56,7 +56,7 @@ See [Contribute](#contribute) for how to request OpenTelemetry/New Relic interac
 - Go
   - [OpenTelemetry SDK New Relic Config](./go): Simple Go applications demonstrating OpenTelemetry instrumentation.
 - Ruby
-  - [OpenTelemetry SDK New Relic Config](./ruby): A Sinatra application with auto- and manual-instrumentation.
+  - [OpenTelemetry SDK New Relic Config](./ruby): A Sinatra application with automatic and manual instrumentation.
 - Serverless
   - AWS Lambda
     - [OpenTelemetry Lambda .NET New Relic Config](./serverless/aws-lambda/dotnet): An example AWS .NET Lambda function instrumented with OpenTelemetry.

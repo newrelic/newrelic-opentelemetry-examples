@@ -1,4 +1,4 @@
-# Getting Started Guide - Ruuby
+# Getting Started Guide - Ruby
 
 This is the solution (completely instrumented with OpenTelemetry) for the Ruby demo application used in the Getting Started Guide - Ruby doc.
 
@@ -24,19 +24,17 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317
 export OTEL_SERVICE_NAME=getting-started-ruby
 ```
 
-4. Install your gems using Bundler
-
+4. Install your gems using Bundler:
 ```shell
 bundle install
 ```
 
-5. Run the following command
-
+5. Run the following command:
 ```shell
 bundle exec rackup
 ```
 
-4. To generate traffic, in a new terminal tab run the following command
+4. To generate traffic, in a new terminal tab run the following command:
 ```shell
 ./load-generator.sh
 ```
