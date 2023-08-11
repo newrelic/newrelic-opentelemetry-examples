@@ -26,7 +26,7 @@ The other settings below have default values defined in the [Dockerfile](./Docke
 * `OTEL_SERVICE_NAME="my-test-service"`
   * Replace `my-test-service` with the name you wish to call the application.
 
-Additional configuration can be controlled using environment variables defined in the [Automatic Instrumentation config document](https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/blob/main/docs/config.md).
+Additional configuration can be controlled using environment variables defined in the [Automatic Instrumentation config document](https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/blob/2f5e1fc2b30f444944966393fba1d2d45a69f08b/docs/config.md).
 
 Run the application from a shell in the `agent-nr-config` directory via:
 ```

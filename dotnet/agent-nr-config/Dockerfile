@@ -23,7 +23,7 @@ COPY --from=build /app/build .
 COPY --from=build /tracer-home /tracer-home
 # The most important environment variables are shown in this example.
 # For a complete list of options refer to the OpenTelemetry documenations available at
-# https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/blob/main/docs/config.md.
+# https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/blob/2f5e1fc2b30f444944966393fba1d2d45a69f08b/docs/config.md.
 # This env variable points to the installation directory for the agent
 ENV OTEL_DOTNET_AUTO_HOME="/tracer-home"
 ENV DOTNET_STARTUP_HOOKS="/tracer-home/net/OpenTelemetry.AutoInstrumentation.StartupHook.dll"
@@ -38,7 +38,7 @@ ENV OTEL_EXPORTER_OTLP_HEADERS="api-key=${NEW_RELIC_LICENSE_KEY}"
 # This env variable controls the name New Relic will use for your application
 ENV OTEL_SERVICE_NAME="agent-nr-config"
 # The env variables below can be used if byte-code instrumentation is desired. See
-# https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/blob/main/docs/config.md#instrumentations
+# https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/blob/2f5e1fc2b30f444944966393fba1d2d45a69f08b/docs/config.md#instrumentations
 # for the list of available instrumentations and which ones require byte-code support.
 ENV CORECLR_ENABLE_PROFILING=1
 ENV CORECLR_PROFILER="{918728DD-259F-4A6A-AC2B-B85E1B658318}"
