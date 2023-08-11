@@ -1,5 +1,4 @@
 #!/bin/bash
-
 echo "GET ${1}/fibonacci?n=5"
 curl "${1}/fibonacci?n=5" || true
 echo

@@ -1,4 +1,3 @@
-using OpenTelemetry;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
@@ -8,21 +7,20 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-// Define an OpenTelemetry resource 
-// A resource represents a collection of attributes describing the
-// service. This collection of attributes will be associated with all
-// telemetry generated from this service (traces, metrics, logs).
-var resourceBuilder = ResourceBuilder
-    .CreateDefault()
-    .AddService("getting-started-dotnet")
-    .AddTelemetrySdk();
 
 // Configure the OpenTelemetry SDK for traces and metrics
 builder.Services.AddOpenTelemetry()
+    // Define an OpenTelemetry resource 
+    // A resource represents a collection of attributes describing the
+    // service. This collection of attributes will be associated with all
+    // telemetry generated from this service (traces, metrics, logs).
+    .ConfigureResource(resourceBuilder =>
+        resourceBuilder
+            .AddService("getting-started-dotnet")
+            .AddTelemetrySdk())
     .WithTracing(tracerProviderBuilder =>
     {
         tracerProviderBuilder
-            .SetResourceBuilder(resourceBuilder)
             .AddAspNetCoreInstrumentation()
             .AddSource(nameof(dotnet))
             .AddOtlpExporter();
@@ -30,7 +28,6 @@ builder.Services.AddOpenTelemetry()
     .WithMetrics(meterProviderBuilder =>
     {
         meterProviderBuilder
-            .SetResourceBuilder(resourceBuilder)
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
             .AddMeter(nameof(dotnet))
@@ -39,8 +36,7 @@ builder.Services.AddOpenTelemetry()
                 metricReaderOptions.TemporalityPreference = MetricReaderTemporalityPreference.Delta;
             });
 
-    })
-    .StartWithHost();
+    });
 
 // Configure the OpenTelemetry SDK for logs
 builder.Logging.AddOpenTelemetry(options =>
@@ -49,7 +45,6 @@ builder.Logging.AddOpenTelemetry(options =>
     options.ParseStateValues = true;
     options.IncludeScopes = true;
     options
-        .SetResourceBuilder(resourceBuilder)
         .AddOtlpExporter();
 });
 
