@@ -15,7 +15,7 @@ jobs:
           distribution: temurin
           java-version: 17
       - name: Build java with Gradle
-        working-directory: java
+        working-directory: other-examples/java
         run: ./gradlew build
       - name: Build getting-started-guides/java with Gradle
         working-directory: getting-started-guides/java
