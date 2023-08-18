@@ -5,7 +5,7 @@ updates:
     schedule:
       interval: "daily"
   - package-ecosystem: "gradle"
-    directory: "/java"
+    directory: "/other-examples/java"
     rebase-strategy: "disabled"
     schedule:
       interval: "daily"
