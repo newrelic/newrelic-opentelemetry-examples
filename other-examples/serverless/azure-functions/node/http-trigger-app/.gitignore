@@ -1,3 +1,6 @@
+# Preserve .vscode directory
+!.vscode/
+
 # Logs
 logs
 *.log
