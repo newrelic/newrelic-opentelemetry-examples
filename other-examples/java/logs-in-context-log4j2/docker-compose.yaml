@@ -4,6 +4,8 @@ services:
     build: ./
     environment:
       OTEL_SERVICE_NAME: 'logs-in-context'
+      # Logs are forwarded to collector using fluentd
+      OTEL_LOGS_EXPORTER: none
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://collector:4317'
     ports:
       - '8080:8080'
@@ -15,10 +17,10 @@ services:
       - collector
 
   collector:
-    image: otel/opentelemetry-collector-contrib:0.80.0
+    image: otel/opentelemetry-collector-contrib:0.83.0
     volumes:
       - ./otel-config.yaml:/otel-config.yaml
-    command: ["--config=/otel-config.yaml", "${OTELCOL_ARGS}"]
+    command: ["--config=/otel-config.yaml"]
     environment:
       LOG_EXPORTER_LOG_VERBOSITY: "detailed"
       NEW_RELIC_API_KEY: '${NEW_RELIC_API_KEY}'

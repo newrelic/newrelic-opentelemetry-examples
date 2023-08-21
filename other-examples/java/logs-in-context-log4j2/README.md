@@ -15,10 +15,11 @@ The result is JSON structured logs, with one JSON object per line, which have th
   "timestamp": "2021-05-19T15:51:16.063-05:00",
   "thread.name": "http-nio-8080-exec-1",
   "log.level": "INFO",
-  "logger.name": "com.newrelic.app.Controller",
-  "message": "A sample log message!",
+  "logger.name": "...",
+  "message": "...",
   "trace_id": "6aae93314fe034149cd85f07eac24bc5",
-  "span_id": "f1be31bc6e4471d8"
+  "span_id": "f1be31bc6e4471d8",
+  "service.name": "logs-in-context"
 }
 ```
 
@@ -35,23 +36,22 @@ The following image illustrates a similar example using FluentBit:
 Next, build and run the application:
 
 ```shell
-// Build the application with gradle
+// Build the application
+docker compose build
 ./gradlew logs-in-context-log4j2:bootJar
 
 // Export your New Relic API key as an environment variable
 export NEW_RELIC_API_KEY=<INSERT-API-KEY-HERE>
 
 // Run the application and the collector with docker compose
-docker compose -f logs-in-context-log4j2/docker-compose.yaml up --build
+docker compose up
 ```
 
-Exercise logs in context by calling the `GET /ping`, which generated a log message inside the context of a trace:
+Navigate to the app in a browser at `http://localhost:8080`. 
 
-```shell
-curl http://localhost:8080/ping
-```
+To exercise such that a trace is committed with logs in context, navigate to `http://localhost:8080/oups`.
 
-You should be able to see a mix of trace and log data flowing through the collector. If you navigate to the distributed traces of the application in [New Relic One](https://one.newrelic.com/), you should be able to find traces related to the call to `GET /ping`, and see the logs in context:
+You should be able to see a mix of trace and log data flowing through the collector. If you navigate to the distributed traces of the application in [New Relic One](https://one.newrelic.com/), you should be able to find traces related to the call to `GET /oups`, and see the logs in context:
 
 _Trace With Logs_
 ![](trace-with-logs.png)

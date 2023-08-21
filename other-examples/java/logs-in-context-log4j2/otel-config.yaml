@@ -18,6 +18,8 @@ processors:
           # https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/README.md#trace-context-in-legacy-formats
           - replace_pattern(body, "\"trace_id\":", "\"trace.id\":")
           - replace_pattern(body, "\"span_id\":", "\"span.id\":")
+          # Truncate log bodies to 4095 characters
+          - set(body, Substring(body, 0, 4095)) where Len(body) >= 4095
 exporters:
   logging:
     verbosity: $LOG_EXPORTER_LOG_VERBOSITY
@@ -31,11 +33,11 @@ service:
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging, otlp]
+      exporters: [ otlp]
     traces:
       receivers: [otlp]
       processors: [ batch ]
-      exporters: [logging, otlp]
+      exporters: [ logging, otlp]
     logs:
       receivers: [fluentforward]
       processors: [ transform, batch ]

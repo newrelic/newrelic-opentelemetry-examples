@@ -1,4 +1,5 @@
 {
+  "service.name": "${env:SERVICE_NAME:-logs-in-context}",
   "timestamp": {
     "$resolver": "timestamp"
   },
@@ -26,6 +27,18 @@
     "$resolver": "source",
     "field": "lineNumber"
   },
+  "trace_id": {
+    "$resolver": "mdc",
+    "key": "trace_id"
+  },
+  "span_id": {
+    "$resolver": "mdc",
+    "key": "span_id"
+  },
+  "message": {
+    "$resolver": "message",
+    "stringified": true
+  },
   "error.class": {
     "$resolver": "exception",
     "field": "className"
@@ -40,18 +53,5 @@
     "stackTrace": {
       "stringified": true
     }
-  },
-  "message": {
-    "$resolver": "message",
-    "stringified": true
-  },
-  "trace_id": {
-    "$resolver": "mdc",
-    "key": "trace_id"
-  },
-  "span_id": {
-    "$resolver": "mdc",
-    "key": "span_id"
-  },
-  "service.name": "${env:SERVICE_NAME:-logs-in-context}"
+  }
 }
