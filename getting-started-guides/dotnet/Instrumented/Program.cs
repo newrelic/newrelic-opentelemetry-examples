@@ -8,14 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-// Define an OpenTelemetry resource 
-// A resource represents a collection of attributes describing the
-// service. This collection of attributes will be associated with all
-// telemetry generated from this service (traces, metrics, logs).
-var resourceBuilder = ResourceBuilder
-    .CreateDefault()
-    .AddService("getting-started-dotnet");
-
 // Configure the OpenTelemetry SDK for traces and metrics
 builder.Services.AddOpenTelemetry()
     // Define an OpenTelemetry resource 
@@ -29,7 +21,6 @@ builder.Services.AddOpenTelemetry()
     .WithTracing(tracerProviderBuilder =>
     {
         tracerProviderBuilder
-            .SetResourceBuilder(resourceBuilder)
             .AddSource(nameof(dotnet))
             .AddAspNetCoreInstrumentation()
             .AddOtlpExporter();
@@ -37,7 +28,6 @@ builder.Services.AddOpenTelemetry()
     .WithMetrics(meterProviderBuilder =>
     {
         meterProviderBuilder
-            .SetResourceBuilder(resourceBuilder)
             .AddMeter(nameof(dotnet))
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
