@@ -1,4 +1,5 @@
 #!/bin/bash
+
 while :
 do
   echo "Calling fibonacci-dotnet"
