@@ -14,7 +14,8 @@ builder.Services.AddControllers();
 // telemetry generated from this service (traces, metrics, logs).
 var resourceBuilder = ResourceBuilder
     .CreateDefault()
-    .AddService("getting-started-dotnet");
+    .AddService(serviceName: "getting-started-dotnet",
+                serviceVersion: typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown");
 
 // Configure the OpenTelemetry SDK for traces and metrics
 builder.Services.AddOpenTelemetry()
@@ -43,10 +44,10 @@ builder.Services.AddOpenTelemetry()
             {
                 metricReaderOptions.TemporalityPreference = MetricReaderTemporalityPreference.Delta;
             });
-
     });
 
 // Configure the OpenTelemetry SDK for logs
+builder.Logging.ClearProviders();
 builder.Logging.AddOpenTelemetry(options =>
 {
     options.IncludeFormattedMessage = true;
