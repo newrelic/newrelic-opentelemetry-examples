@@ -9,7 +9,7 @@ Requires:
 
 To run this demo app via the CLI:
 
-1. Switch to the `dotnet` directory
+1. Switch to the `dotnet\Instrumented` directory
 2. Export the following environment variables (replace `<your_license_key>` with your [New Relic ingest license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)):
 * export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317
 * export OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>

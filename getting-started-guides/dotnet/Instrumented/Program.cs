@@ -8,16 +8,19 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+// Build a resource configuration action to set service information.
+// A resource represents a collection of attributes describing the
+// service. This collection of attributes will be associated with all
+// telemetry generated from this service (traces, metrics, logs).
+Action<ResourceBuilder> configureResource = r => r.AddService(
+    serviceName: "getting-started-dotnet",
+    serviceVersion: typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown",
+    serviceInstanceId: Environment.MachineName);
+
 // Configure the OpenTelemetry SDK for traces and metrics
 builder.Services.AddOpenTelemetry()
-    // Define an OpenTelemetry resource 
-    // A resource represents a collection of attributes describing the
-    // service. This collection of attributes will be associated with all
-    // telemetry generated from this service (traces, metrics, logs).
-    .ConfigureResource(resourceBuilder =>
-        resourceBuilder
-            .AddService("getting-started-dotnet")
-            .AddTelemetrySdk())
+    .ConfigureResource(configureResource
+        .AddTelemetrySdk())
     .WithTracing(tracerProviderBuilder =>
     {
         tracerProviderBuilder
@@ -45,8 +48,13 @@ builder.Services.AddOpenTelemetry()
     });
 
 // Configure the OpenTelemetry SDK for logs
+builder.Logging.ClearProviders();
 builder.Logging.AddOpenTelemetry(options =>
 {
+    var resourceBuilder = ResourceBuilder.CreateDefault();
+    configureResource(resourceBuilder);
+    options.SetResourceBuilder(resourceBuilder);
+
     options.IncludeFormattedMessage = true;
     options.ParseStateValues = true;
     options.IncludeScopes = true;
