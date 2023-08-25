@@ -1,0 +1,31 @@
+version: '3'
+services:
+  app:
+    build: ./
+    environment:
+      OTEL_SERVICE_NAME: 'logs-in-context'
+      # Logs are forwarded to collector using fluentd
+      OTEL_LOGS_EXPORTER: none
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://collector:4317'
+    ports:
+      - '8080:8080'
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:8006
+    depends_on:
+      - collector
+
+  collector:
+    image: otel/opentelemetry-collector-contrib:0.83.0
+    volumes:
+      - ./otel-config.yaml:/otel-config.yaml
+    command: ["--config=/otel-config.yaml"]
+    environment:
+      LOG_EXPORTER_LOG_VERBOSITY: "detailed"
+      NEW_RELIC_API_KEY: '${NEW_RELIC_API_KEY}'
+    ports:
+      - '4317:4317' # OTLP gRPC receiver
+      - '13133:13133' # health_check
+      - '8006:8006' # Fluentd forward receiver
+      - '8006:8006/udp' # Fluentd forward receiver

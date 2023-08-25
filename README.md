@@ -1,4 +1,4 @@
-[![Example Code header](https://github.com/newrelic/opensource-website/raw/develop/src/images/categories/Example_Code.png)](https://opensource.newrelic.com/oss-category/#example-code)
+<a href="https://opensource.newrelic.com/oss-category/#example-code"><picture><source media="(prefers-color-scheme: dark)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/dark/Example_Code.png"><source media="(prefers-color-scheme: light)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Example_Code.png"><img alt="New Relic Open Source example project banner." src="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Example_Code.png"></picture></a>
 
 # New Relic OpenTelemetry Examples
 
@@ -10,23 +10,23 @@ This project contains examples illustrating usage of OpenTelemetry with New Reli
   * Export data to New Relic over OTLP using protocol most idiomatic for the language, and defaulting to `http/protobuf` when there is no clear preference.
   * Configure metrics to export using [delta](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk_exporters/otlp.md) temporality preference.
   * Configure attribute limits to adhere to New Relic's limits on attribute length and count.
-* Demonstrate auto instrumentation / agent configuration if offered by a language. 
+* Demonstrate auto instrumentation / agent configuration if offered by a language.
   * Use environment variables / system properties to configure OTLP export, delta metrics export, and attribute limits aligned with manual configuration of SDK.
 
 The following table details features currently demonstrated by the example.
 
 `+` means the feature is covered, `-` means it is not covered, and  `N/A` means feature is not available yet.
 
-|                                                             | Java | .NET | JS  | Go  | Python | Collector[1] |
-|-------------------------------------------------------------|------|------|-----|-----|--------|--------------|
-| Configure SDK for New Relic                                 |      |      |     |     |        |              |
-| &nbsp;&nbsp;&nbsp;&nbsp;Collect traces                      | +    | +    | +   | +   | +      | +            |
-| &nbsp;&nbsp;&nbsp;&nbsp;Collect metrics                     | +    | +    | +   | +   | +      | +            |
-| &nbsp;&nbsp;&nbsp;&nbsp;Collect logs                        | +    | +    | N/A | N/A | N/A    | +            |
-| &nbsp;&nbsp;&nbsp;&nbsp;Export over OTLP                    | +    | +    | +   | +   | +      | +            |
-| &nbsp;&nbsp;&nbsp;&nbsp;Export metrics w/ delta temporality | +    | +    | +   | +   | +      | +            |
-| &nbsp;&nbsp;&nbsp;&nbsp;Adhere to attribute limits          | +    | +    | +   | +   | +      | +            |
-| Configure auto instrumentation / agent for New Relic        | +    | +    | +   | N/A | N/A    | N/A          |
+|                                                             | Java | .NET | JS  | Go  | Python | Ruby | Collector[1] |
+|-------------------------------------------------------------|------|------|-----|-----|--------|------|--------------|
+| Configure SDK for New Relic                                 |      |      |     |     |        |      |              |
+| &nbsp;&nbsp;&nbsp;&nbsp;Collect traces                      | +    | +    | +   | +   | +      | +    | +            |
+| &nbsp;&nbsp;&nbsp;&nbsp;Collect metrics                     | +    | +    | +   | +   | +      | N/A  | +            |
+| &nbsp;&nbsp;&nbsp;&nbsp;Collect logs                        | +    | +    | N/A | N/A | N/A    | N/A  | +            |
+| &nbsp;&nbsp;&nbsp;&nbsp;Export over OTLP                    | +    | +    | +   | +   | +      | +    | +            |
+| &nbsp;&nbsp;&nbsp;&nbsp;Export metrics w/ delta temporality | +    | +    | +   | +   | +      | N/A  | +            |
+| &nbsp;&nbsp;&nbsp;&nbsp;Adhere to attribute limits          | +    | +    | +   | +   | +      | +    | +            |
+| Configure auto instrumentation / agent for New Relic        | +    | +    | +   | N/A | N/A    | N/A  | N/A          |
 
 
 **[1]** The collector has a different architecture and serves a different purpose than the language SDKs. Therefore, an apples-to-apples comparison to SDKs doesn't make sense. The table roughly indicates whether the feature is illustrated in the example collector configuration, even though the feature may not mean exactly the same thing as it does in the context of an SDK.
@@ -56,6 +56,8 @@ See [Contribute](#contribute) for how to request OpenTelemetry/New Relic interac
   - [OpenTelemetry SDK New Relic Config](./python): Two simple Python application demonstrating OpenTelemetry instrumentation, one with Flask auto-instrumentation and one without Flask. Configured for New Relic via the SDK.
 - Go
   - [OpenTelemetry SDK New Relic Config](./go): Simple Go applications demonstrating OpenTelemetry instrumentation.
+- Ruby
+  - [OpenTelemetry SDK New Relic Config](./ruby): A Sinatra application with automatic and manual instrumentation.
 - Serverless
   - AWS Lambda
     - [OpenTelemetry Lambda .NET New Relic Config](./serverless/aws-lambda/dotnet): An example AWS .NET Lambda function instrumented with OpenTelemetry.

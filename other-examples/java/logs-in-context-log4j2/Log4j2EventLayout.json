@@ -1,0 +1,57 @@
+{
+  "service.name": "${env:SERVICE_NAME:-logs-in-context}",
+  "timestamp": {
+    "$resolver": "timestamp"
+  },
+  "thread.name": {
+    "$resolver": "thread",
+    "field": "name"
+  },
+  "log.level": {
+    "$resolver": "level",
+    "field": "name"
+  },
+  "logger.name": {
+    "$resolver": "logger",
+    "field": "name"
+  },
+  "class.name": {
+    "$resolver": "source",
+    "field": "className"
+  },
+  "method.name": {
+    "$resolver": "source",
+    "field": "methodName"
+  },
+  "line.number": {
+    "$resolver": "source",
+    "field": "lineNumber"
+  },
+  "trace_id": {
+    "$resolver": "mdc",
+    "key": "trace_id"
+  },
+  "span_id": {
+    "$resolver": "mdc",
+    "key": "span_id"
+  },
+  "message": {
+    "$resolver": "message",
+    "stringified": true
+  },
+  "error.class": {
+    "$resolver": "exception",
+    "field": "className"
+  },
+  "error.message": {
+    "$resolver": "exception",
+    "field": "message"
+  },
+  "error.stack": {
+    "$resolver": "exception",
+    "field": "stackTrace",
+    "stackTrace": {
+      "stringified": true
+    }
+  }
+}
