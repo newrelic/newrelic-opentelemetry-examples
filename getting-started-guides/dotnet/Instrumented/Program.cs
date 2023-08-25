@@ -19,8 +19,7 @@ Action<ResourceBuilder> configureResource = r => r.AddService(
 
 // Configure the OpenTelemetry SDK for traces and metrics
 builder.Services.AddOpenTelemetry()
-    .ConfigureResource(configureResource
-        .AddTelemetrySdk())
+    .ConfigureResource(configureResource)
     .WithTracing(tracerProviderBuilder =>
     {
         tracerProviderBuilder
