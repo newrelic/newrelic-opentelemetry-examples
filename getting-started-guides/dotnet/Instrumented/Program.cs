@@ -8,21 +8,21 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-// Build a resource configuration action to set service information.
+// Define an OpenTelemetry resource 
 // A resource represents a collection of attributes describing the
 // service. This collection of attributes will be associated with all
 // telemetry generated from this service (traces, metrics, logs).
-Action<ResourceBuilder> configureResource = r => r.AddService(
-    serviceName: "getting-started-dotnet",
-    serviceVersion: typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown",
-    serviceInstanceId: Environment.MachineName);
+var resourceBuilder = ResourceBuilder
+    .CreateDefault()
+    .AddService(serviceName: "getting-started-dotnet",
+                serviceVersion: typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown");
 
 // Configure the OpenTelemetry SDK for traces and metrics
 builder.Services.AddOpenTelemetry()
-    .ConfigureResource(configureResource)
     .WithTracing(tracerProviderBuilder =>
     {
         tracerProviderBuilder
+            .SetResourceBuilder(resourceBuilder)
             .AddSource(nameof(dotnet))
             .AddAspNetCoreInstrumentation()
             .AddOtlpExporter();
@@ -30,6 +30,7 @@ builder.Services.AddOpenTelemetry()
     .WithMetrics(meterProviderBuilder =>
     {
         meterProviderBuilder
+            .SetResourceBuilder(resourceBuilder)
             .AddMeter(nameof(dotnet))
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
@@ -49,14 +50,11 @@ builder.Services.AddOpenTelemetry()
 builder.Logging.ClearProviders();
 builder.Logging.AddOpenTelemetry(options =>
 {
-    var resourceBuilder = ResourceBuilder.CreateDefault();
-    configureResource(resourceBuilder);
-    options.SetResourceBuilder(resourceBuilder);
-
     options.IncludeFormattedMessage = true;
     options.ParseStateValues = true;
     options.IncludeScopes = true;
     options
+        .SetResourceBuilder(resourceBuilder)
         .AddOtlpExporter();
 });
 
