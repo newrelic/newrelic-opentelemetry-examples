@@ -29,6 +29,9 @@ ENV OTEL_DOTNET_AUTO_HOME="/tracer-home"
 ENV DOTNET_STARTUP_HOOKS="/tracer-home/net/OpenTelemetry.AutoInstrumentation.StartupHook.dll"
 ENV DOTNET_ADDITIONAL_DEPS="/tracer-home/AdditionalDeps"
 ENV DOTNET_SHARED_STORE="/tracer-home/store"
+# These variables configure the metrics exporter to use "delta" temporality, which is required when sending data to NR
+ENV OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=delta
+ENV OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION=base2_exponential_bucket_histogram
 # This env variable points to the New Relic OTLP endpoint
 ENV OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp.nr-data.net:4318"
 # This env variable adds your New Relic license key to the OTLP headers.

@@ -43,7 +43,6 @@ builder.Services.AddOpenTelemetry()
             {
                 metricReaderOptions.TemporalityPreference = MetricReaderTemporalityPreference.Delta;
             });
-
     });
 
 // Configure the OpenTelemetry SDK for logs
