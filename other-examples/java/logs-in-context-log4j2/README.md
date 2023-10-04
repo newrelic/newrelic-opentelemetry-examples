@@ -36,15 +36,11 @@ The following image illustrates a similar example using FluentBit:
 Next, build and run the application:
 
 ```shell
-// Build the application
-docker compose build
-./gradlew logs-in-context-log4j2:bootJar
-
 // Export your New Relic API key as an environment variable
 export NEW_RELIC_API_KEY=<INSERT-API-KEY-HERE>
 
-// Run the application and the collector with docker compose
-docker compose up
+// Build and run the application
+docker compose up --build
 ```
 
 Navigate to the app in a browser at `http://localhost:8080`. 

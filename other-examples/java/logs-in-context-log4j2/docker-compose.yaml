@@ -7,6 +7,7 @@ services:
       # Logs are forwarded to collector using fluentd
       OTEL_LOGS_EXPORTER: none
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://collector:4317'
+      OTEL_EXPERIMENTAL_RESOURCE_DISABLED_KEYS: 'process.command_line,process.command_args'
     ports:
       - '8080:8080'
     logging:
@@ -23,6 +24,7 @@ services:
     command: ["--config=/otel-config.yaml"]
     environment:
       LOG_EXPORTER_LOG_VERBOSITY: "detailed"
+      NEW_RELIC_OTLP_ENDPOINT: ${NEW_RELIC_OTLP_ENDPOINT}
       NEW_RELIC_API_KEY: '${NEW_RELIC_API_KEY}'
     ports:
       - '4317:4317' # OTLP gRPC receiver
