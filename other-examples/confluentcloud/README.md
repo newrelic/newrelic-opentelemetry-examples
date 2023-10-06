@@ -42,4 +42,4 @@ docker compose up
 
 # Notes
 
- For more information on setting up this OTeL collector for Confluent Metrics, check out our [documentation](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/collector/collector-configuration-examples/opentelemetry-collector-kafka-confluentcloud/).
+ For more information on setting up this OTel collector for Confluent Metrics, check out our [documentation](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/collector/collector-configuration-examples/opentelemetry-collector-kafka-confluentcloud/).
