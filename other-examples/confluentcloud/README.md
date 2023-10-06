@@ -1,6 +1,11 @@
-# Confluent Cloud OTeL metrics example setup
+# Confluent Cloud OpenTelemetry metrics example setup
 
-This example shows a setup for running a docker OTeL collector to scrape metrics from Confluent Cloud and post them the New Relic OTeL Collector Endpoint.
+This example shows a setup for running a Docker OpenTelemetry Collector to scrape metrics from Confluent Cloud and post them the New Relic OTLP Collector Endpoint. 
+
+*Pre-requisites*: 
+1. You must have a Docker daemon running
+2. You must have docker compose installed (info: https://docs.docker.com/compose/)
+3. You must have a Confluent cluster and account created (free account: https://www.confluent.io/get-started/) 
 
 
 
