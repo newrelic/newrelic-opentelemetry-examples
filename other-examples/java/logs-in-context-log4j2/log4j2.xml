@@ -2,7 +2,7 @@
 <Configuration status="WARN" monitorInterval="30">
     <Appenders>
         <Console name="ConsoleAppender" target="SYSTEM_OUT" follow="true">
-            <JsonTemplateLayout eventTemplateUri="classpath:Log4j2EventLayout.json" maxStringLength="1000"/>
+            <JsonTemplateLayout eventTemplateUri="classpath:Log4j2EventLayout.json"/>
         </Console>
     </Appenders>
     <Loggers>
