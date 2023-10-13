@@ -32,7 +32,8 @@ public class Customizer implements AutoConfigurationCustomizerProvider {
             sdkTracerProviderBuilder.setSampler(
                 Sampler.parentBased(
                     RuleBasedRoutingSampler.builder(SpanKind.SERVER, Sampler.alwaysOn())
-                        // TODO: Update to url.path when semconv 1.22.0 is published
+                        // TODO: Update to url.path when semconv 1.22.0 is published and 2.0 version
+                        // of otel java agent available
                         .drop(SemanticAttributes.HTTP_TARGET, "/actuator.*")
                         .build())));
   }
