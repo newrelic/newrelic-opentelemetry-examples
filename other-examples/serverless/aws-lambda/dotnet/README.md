@@ -8,7 +8,7 @@ This example assumes you have the following:
 
 * A New Relic account. If you don't have one, [create one for free](https://newrelic.com/signup).
 * An AWS account. If you don't have one, [create one for free](https://aws.amazon.com/).
-* A [New Relic license key](/docs/apis/intro-apis/new-relic-api-keys/#ingest-keys) from your New Relic account.
+* A [New Relic license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#ingest-keys) from your New Relic account.
 
 It also assumes you have the following installed:
 

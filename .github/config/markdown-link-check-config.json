@@ -1,0 +1,11 @@
+{
+  "retryOn429": true,
+  "aliveStatusCodes": [
+    200,
+    403
+  ],
+  "ignorePatterns": [
+    { "pattern": "https:\\/\\/.*.nr-data\\.net.*" },
+    { "pattern": "http:\\/\\/localhost:[0-9]*" }
+  ]
+}

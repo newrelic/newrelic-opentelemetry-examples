@@ -14,11 +14,11 @@ This example currently only exports trace data and does not have metric examples
 
 Traces are buffered using a `BatchSpanProcessor`. The batch span processor will export when either the timeout is hit, the buffer size limit is hit, or the function completes execution via a call to force flush.
 
-A minimal amount of useful HTTP specific data has been captured for this example. You may wish to capture additional details and add according to the [HTTP Semantic Conventions](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/http.md).
+A minimal amount of useful HTTP specific data has been captured for this example. You may wish to capture additional details and add according to the [HTTP Semantic Conventions](https://github.com/open-telemetry/semantic-conventions/blob/main/docs/http/http-spans.md).
 
 See also the FAAS Semantic conventions, which are currently experimental and subject to change:
-* https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/semantic_conventions/faas.md
-* https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/faas.md
+* https://github.com/open-telemetry/semantic-conventions/blob/main/docs/resource/faas.md
+* https://github.com/open-telemetry/semantic-conventions/blob/main/docs/faas/faas-spans.md
 
 ## Required/Recommended Configuration
 
