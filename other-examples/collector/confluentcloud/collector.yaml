@@ -9,9 +9,9 @@ receivers:
       - consumers
     auth:
       tls:
-        ca_file: ca.pem
-        cert_file: cert.pem
-        key_file: key.pem
+        ca_file: ./etc/otelcol/pem/ca.pem
+        cert_file: ./etc/otelcol/pem/cert.pem
+        key_file: ./etc/otelcol/pem/key.pem
     collection_interval: 30s
 
 

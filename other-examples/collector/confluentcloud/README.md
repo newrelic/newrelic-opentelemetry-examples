@@ -11,7 +11,7 @@ This example shows a setup for running a Docker OpenTelemetry Collector to scrap
 
 
 
-To run the example, set the environment variables and run `docker compose up`:
+To run the example: add in the key files, set the environment variables, and run `docker compose up`
 
 ```shell
 export NEW_RELIC_API_KEY=<your_api_key>
@@ -37,7 +37,3 @@ docker compose up
 | **CLUSTER_BOOTSTRAP_SERVER** | Bootstrap Server for cluster | Available in your cluster settings |
 
 </br>
-
-## Notes
-
- For more information on setting up this OTel collector for Confluent Metrics, check out our [documentation](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/collector/collector-configuration-examples/opentelemetry-collector-kafka-confluentcloud/).
