@@ -7,10 +7,20 @@
   * For valid input, `{"n":5,"result":5}`
   * For invalid input, `{"message":"n must be 1 <= n <= 90."}`
 
-3. Must configure the OTLP exporter to send data to NR. Should use the standard environment variables for configuration rather than programmatic or other means:
-  * `OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>`
-  * `OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317`
-  * `OTEL_SERVICE_NAME=getting-started-java`
+3. Must configure the OpenTelemetry SDK according to New Relic best practices.
+  * Should use be kept up to date with latest version of OpenTelemetry API / SDK for language. 
+  * Should export data to New Relic using OTLP, preferring `http/protobuf` where there is no clear preference.
+  * Should enable gzip compression.
+  * Should configure metrics w/ delta temporality.
+  * Should configure attribute limits.
+  * Should use the standard environment variables for configuration rather than programmatic or other means:
+    * `OTEL_SERVICE_NAME=getting-started-java`
+    * `OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>`
+    * `OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4318`
+    * `OTEL_EXPORTER_OTLP_COMPRESSION=gzip`
+    * `OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf`
+    * `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=DELTA`
+    * `OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095`
 
 4. Must accept input as `n`, with the valid input range as 1 <= n <= 90
 5. The application must emit the following telemetry:
