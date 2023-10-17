@@ -60,7 +60,7 @@ npm install
 ```bash
 npm start
 ```
-The above command will use [parcel]([https://](https://parceljs.org/)) to build the frontend and start the server. 
+The above command will use [parcel](https://parceljs.org/) to build the frontend and start the server. 
 
 2. Open your browser and navigate to [http://localhost:8080](http://localhost:8080) to access the app.
 

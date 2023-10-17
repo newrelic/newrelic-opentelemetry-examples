@@ -60,7 +60,7 @@ npm install
 ```bash
 npm start
 ```
-The above command will use [parcel]([https://](https://parceljs.org/)) to build the frontend and start the server. 
+The above command will use [parcel](https://parceljs.org/) to build the frontend and start the server. 
 
 2. Open your browser and navigate to [http://localhost:8080](http://localhost:8080) to access the app.
 
@@ -98,7 +98,7 @@ npm install @opentelemetry/api \
   @opentelemetry/resources \
   @opentelemetry/semantic-conventions
 ```
-Refer to the [manual-otel-web.js](./src/public/custom-otel-web.js) file for the implementation details.
+Refer to the [manual-otel-web.js](./src/public/manual-otel-web.js) file for the implementation details.
 
 ## Open Telemetry Auto Instrumentation for Backend (Node.js)
 

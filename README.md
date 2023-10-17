@@ -40,28 +40,28 @@ See [Contribute](#contribute) for how to request OpenTelemetry/New Relic interac
 
 ## Examples Index
 
-- Collector
-  - [OpenTelemetry Collector with OTLP Export to New Relic](./collector): Run the OpenTelemetry Collector with OTLP gRPC export to New Relic.
-- Java
-  - [OpenTelemetry Agent New Relic Config](./java/agent-nr-config): A Java application with the OpenTelemetry Agent configured for New Relic.
-  - [Micrometer Shim with OTLP Export](./java/logs-in-context-log4j2): A Spring Boot Java application with micrometer installed, configured to use the OpenTelemetry micrometer shim and export to New Relic using OTLP.
-  - [Logs In Context With Log4j2](./java/logs-in-context-log4j2): A Java application configured to include OpenTelemetry trace context on Log4j2 structured logs.
-  - [OpenTelemetry SDK New Relic Config](./java/sdk-nr-config): A Java application with OpenTelemetry standalone library instrumentation as well as custom instrumentation, configured for New Relic via the SDK.
-  - [OTLP New Relic Mapping](./java/otlp-nr-mapping): Contains a variety of test cases demonstrating how OTLP payloads are mapped to records in NRDB upon ingest.
-- .NET
-  - [OpenTelemetry SDK New Relic Config](./dotnet/aspnetcore/) Simple ASP.NET Core application demonstrating OpenTelemetry instrumentation.
-- JavaScript
-  - [OpenTelemetry SDK New Relic Config](./javascript/simple-nodejs-app-http-exp): An express application demonstrating OpenTelemetry auto-instrumentation, configured for New Relic via the SDK.
-- Python
-  - [OpenTelemetry SDK New Relic Config](./python): Two simple Python application demonstrating OpenTelemetry instrumentation, one with Flask auto-instrumentation and one without Flask. Configured for New Relic via the SDK.
-- Go
-  - [OpenTelemetry SDK New Relic Config](./go): Simple Go applications demonstrating OpenTelemetry instrumentation.
-- Ruby
-  - [OpenTelemetry SDK New Relic Config](./ruby): A Sinatra application with automatic and manual instrumentation.
-- Serverless
-  - AWS Lambda
-    - [OpenTelemetry Lambda .NET New Relic Config](./serverless/aws-lambda/dotnet): An example AWS .NET Lambda function instrumented with OpenTelemetry.
-    - [OpenTelemetry Lambda Java New Relic Config](./serverless/aws-lambda/java): An example AWS Java Lambda function instrumented with OpenTelemetry.
+- [Getting Started Guides](./getting-started-guides/README.md)
+  - .NET ([uninstrumented](./getting-started-guides/dotnet/Uninstrumented) / [instrumented](./getting-started-guides/dotnet/Instrumented))
+  - Go ([uninstrumented](./getting-started-guides/go/uninstrumented) / [instrumented](./getting-started-guides/go/instrumented))
+  - Java ([uninstrumented](./getting-started-guides/java/uninstrumented) / [instrumented](./getting-started-guides/java/instrumented))
+  - Javascript ([uninstrumented](./getting-started-guides/javascript/uninstrumented) / [instrumented](./getting-started-guides/javascript/instrumented))
+  - Python ([uninstrumented](./getting-started-guides/python/Uninstrumented) / [instrumented](./getting-started-guides/python/Instrumented))
+  - Ruby ([uninstrumented](./getting-started-guides/ruby/uninstrumented) / [instrumented](./getting-started-guides/ruby/instrumented))
+- Other Examples
+  - Collector
+    - [OpenTelemetry Collector with OTLP Export to New Relic](./other-examples/collector): Run the OpenTelemetry Collector with OTLP gRPC export to New Relic.
+  - Java
+    - [OpenTelemetry Agent New Relic Config](./other-examples/java/agent-nr-config): A Java application with the OpenTelemetry Agent configured for New Relic.
+    - [Micrometer Shim with OTLP Export](./other-examples/java/micrometer-shim): A Spring Boot Java application with micrometer installed, configured to use the OpenTelemetry micrometer shim and export to New Relic using OTLP.
+    - [Logs In Context With Log4j2](./other-examples/java/logs-in-context-log4j2): A Java application configured to include OpenTelemetry trace context on Log4j2 structured logs.
+  - .NET
+    - [OpenTelemetry Agent With New Relic Config](./other-examples/dotnet/agent-nr-config) A simple .NET application running with the OpenTelemetry Automatic Instrumentation Agent.
+  - Serverless
+    - AWS Lambda
+      - [OpenTelemetry Lambda .NET New Relic Config](./other-examples/serverless/aws-lambda/dotnet): An example AWS .NET Lambda function instrumented with OpenTelemetry.
+      - [OpenTelemetry Lambda Java New Relic Config](./other-examples/serverless/aws-lambda/java): An example AWS Java Lambda function instrumented with OpenTelemetry.
+    - Azure Functions
+      - [OpenTelemetry Azure Functions Node New Relic Config](./other-examples/serverless/azure-functions/node/http-trigger-app): An example Azure Function App that includes an HTTP trigger Azure Function instrumented using Open Telemetry.
 
 ## Contribute
 
@@ -73,7 +73,7 @@ If you have any questions, or to execute our corporate CLA (which is required if
 
 **A note about vulnerabilities**
 
-As noted in our [security policy](../../security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
+As noted in our [security policy](https://github.com/newrelic/newrelic-opentelemetry-examples/security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
 
 If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through [HackerOne](https://hackerone.com/newrelic).
 
