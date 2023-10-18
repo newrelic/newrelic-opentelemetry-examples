@@ -1,1 +1,17 @@
+# Global codeowners
 * @newrelic/opentelemetry-community
+
+getting-started-guides/             @reese-lee
+getting-started-guides/dotnet/      @alanwest
+getting-started-guides/go/          @utr1903
+getting-started-guides/java/        @jack-berg
+getting-started-guides/javascript   @matewilk
+getting-started-guides/python/      @pnvnd
+getting-started-guides/ruby/        @kaylareopelle
+
+other-examples/collector/   @jcountsNR
+other-examples/dotnet/      @alanwest
+other-examples/java/        @jack-berg
+# TODO: find serverless codeowner
+other-examples/serverless/
+

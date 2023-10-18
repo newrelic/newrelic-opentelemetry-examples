@@ -8,6 +8,8 @@ services:
       OTEL_LOGS_EXPORTER: none
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://collector:4317'
       OTEL_EXPERIMENTAL_RESOURCE_DISABLED_KEYS: 'process.command_line,process.command_args'
+      OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE: 'delta'
+      OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT: 4095
     ports:
       - '8080:8080'
     logging:

@@ -13,3 +13,6 @@ build/
 # Python
 venv
 __pycache__
+
+# Docker
+.env
