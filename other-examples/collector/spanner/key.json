@@ -1,0 +1,14 @@
+{
+    "type": "service_account",
+    "project_id": "aqueous-sandbox-402414",
+    "private_key_id": "b76d335984ebf25ee824c406e1da80239c0cef93",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEuwIBADANBgkqhkiG9w0BAQEFAASCBKUwggShAgEAAoIBAQCtVOSec5xt0bgn\nnCjTUx9hZhR2fZwzO1Q1wA/Qjek5VPzYuZNOmSUV+l2K15BKjQUmUTdukIGXGArP\n16DIZpg3JqzSsO+Va+w3k6xTFy9GMpuzaySBivGUMuzt+WWrd3tdYzb+n22em6p9\nuIbqitwNuoTP5VN7D2fP36SHALV7C4TI6uYeVT9aKbUr3Q2zywKQGQGYrqyRrT4Z\nvP4c3f4fIpMPaSjnAoVEJPMOccDU4Os3JW42m9dAWcu2el5pLPHgROrjYx2qKtkV\n8lClrbrt5jqrn+BPSGURK304xiqsM4gBvMb8nwYuVDk4NqXKhrbn+5EguCfQGfnH\nzYXlxZDfAgMBAAECgf9YQZ2OmPLUi0kFvA4o0wxVuf5fqLZweuiD6ETTfMtctObO\nASJU6zNLZ8XHMIPuICbOF83uDpuWdxGtrP+2qLI6ykLN6cckjMGsxr3ENJTVfe9X\ndDlr6DAkxb6HIWhvnOb6o3cOKdip51f1+CK6VQUOWoXN2FvSSnrw2ChotgbCgXxD\nlMZVxkila6rGuS1UnB3wB6oMaKEpq2U/2dyWck6X8w7eHoFWOZc0UAoztVMVz1Gu\n0ZkZXRkcxuWyr9BnmUfm6LiYJV/VGD4UWtHIuXXRu/UA21Yeyant08M3MfHpZXJ8\nbmbh53krXjn8WG055t7+YmumLwNHFqgUXEvexlUCgYEA6+kuEHIv/czsYcH4aAbU\nDkwCzRbPBAATmQT6w54Yj0b+fOowctoQ31f49Da2fvxCHNev4Z9Xm3RbbLq+uRJn\nHigvPUnVDHIieG6uE+Wsn+m/dlKGe22RYHW/NUdIwUclzbF1u87ckwk5gF3otCI7\n06OV2mrxY8/U1E2Hb+FtD9sCgYEAvBd+yliPmNn5f5ITie27rg5wHanoRZrv3BAo\nnXWpn1zEOZATGlwoAe1dWGcHVq9YABICpqN1p6ahxp6IOcqAlDQQ3GSkzCsuhuvV\neUvhE9kAfelP4kipLBuOO1LUSDyqiLcZnOVplVPMSSzWENXMtoLNyEcR1DTN/4+3\n0dRHJE0CgYATff3PYA/1EYSKg0NqHP5SfBdTKMpME1GLOC0cEqkG1Z/bZGJCayAv\nxA4O56JmlaNEzNF8e/T6JEAVmMx/cDTS+hEFKF+RGrEccFCz1itQPzkRprnz4ta7\nOJ9m4I/zYFSQTVRkAzCYeY+lupyqnZWB5CdSl7mAPMDiFdHV/bNMNwKBgQCBqIyd\nfekXDAOCnjbb2MaMmKVOvYZBHSoFgBoPWUHhejhGGfwhKq/ljDPRscwMRHkcK04q\ngvmi5SoV2ci8VczG3RFWbAZyO74qAb45jEYOwYMmSMPpj/8WSbSFTnbJiRBhiB6e\n2kIrTwW+16qFFmy0z3x9eAhhSTlL10121qdn7QKBgGeVKSvj7TVbgFMrcyNhaIb1\noCVCyi8M8KuUe+yk+8OQMm9TAzYe2i17jHgrkkgVGNMXiaTM7ftiEVlgonsIuskQ\n0SVSll+Y0h/4tbAw2OV84iGPQ191f//TllMFw03EmOaEcce9amUrXp/JNiyPQdxt\nfjPm0fRzHNomqijNZcLf\n-----END PRIVATE KEY-----\n",
+    "client_email": "otelreceiver@aqueous-sandbox-402414.iam.gserviceaccount.com",
+    "client_id": "112201300501357424335",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/otelreceiver%40aqueous-sandbox-402414.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com"
+  }
+  
