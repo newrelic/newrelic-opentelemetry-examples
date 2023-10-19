@@ -15,6 +15,7 @@ Before you begin with the instrumentation, set these env vars up.
 export OTEL_SERVICE_NAME=getting-started-go
 export OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>
 export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317
+export OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
 ```
 
 ### Remarks
@@ -117,16 +118,8 @@ func newTraceProvider(
 		panic(err)
 	}
 
-	// Ensure default SDK resources and the required service name are set
-	r, err := resource.Merge(
-		resource.Default(),
-		resource.NewWithAttributes(
-			semconv.SchemaURL,
-		),
-	)
-	if err != nil {
-		panic(err)
-	}
+	// Instantiate a default resource with environment variables
+	r := resource.Default()
 
 	// Create trace provider
 	tp := sdktrace.NewTracerProvider(
@@ -189,8 +182,8 @@ type HttpWrapper struct {
 	operation            string
 	serverName           string
 	handler              http.Handler
-	httpServerDuration   instrument.Float64Histogram
-	fibonacciInvocations instrument.Int64Counter
+	httpServerDuration   metric.Float64Histogram
+	fibonacciInvocations metric.Int64Counter
 }
 ```
 
@@ -271,8 +264,8 @@ As the request ends, you can record the metrics:
 // Use floating point division here for higher precision (instead of Millisecond method).
 elapsedTime := float64(time.Since(requestStartTime)) / float64(time.Millisecond)
 
-h.fibonacciInvocations.Add(ctx, 1, fibonacciInvocationMetricAttributes...)
-h.httpServerDuration.Record(ctx, elapsedTime, httpServerMetricAttributes...)
+h.fibonacciInvocations.Add(ctx, 1, metric.WithAttributes(fibonacciInvocationMetricAttributes...))
+h.httpServerDuration.Record(ctx, elapsedTime, metric.WithAttributes(httpServerMetricAttributes...))
 ```
 
 Now, you need to call the actual handler which will execute the application code. You can directly call it like this:

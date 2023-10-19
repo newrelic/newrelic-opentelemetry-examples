@@ -11,14 +11,15 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-	"go.opentelemetry.io/otel/metric/instrument"
+	"go.opentelemetry.io/otel/metric"
+
 	"go.opentelemetry.io/otel/propagation"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	"go.opentelemetry.io/otel/semconv/v1.13.0/httpconv"
-	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.19.0"
+	"go.opentelemetry.io/otel/semconv/v1.19.0/httpconv"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -77,16 +78,8 @@ func newTraceProvider(
 		panic(err)
 	}
 
-	// Ensure default SDK resources and the required service name are set
-	r, err := resource.Merge(
-		resource.Default(),
-		resource.NewWithAttributes(
-			semconv.SchemaURL,
-		),
-	)
-	if err != nil {
-		panic(err)
-	}
+	// Instantiate a default resource with environment variables
+	r := resource.Default()
 
 	// Create trace provider
 	tp := sdktrace.NewTracerProvider(
@@ -124,8 +117,8 @@ type HttpWrapper struct {
 	operation            string
 	serverName           string
 	handler              http.Handler
-	httpServerDuration   instrument.Float64Histogram
-	fibonacciInvocations instrument.Int64Counter
+	httpServerDuration   metric.Float64Histogram
+	fibonacciInvocations metric.Int64Counter
 }
 
 func NewHttpWrapper(
@@ -220,8 +213,8 @@ func (h *HttpWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Use floating point division here for higher precision (instead of Millisecond method).
 	elapsedTime := float64(time.Since(requestStartTime)) / float64(time.Millisecond)
 
-	h.fibonacciInvocations.Add(ctx, 1, fibonacciInvocationMetricAttributes...)
-	h.httpServerDuration.Record(ctx, elapsedTime, httpServerMetricAttributes...)
+	h.fibonacciInvocations.Add(ctx, 1, metric.WithAttributes(fibonacciInvocationMetricAttributes...))
+	h.httpServerDuration.Record(ctx, elapsedTime, metric.WithAttributes(httpServerMetricAttributes...))
 }
 
 // Wrapper for response writer in order to retrieve the status code of the HTTP call
