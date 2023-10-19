@@ -13,6 +13,7 @@ This is the solution (completely instrumented with OpenTelemetry) for the Go dem
 export OTEL_SERVICE_NAME=getting-started-go
 export OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>
 export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4317
+export OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
 ```
 
 ### Remarks
