@@ -20,7 +20,8 @@ The [Getting Started Guides](./getting-started-guides/README.md) demonstrate how
 OpenTelemetry is a big ecosystem and everything doesn't fit into the goals of the [getting started guides](#getting-started-guides). These "other examples" demonstrate how other areas of OpenTelemetry fit in with New Relic. 
 
 * Collector
-  * [OpenTelemetry Collector with OTLP Export to New Relic](./other-examples/collector)
+  * [OpenTelemetry Collector with OTLP Export to New Relic](./other-examples/collector/nr-config)
+  * [OpenTelemetry Collector with Confluent Cloud and New Relic](./other-examples/collector/confluentcloud)
 * Java
   * [OpenTelemetry Agent New Relic Config](./other-examples/java/agent-nr-config)
   * [Micrometer Shim with OTLP Export](./other-examples/java/micrometer-shim)
