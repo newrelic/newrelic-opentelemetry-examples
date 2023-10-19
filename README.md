@@ -64,6 +64,8 @@ Codeowners for each example are defined in [codeowner](.github/CODEOWNERS). Each
 * Keeping dependencies (relatively) up to date.
 * Responding to issues related to the example.
 
+Codeowners are added as collaborators individually and given "write" permissions to the repository.
+
 Examples without a codeowner may be deleted.
 
 ## Vulnerabilities
