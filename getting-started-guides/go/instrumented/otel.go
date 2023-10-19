@@ -78,6 +78,7 @@ func newTraceProvider(
 		panic(err)
 	}
 
+	// Instantiate a default resource with environment variables
 	r := resource.Default()
 
 	// Create trace provider
