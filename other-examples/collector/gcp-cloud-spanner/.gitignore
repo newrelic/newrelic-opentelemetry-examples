@@ -1,2 +1,2 @@
 *.env
-*.key.json
+*key.json
