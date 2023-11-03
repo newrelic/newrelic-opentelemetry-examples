@@ -15,7 +15,7 @@ To run the example: add in the key files, set the environment variables, and run
 
 ```shell
 export NEW_RELIC_API_KEY=<your_api_key>
-export NEW_RELIC_OTLP_ENDPOINT=https://otlp.nr-data.net:4318  # This works for NA http endpoint. If you need an EU endpoint or non-http endpoint, refer to the docs.
+export NEW_RELIC_OTLP_ENDPOINT=https://otlp.nr-data.net:4318  # This works for NA (North America) http endpoint. If you need an EU endpoint or non-http endpoint, refer to the docs.
 export CLUSTER_ID=<your_cluster_id>
 export CONFLUENT_API_ID=<your_confluent_api_id>
 export CONFLUENT_API_SECRET=<your_cluster_api_secret>
