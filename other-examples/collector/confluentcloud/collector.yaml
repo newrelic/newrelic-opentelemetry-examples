@@ -30,6 +30,13 @@ receivers:
           params:
             "resource.kafka.id":
               - $CLUSTER_ID
+            "resource.ksql.id":
+              - $KSQL_CLUSTER_ID
+            "resource.connector.id"
+              - $CONNECTOR_ID"
+            "resource.schema_registry.id"
+              - $SCHEMA_REGISTRY_ID
+
 exporters:
   otlp:
     endpoint: $NEW_RELIC_OTLP_ENDPOINT

@@ -17,6 +17,9 @@ To run the example: add in the key files, set the environment variables, and run
 export NEW_RELIC_API_KEY=<your_api_key>
 export NEW_RELIC_OTLP_ENDPOINT=https://otlp.nr-data.net
 export CLUSTER_ID=<your_cluster_id>
+export KSQL_CLUSTER_ID=<your_ksql_cluster_id>
+export CONNECTOR_ID=<your_connector_id>
+export SCHEMA_REGISTRY_ID=<your_schema_registry_id>
 export CLUSTER_API_KEY=<your_cluster_api_key>
 export CLUSTER_API_SECRET=<your_cluster_api_secret>
 export CLUSTER_BOOTSTRAP_SERVER=<your_cluster_bootstrap_server>
