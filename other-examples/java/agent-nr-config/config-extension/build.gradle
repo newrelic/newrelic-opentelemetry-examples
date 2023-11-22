@@ -18,7 +18,7 @@ jar {
 
 dependencies {
   compileOnly 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure'
-  compileOnly 'io.opentelemetry.semconv:opentelemetry-semconv:1.22.0-alpha'
+  compileOnly 'io.opentelemetry.semconv:opentelemetry-semconv:1.23.1-alpha'
 
   implementation "io.opentelemetry.contrib:opentelemetry-samplers:1.31.0-alpha"
 }
