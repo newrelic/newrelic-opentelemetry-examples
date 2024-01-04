@@ -59,12 +59,15 @@ Set the Application Name and New Relic [Ingest - License Key](https://docs.newre
     pip install opentelemetry-distro
     ```
 
-3. No changes to the code is needed, just run the app as usual but with `opentelemetry-instrument` before the command to start the application. For example:
+3. When the [auto-instrument](https://opentelemetry.io/docs/instrumentation/python/automatic/) package is used, no changes to the code is needed, just run the app as usual but with `opentelemetry-instrument` before the command to start the application. To get logging data you must also set the OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED environment variable to true.
+
+For example:
 
     ```
+    export OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED=true
     opentelemetry-instrument python app.py
     ```
-   
+
 4. To generate traffic, in a new terminal tab, run the following command:
    PowerShell:
    ```powershell
@@ -74,5 +77,19 @@ Set the Application Name and New Relic [Ingest - License Key](https://docs.newre
    ```bash
    ./load-generator.sh
    ```
-   
+
+5. This will only collect logs. In order to get traces and metrics you need to [make the following update to app.py](https://opentelemetry-python-contrib.readthedocs.io/en/latest/instrumentation/flask/flask.html#id1)
+    ```
+    from opentelemetry.instrumentation.flask import FlaskInstrumentor
+
+    app = Flask(__name__)
+
+    FlaskInstrumentor().instrument_app(app)
+    ```
+
+Then run the app again with:
+
+    opentelemetry-instrument --logs_exporter otlp python app.py
+
+
 5. To shut down the program, run the following in both shells or terminal tabs: `CTRL + C`.
