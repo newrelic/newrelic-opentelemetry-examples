@@ -3,7 +3,7 @@ from flask import Flask, jsonify, request
 app = Flask(__name__)
 
 @app.route("/fibonacci")
-def fibonacci(x):
+def fibonacci():
     args = request.args
     x = int(args.get("n"))
 
