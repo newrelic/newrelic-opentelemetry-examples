@@ -20,6 +20,8 @@ export CLUSTER_ID=<your_cluster_id>
 export CLUSTER_API_KEY=<your_cluster_api_key>
 export CLUSTER_API_SECRET=<your_cluster_api_secret>
 export CLUSTER_BOOTSTRAP_SERVER=<your_cluster_bootstrap_server>
+export CONFLUENT_API_ID=<your_confluent_api_id>
+export CONFLUENT_API_SECRET=<your_confluent_api_secret>
 
 docker compose up
 ```
@@ -35,5 +37,7 @@ docker compose up
 | **CLUSTER_API_KEY** | Resource API key for your Confluent cluster |[Resource API key docs](https://docs.confluent.io/cloud/current/access-management/authenticate/api-keys/api-keys.html#create-a-resource-api-key) |
 | **CLUSTER_API_SECRET**| Resource API secret key from your Confluent cluster| [Resource API key docs](https://docs.confluent.io/cloud/current/access-management/authenticate/api-keys/api-keys.html#create-a-resource-api-key) |
 | **CLUSTER_BOOTSTRAP_SERVER** | Bootstrap Server for cluster | Available in your cluster settings |
+| **CONFLUENT_API_ID** |ID for Confluent Cloud |[Confluent API key docs](https://docs.confluent.io/cloud/current/access-management/authenticate/api-keys/api-keys.html)|
+| **CONFLUENT_API_SECRET** | API Secret for Confluent Cloud | [Confluent API key docs](https://docs.confluent.io/cloud/current/access-management/authenticate/api-keys/api-keys.html) |
 
 </br>

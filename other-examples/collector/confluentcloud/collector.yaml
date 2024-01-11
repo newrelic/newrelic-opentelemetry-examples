@@ -8,10 +8,14 @@ receivers:
       - topics
       - consumers
     auth:
-      tls:
-        ca_file: ./etc/otelcol/pem/ca.pem
-        cert_file: ./etc/otelcol/pem/cert.pem
-        key_file: ./etc/otelcol/pem/key.pem
+      sasl:
+        username: $CLUSTER_API_KEY
+        password: $CLUSTER_API_SECRET
+        mechanism: PLAIN
+      #tls:
+        #ca_file: ./etc/otelcol/pem/ca.pem
+        #cert_file: ./etc/otelcol/pem/cert.pem
+        #key_file: ./etc/otelcol/pem/key.pem
     collection_interval: 30s
 
 
@@ -30,6 +34,8 @@ receivers:
           params:
             "resource.kafka.id":
               - $CLUSTER_ID
+            # "resource.connector.id"
+            #  - $CONNECTOR_ID
 exporters:
   otlp:
     endpoint: $NEW_RELIC_OTLP_ENDPOINT
