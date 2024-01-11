@@ -20,4 +20,5 @@ services:
       - CONFLUENT_API_ID
       - CONFLUENT_API_SECRET
     # - CONNECTOR_ID
+    # - SCHEMA_REGISTRY_ID
 

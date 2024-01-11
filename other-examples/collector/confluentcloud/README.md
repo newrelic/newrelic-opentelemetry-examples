@@ -22,6 +22,8 @@ export CLUSTER_API_SECRET=<your_cluster_api_secret>
 export CLUSTER_BOOTSTRAP_SERVER=<your_cluster_bootstrap_server>
 export CONFLUENT_API_ID=<your_confluent_api_id>
 export CONFLUENT_API_SECRET=<your_confluent_api_secret>
+# export SCHEMA_REGISTRY_ID=<your_schema_registry_id>
+# export CONNECTOR_ID=<your_connector_id>
 
 docker compose up
 ```
