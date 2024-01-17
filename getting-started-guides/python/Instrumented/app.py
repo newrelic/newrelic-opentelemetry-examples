@@ -29,7 +29,7 @@ trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(OTLPSpanExport
 from opentelemetry import metrics
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
-from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
+from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
 
 # Initialize metering and an exporter that can send data to an OTLP endpoint
 # SELECT count(`http.server.active_requests`) FROM Metric FACET `service.name` TIMESERIES
@@ -46,7 +46,7 @@ logging.basicConfig(level=logging.DEBUG)
 from opentelemetry import _logs
 from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
-from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
+from opentelemetry.exporter.otlp.proto.http._log_exporter import OTLPLogExporter
 
 # Initialize logging and an exporter that can send data to an OTLP endpoint by attaching OTLP handler to root logger
 # SELECT * FROM Log WHERE instrumentation.provider='opentelemetry'
