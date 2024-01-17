@@ -16,7 +16,7 @@
   * Should use the standard environment variables for configuration rather than programmatic or other means:
     * `OTEL_SERVICE_NAME=getting-started-java`
     * `OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>`
-    * `OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net:4318`
+    * `OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net`
     * `OTEL_EXPORTER_OTLP_COMPRESSION=gzip`
     * `OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf`
     * `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=DELTA`
