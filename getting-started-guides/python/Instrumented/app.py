@@ -15,7 +15,7 @@ OTEL_RESOURCE_ATTRIBUTES = {
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.trace.status import Status, StatusCode
 
 # Initialize tracing and an exporter that can send data to an OTLP endpoint
