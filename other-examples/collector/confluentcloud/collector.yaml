@@ -31,7 +31,7 @@ receivers:
             "resource.kafka.id":
               - $CLUSTER_ID
 exporters:
-  otlp:
+  otlphttp:
     endpoint: $NEW_RELIC_OTLP_ENDPOINT
     headers:
       api-key: $NEW_RELIC_API_KEY
@@ -48,8 +48,8 @@ service:
     metrics:
       receivers: [prometheus]
       processors: [batch]
-      exporters: [otlp]
+      exporters: [otlphttp]
     metrics/kafka:
       receivers: [kafkametrics]
       processors: [batch]
-      exporters: [otlp]
+      exporters: [otlphttp]

@@ -20,7 +20,7 @@ services:
       - collector
 
   collector:
-    image: otel/opentelemetry-collector-contrib:0.83.0
+    image: otel/opentelemetry-collector-contrib:0.92.0
     volumes:
       - ./otel-config.yaml:/otel-config.yaml
     command: ["--config=/otel-config.yaml"]
@@ -30,6 +30,7 @@ services:
       NEW_RELIC_API_KEY: '${NEW_RELIC_API_KEY}'
     ports:
       - '4317:4317' # OTLP gRPC receiver
+      - '4318:4318' # OTLP HTTP receiver
       - '13133:13133' # health_check
       - '8006:8006' # Fluentd forward receiver
       - '8006:8006/udp' # Fluentd forward receiver
