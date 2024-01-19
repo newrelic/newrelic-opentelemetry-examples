@@ -17,7 +17,7 @@ export OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>
 export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net
 ```
 * Make sure to use your [ingest license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)
-* If your account is based in the EU, set the endpoint to: https://otlp.eu01.nr-data.net:4317
+* If your account is based in the EU, set the endpoint to: https://otlp.eu01.nr-data.net
 
 3. Set this environment variable to name the demo app:
 ```
