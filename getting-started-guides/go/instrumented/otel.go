@@ -9,8 +9,8 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/metric"
 
 	"go.opentelemetry.io/otel/propagation"
@@ -36,9 +36,9 @@ func newMetricProvider(
 	var exp sdkmetric.Exporter
 	var err error
 
-	exp, err = otlpmetricgrpc.New(
+	exp, err = otlpmetrichttp.New(
 		ctx,
-		otlpmetricgrpc.WithTemporalitySelector(newRelicTemporalitySelector),
+		otlpmetrichttp.WithTemporalitySelector(newRelicTemporalitySelector),
 	)
 	if err != nil {
 		panic(err)
@@ -73,7 +73,7 @@ func newTraceProvider(
 	var exp sdktrace.SpanExporter
 	var err error
 
-	exp, err = otlptracegrpc.New(ctx)
+	exp, err = otlptracehttp.New(ctx)
 	if err != nil {
 		panic(err)
 	}
