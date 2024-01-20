@@ -1,0 +1,37 @@
+receivers:
+  googlecloudspanner:
+    collection_interval: 60s
+    initial_delay: 1s
+    top_metrics_query_max_rows: 100
+    backfill_enabled: true
+    cardinality_total_limit: 200000
+    hide_topn_lockstats_rowrangestartkey: false
+    truncate_text: false
+    projects:
+      - project_id: $SPANNER_PROJECT_ID
+        service_account_key: "./etc/key.json"
+        instances:
+          - instance_id: $SPANNER_INSTANCE_ID
+            databases:
+              - $SPANNER_DATABASE_ID
+exporters:
+  otlp:
+    endpoint: $NEW_RELIC_OTLP_ENDPOINT
+    headers:
+      api-key: $NEW_RELIC_API_KEY
+  logging:
+    verbosity: normal
+processors:
+  batch:
+  memory_limiter:
+    limit_mib: 400
+    spike_limit_mib: 100
+    check_interval: 5s
+service:
+  telemetry:
+    logs:
+  pipelines:
+    metrics:
+      receivers: [googlecloudspanner]
+      processors: [batch]
+      exporters: [otlp,logging]

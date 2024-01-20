@@ -1,0 +1,17 @@
+version: "3.6"
+
+services:
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: --config=/etc/otelcol/config.yaml
+    volumes:
+      - ./collector.yaml:/etc/otelcol/config.yaml
+      - ./key.json:/etc/key.json
+    environment:
+      - NEW_RELIC_OTLP_ENDPOINT
+      - NEW_RELIC_API_KEY
+      - SPANNER_PROJECT_ID
+      - SPANNER_INSTANCE_ID
+      - SPANNER_DATABASE_ID
+
