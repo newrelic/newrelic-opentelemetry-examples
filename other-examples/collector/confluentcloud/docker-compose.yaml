@@ -10,8 +10,8 @@ services:
     environment:
       - NEW_RELIC_OTLP_ENDPOINT
       - NEW_RELIC_API_KEY
-      - CLUSTER_ID
       - CONFLUENT_API_ID
       - CONFLUENT_API_SECRET
-    # - CONNECTOR_ID
-    # - SCHEMA_REGISTRY_ID
+      - CLUSTER_ID
+      - CONNECTOR_ID
+      - SCHEMA_REGISTRY_ID

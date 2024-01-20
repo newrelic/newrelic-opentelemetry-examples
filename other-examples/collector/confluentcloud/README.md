@@ -1,25 +1,20 @@
 # Confluent Cloud OpenTelemetry metrics example setup
 
-This example shows a setup for running a Docker OpenTelemetry Collector to scrape metrics from Confluent Cloud and post them the New Relic OTLP Collector Endpoint. For more information, please see our [Kafka with Confluent documentation](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/collector/collector-configuration-examples/opentelemetry-collector-kafka-confluentcloud/).
+This example shows a setup for running a prometheus OpenTelemetry Collector in a docker container to scrape metrics from Confluent Cloud and post them the New Relic OTLP Collector Endpoint. For more information, please see our [Kafka with Confluent documentation](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/collector/collector-configuration-examples/opentelemetry-collector-kafka-confluentcloud/).
 
 ## Prerequisites
 
-1. You must have a Docker daemon running
-2. You must have docker compose installed (info: https://docs.docker.com/compose/)
-3. You must have a Confluent cluster and account created (free account: https://www.confluent.io/get-started/)
-4. For best authentication practices, you will have to procure a tls authentication key from Confluent and put the ca, cert, and key files in this directory. </br>
-(Confluent TLS encryption docs: https://docs.confluent.io/platform/current/kafka/encryption.html)
+1. You must have a Docker daemon running.
+2. You must have [Docker compose](https://docs.docker.com/compose/) installed .
+3. You must have a [Confluent Cloud account](https://www.confluent.io/get-started/) with a cluster running.
 
-To run the example: add in the key files, set the environment variables, and run `docker compose up`
+## Running the example
+First, set your environment variables in the `.env` file in this directory. For more information on the individual variables, reference the docs available below.
+
+Once the variables are set, run the following command from the root directory to start the collector.
 
 ```shell
-export NEW_RELIC_API_KEY=<your_api_key>
-export NEW_RELIC_OTLP_ENDPOINT=https://otlp.nr-data.net
-export CLUSTER_ID=<your_cluster_id>
-export CONFLUENT_API_ID=<your_confluent_api_id>
-export CONFLUENT_API_SECRET=<your_confluent_api_secret>
-# export SCHEMA_REGISTRY_ID=<your_schema_registry_id>
-# export CONNECTOR_ID=<your_connector_id>
+cd ./other-examples/collector/confluentcloud
 
 docker compose up
 ```
@@ -29,7 +24,9 @@ docker compose up
 | Variable | Description | Docs |
 | -------- | ----------- | ---- |
 | **NEW_RELIC_API_KEY** |New Relic Ingest API Key |[API Key docs](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/) | 
-| **NEW_RELIC_OTLP_ENDPOINT** | OTLP endpoint is https://otlp.nr-data.net | [OTLP endpoint config docs](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/get-started/opentelemetry-set-up-your-app/#review-settings) |
-| **CLUSTER_ID** | ID of cluster from Confluent Cloud | Available in your cluster settings |
-| **CONFLUENT_API_ID** |ID for Confluent Cloud |[Confluent API key docs](https://docs.confluent.io/cloud/current/access-management/authenticate/api-keys/api-keys.html)|
-| **CONFLUENT_API_SECRET** | API Secret for Confluent Cloud | [Confluent API key docs](https://docs.confluent.io/cloud/current/access-management/authenticate/api-keys/api-keys.html) |
+| **NEW_RELIC_OTLP_ENDPOINT** |Default US OTLP endpoint is https://otlp.nr-data.net | [OTLP endpoint config docs](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/get-started/opentelemetry-set-up-your-app/#review-settings) |
+| **CONFLUENT_API_KEY** |API key for Confluent Cloud, can be created via cli by following the docs |[Confluent API key docs](https://docs.confluent.io/cloud/current/monitoring/metrics-api.html)|
+| **CONFLUENT_API_SECRET** | API secret for Confluent Cloud | [Confluent API key docs](https://docs.confluent.io/cloud/current/monitoring/metrics-api.html) |
+| **CLUSTER_ID** | ID of the cluster from Confluent Cloud | [List cluster ID docs](https://docs.confluent.io/confluent-cli/current/command-reference/kafka/cluster/confluent_kafka_cluster_list.html#description) |
+| **CONNECTOR_ID** |(Optional) ID of the connector from Confluent Cloud | [List connector ID docs](https://docs.confluent.io/confluent-cli/current/command-reference/connect/cluster/confluent_connect_cluster_list.html) |
+| **SCHEMA_REGISTRY_ID** | (Optional) ID of schema registry from Confluent Cloud | [List schema-registry ID docs](https://docs.confluent.io/confluent-cli/current/command-reference/schema-registry/schema/confluent_schema-registry_schema_list.html) |

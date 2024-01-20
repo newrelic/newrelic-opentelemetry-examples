@@ -14,10 +14,11 @@ receivers:
           params:
             "resource.kafka.id":
               - $CLUSTER_ID
-            # "resource.connector.id"
-            #  - $CONNECTOR_ID
-            # "resource.schema_registry.id"
-            #  - $SCHEMA_REGISTRY_ID
+      #  OPTIONAL - You can include monitoring for Confluent connectors or schema registry's by including the ID here.
+      #      "resource.connector.id":
+      #        - $CONNECTOR_ID
+      #      "resource.schema_registry.id":
+      #        - $SCHEMA_REGISTRY_ID
 
 processors:
   batch:
