@@ -8,7 +8,7 @@ receivers:
             - targets: ["api.telemetry.confluent.cloud"]
           scheme: https
           basic_auth:
-            username: $CONFLUENT_API_ID
+            username: $CONFLUENT_API_KEY
             password: $CONFLUENT_API_SECRET
           metrics_path: /v2/metrics/cloud/export
           params:
