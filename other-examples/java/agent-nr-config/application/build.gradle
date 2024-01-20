@@ -3,20 +3,47 @@ import org.springframework.boot.gradle.plugin.SpringBootPlugin
 plugins {
     id 'java-library'
     id 'org.springframework.boot'
-    id 'de.undercouch.download'
 }
 
-def agentPath = project.buildDir.toString() + "/otel/opentelemetry-javaagent.jar"
+configurations.all {
+  exclude module: 'spring-boot-starter-logging'
+}
+
+configurations {
+  agent
+}
+
+dependencies {
+  implementation 'io.opentelemetry:opentelemetry-api'
+
+  agent("io.opentelemetry.javaagent:opentelemetry-javaagent:1.32.0")
+
+  implementation platform(SpringBootPlugin.BOM_COORDINATES)
+  implementation 'org.springframework.boot:spring-boot-starter-web'
+  implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+  implementation 'org.springframework.boot:spring-boot-starter-actuator'
+}
+
+tasks.register("copyAgent", Copy) {
+  from(configurations.agent.singleFile)
+  into(layout.buildDirectory.dir('agent'))
+  rename("opentelemetry-javaagent-.*\\.jar", "opentelemetry-javaagent.jar")
+}
 
 bootRun {
   mainClass.set 'com.newrelic.app.Application'
 
   // Before running, build the config-extension shadow jar
   dependsOn(":agent-nr-config:config-extension:shadowJar")
-  // Before running, download the opentelemetry-java-instrumentation agent
-  dependsOn("downloadAgent")
+  // Before running, copy the agent to a reliable place in the build dir
+  dependsOn("copyAgent")
 
   def extensionPath = project(":agent-nr-config:config-extension").buildDir.toString() + "/libs/config-extension.jar"
+
+  def agentPath = project.buildDir.toString() + "/agent/opentelemetry-javaagent.jar"
+
+  println(agentPath)
+  println(extensionPath)
 
   jvmArgs = [
       // Set the opentelemetry-java-instrumentation agent as the javaagent
@@ -24,24 +51,4 @@ bootRun {
       // Use the config-extension shadowJar to configure the agent via SPI
       "-Dotel.javaagent.extensions=${extensionPath}"
   ]
-}
-
-// Download the opentelemetry java agent and put it in the build directory
-task downloadAgent(type: Download) {
-  src "https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar"
-  dest agentPath
-  overwrite false
-}
-
-configurations.all {
-  exclude module: 'spring-boot-starter-logging'
-}
-
-dependencies {
-  implementation 'io.opentelemetry:opentelemetry-api'
-
-  implementation platform(SpringBootPlugin.BOM_COORDINATES)
-  implementation 'org.springframework.boot:spring-boot-starter-web'
-  implementation 'org.springframework.boot:spring-boot-starter-log4j2'
-  implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }

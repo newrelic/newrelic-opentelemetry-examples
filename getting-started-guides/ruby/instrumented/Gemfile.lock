@@ -3,6 +3,7 @@ GEM
   specs:
     daemons (1.4.1)
     eventmachine (1.2.7)
+    google-protobuf (3.23.3-arm64-darwin)
     google-protobuf (3.23.3-x86_64-darwin)
     googleapis-common-protos-types (1.6.0)
       google-protobuf (~> 3.14)
@@ -214,6 +215,7 @@ GEM
     tilt (2.2.0)
 
 PLATFORMS
+  arm64-darwin-22
   x86_64-darwin-22
 
 DEPENDENCIES

@@ -4,6 +4,7 @@ receivers:
   otlp:
     protocols:
       grpc:
+      http:
   fluentforward:
     endpoint: 0.0.0.0:8006
 processors:
@@ -21,22 +22,22 @@ processors:
 exporters:
   logging:
     verbosity: $LOG_EXPORTER_LOG_VERBOSITY
-  otlp:
+  otlphttp:
     endpoint: $NEW_RELIC_OTLP_ENDPOINT
     headers:
-      "api-key": $NEW_RELIC_API_KEY
+      api-key: $NEW_RELIC_API_KEY
 service:
   extensions: [health_check]
   pipelines:
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [ otlp]
+      exporters: [ otlphttp]
     traces:
       receivers: [otlp]
       processors: [ batch ]
-      exporters: [ logging, otlp]
+      exporters: [ logging, otlphttp]
     logs:
       receivers: [fluentforward]
       processors: [ transform, batch ]
-      exporters: [logging, otlp]
+      exporters: [logging, otlphttp]

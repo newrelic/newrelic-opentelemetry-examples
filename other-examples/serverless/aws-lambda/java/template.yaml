@@ -9,7 +9,7 @@ Parameters:
   newRelicEndpoint:
     Type: String
     Description: New Relic OpenTelemetry endpoint to use.
-    Default: otlp.nr-data.net:4317
+    Default: https://otlp.nr-data.net
 
 Resources:
   api:

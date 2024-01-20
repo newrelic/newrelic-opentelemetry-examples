@@ -19,11 +19,11 @@ cd ./getting-started-guides/python/instrumented/
 6. Install dependencies listed in `requirements.txt` 
 7. To send telemetry data to New Relic, set the following environment variables
 ```shell
-OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp.nr-data.net:4317"
+OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp.nr-data.net"
 OTEL_EXPORTER_OTLP_HEADERS="api-key=[YOUR_INGEST_KEY]"
 ```
 * Make sure to use your [ingest license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)
-* If your account is based in the EU, set the endpoint to: https://otlp.eu01.nr-data.net:4317
+* If your account is based in the EU, set the endpoint to: https://otlp.eu01.nr-data.net
 8. Set this environment variable to name the demo app:
 ```shell
 OTEL_SERVICE_NAME=getting-started-python

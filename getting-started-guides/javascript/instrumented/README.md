@@ -180,7 +180,3 @@ Notice the `npm server` command has been updated to include the `-r` option to l
 
 ## Further reading
 Custom Instrumentation for the backend logic can be found in the [API README.md file](./src/api/README.md)
-
-## License
-
-This project is [MIT](https://opensource.org/licenses/MIT) licensed.

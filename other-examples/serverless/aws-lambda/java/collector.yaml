@@ -9,7 +9,7 @@ exporters:
     loglevel: debug
     sampling_initial: 5
     sampling_thereafter: 200
-  otlp:
+  otlphttp:
     endpoint: ${NEW_RELIC_OPENTELEMETRY_ENDPOINT}
     headers:
       api-key: ${NEW_RELIC_LICENSE_KEY}
@@ -21,11 +21,11 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      exporters: [logging,otlp]
+      exporters: [logging,otlphttp]
     metrics:
       receivers: [otlp]
-      exporters: [logging,otlp]
+      exporters: [logging,otlphttp]
     logs:
       receivers: [otlp]
       processors: []
-      exporters: [logging,otlp]
+      exporters: [logging,otlphttp]
