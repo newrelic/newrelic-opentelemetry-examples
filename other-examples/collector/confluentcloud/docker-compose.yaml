@@ -7,14 +7,11 @@ services:
     command: --config=/etc/otelcol/config.yaml
     volumes:
       - ./collector.yaml:/etc/otelcol/config.yaml
-      - ./key.pem:/etc/otelcol/pem/key.pem
-      - ./cert.pem:/etc/otelcol/pem/cert.pem
-      - ./ca.pem:/etc/otelcol/pem/ca.pem
     environment:
       - NEW_RELIC_OTLP_ENDPOINT
       - NEW_RELIC_API_KEY
-      - CLUSTER_BOOTSTRAP_SERVER
-      - CLUSTER_API_KEY
-      - CLUSTER_API_SECRET
+      - CONFLUENT_API_KEY
+      - CONFLUENT_API_SECRET
       - CLUSTER_ID
-
+      - CONNECTOR_ID
+      - SCHEMA_REGISTRY_ID

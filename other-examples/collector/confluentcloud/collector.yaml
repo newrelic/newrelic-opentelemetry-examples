@@ -1,20 +1,4 @@
 receivers:
-  kafkametrics:
-    brokers:
-      - $CLUSTER_BOOTSTRAP_SERVER
-    protocol_version: 2.0.0
-    scrapers:
-      - brokers
-      - topics
-      - consumers
-    auth:
-      tls:
-        ca_file: ./etc/otelcol/pem/ca.pem
-        cert_file: ./etc/otelcol/pem/cert.pem
-        key_file: ./etc/otelcol/pem/key.pem
-    collection_interval: 30s
-
-
   prometheus:
     config:
       scrape_configs:
@@ -24,32 +8,30 @@ receivers:
             - targets: ["api.telemetry.confluent.cloud"]
           scheme: https
           basic_auth:
-            username: $CONFLUENT_API_ID
+            username: $CONFLUENT_API_KEY
             password: $CONFLUENT_API_SECRET
           metrics_path: /v2/metrics/cloud/export
           params:
             "resource.kafka.id":
               - $CLUSTER_ID
+      #  OPTIONAL - You can include monitoring for Confluent connectors or schema registry's by including the ID here.
+      #      "resource.connector.id":
+      #        - $CONNECTOR_ID
+      #      "resource.schema_registry.id":
+      #        - $SCHEMA_REGISTRY_ID
+
+processors:
+  batch:
+
 exporters:
   otlphttp:
     endpoint: $NEW_RELIC_OTLP_ENDPOINT
     headers:
       api-key: $NEW_RELIC_API_KEY
-processors:
-  batch:
-  memory_limiter:
-    limit_mib: 400
-    spike_limit_mib: 100
-    check_interval: 5s
+
 service:
-  telemetry:
-    logs:
   pipelines:
     metrics:
       receivers: [prometheus]
-      processors: [batch]
-      exporters: [otlphttp]
-    metrics/kafka:
-      receivers: [kafkametrics]
       processors: [batch]
       exporters: [otlphttp]
