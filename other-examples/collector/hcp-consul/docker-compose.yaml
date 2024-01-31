@@ -1,0 +1,14 @@
+version: "3.6"
+
+services:
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.92.0
+    command: --config=/etc/otelcol/config.yaml
+    volumes:
+      - ./collector.yaml:/etc/otelcol/config.yaml
+    environment:
+      - NEW_RELIC_OTLP_ENDPOINT
+      - NEW_RELIC_API_KEY
+      - HCP_ACCESS_TOKEN
+      - HCP_ACCESS_URL

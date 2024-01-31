@@ -1,0 +1,34 @@
+receivers:
+  prometheus:
+    config:
+      global:
+        scrape_interval: "60s"
+      scrape_configs:
+        - job_name: "hcp-consul-cluster"
+          scheme: "https"
+          dns_sd_configs:
+            - names:
+                - "$HCP_ACCESS_URL"
+              type: "A"
+              port: 443
+          authorization:
+            credentials: "$HCP_ACCESS_TOKEN"
+          metrics_path: "/v1/agent/metrics"
+          tls_config:
+            insecure_skip_verify: true
+
+processors:
+  batch:
+
+exporters:
+  otlphttp:
+    endpoint: $NEW_RELIC_OTLP_ENDPOINT
+    headers:
+      api-key: $NEW_RELIC_API_KEY
+
+service:
+  pipelines:
+    metrics:
+      receivers: [prometheus]
+      processors: [batch]
+      exporters: [otlphttp]
