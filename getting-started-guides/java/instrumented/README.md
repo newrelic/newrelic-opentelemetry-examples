@@ -12,7 +12,7 @@ To run this demo app via the CLI:
 1. Switch to the `java` directory
 2. Set these two environment variables to send data to your New Relic account:
 ```
-export OTEL_EXPORTER_OTLP_HEADERS=<your_license_key>
+export OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>
 export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net
 export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 export OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
