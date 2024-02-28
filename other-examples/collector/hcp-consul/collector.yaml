@@ -2,7 +2,7 @@ receivers:
   prometheus:
     config:
       global:
-        scrape_interval: "60s"
+        scrape_interval: "10s"
       scrape_configs:
         - job_name: "hcp-consul-cluster"
           scheme: "https"
@@ -15,12 +15,47 @@ receivers:
             credentials: "$HCP_ACCESS_TOKEN"
           metrics_path: "/v1/agent/metrics"
 
-          # Skipping TLS verification based on Consul docs(https://developer.hashicorp.com/hcp/docs/consul/monitor/metrics#prometheus).
+          # Skipping TLS verification based on Consul docs(https://developer_hashicorp_com/hcp/docs/consul/monitor/metrics#prometheus)_
           tls_config:
             insecure_skip_verify: true
 
 processors:
   batch:
+# NOTE: This is to filter out only the key metrics from Consul according to their docs(https://developer.hashicorp.com/consul/docs/agent/telemetry#key-metrics).
+# to get all Consul related metrics, you can remove this filter, but it will be more intensive amount of data ingested.
+  filter/resource_attributes_include:
+    metrics:
+      include:
+        match_type: strict
+        metric_names:
+          - consul_kvs_apply
+          - consul_txn_apply
+          - consul_raft_apply
+          - consul_raft_commitTime
+          - consul_raft_leader_lastContact
+          - consul_raft_state_candidate
+          - consul_raft_state_leader
+          - consul_server_isLeader
+          - consul_mesh_active-root-ca_expiry
+          - consul_mesh_active-signing-ca_expiry
+          - consul_agent_tls_cert_expiry
+          - consul_autopilot_healthy
+          - consul_runtime_alloc_bytes
+          - consul_runtime_sys_bytes
+          - consul_runtime_total_gc_pause_ns
+          - consul_client_rpc
+          - consul_client_rpc_exceeded
+          - consul_client_rpc_failed	
+          - consul_raft_thread_main_saturation
+          - consul_raft_thread_fsm_saturation
+          - consul_raft_fsm_lastRestoreDuration
+          - consul_raft_leader_oldestLogAge
+          - consul_raft_rpc_installSnapshot
+          - consul_system_licenseExpiration
+          - consul_raft_boltdb_freelistBytes
+          - consul_raft_boltdb_logsPerBatch	
+          - consul_raft_boltdb_storeLogs
+          - consul_raft_boltdb_writeCapacity
 
 exporters:
   otlphttp:
@@ -32,5 +67,5 @@ service:
   pipelines:
     metrics:
       receivers: [prometheus]
-      processors: [batch]
+      processors: [batch, filter/resource_attributes_include]
       exporters: [otlphttp]
