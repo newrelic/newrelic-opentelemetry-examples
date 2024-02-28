@@ -2,7 +2,7 @@ receivers:
   prometheus:
     config:
       global:
-        scrape_interval: "10s"
+        scrape_interval: "60s"
       scrape_configs:
         - job_name: "hcp-consul-cluster"
           scheme: "https"
@@ -15,7 +15,7 @@ receivers:
             credentials: "$HCP_ACCESS_TOKEN"
           metrics_path: "/v1/agent/metrics"
 
-          # Skipping TLS verification based on Consul docs(https://developer_hashicorp_com/hcp/docs/consul/monitor/metrics#prometheus)_
+          # Skipping TLS verification based on Consul docs(https://developer.hashicorp.com/hcp/docs/consul/monitor/metrics#prometheus)_
           tls_config:
             insecure_skip_verify: true
 
