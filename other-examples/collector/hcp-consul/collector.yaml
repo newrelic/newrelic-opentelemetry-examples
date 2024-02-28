@@ -15,7 +15,7 @@ receivers:
             credentials: "$HCP_ACCESS_TOKEN"
           metrics_path: "/v1/agent/metrics"
 
-          # Skipping TLS verification based on Consul docs(https://developer.hashicorp.com/hcp/docs/consul/monitor/metrics#prometheus)_
+          # Skipping TLS verification based on Consul docs(https://developer.hashicorp.com/hcp/docs/consul/monitor/metrics#prometheus).
           tls_config:
             insecure_skip_verify: true
 
