@@ -1,0 +1,58 @@
+mode: deployment
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 200M
+
+configMap:
+  create: true
+
+config:
+  receivers:
+    prometheus:
+      config:
+        scrape_configs:
+          - job_name: "confluent"
+            scrape_interval: 60s # Do not go any lower than this or you'll hit rate limits
+            static_configs:
+              - targets: ["api.telemetry.confluent.cloud"]
+            scheme: https
+            basic_auth:
+              username: <CONFLUENT_KEY>
+              password: <CONFLUENT_SECRET>
+            metrics_path: /v2/metrics/cloud/export
+            params:
+              "resource.kafka.id":
+                - <CONFLUENT_CLUSTER_ID>
+                # - <another CONFLUENT_CLUSTER_ID>
+      #  OPTIONAL - You can include monitoring for Confluent connectors or schema registry's by including the ID here.
+      #      "resource.connector.id":
+      #        - <CONFLUENT_CONNECTOR_ID>
+      #      "resource.schema_registry.id":
+      #        - <CONFLUENT_SCHEMA_REGISTRY_ID> 
+      #      "resource.ksql.id":
+      #        - <CONFLUENT_KSQL_CLUSTER_ID>
+      
+  processors:
+    batch:
+      send_batch_max_size: 10000
+      timeout: 30s
+    memory_limiter:
+      limit_mib: 400
+      spike_limit_mib: 100
+      check_interval: 5s
+      
+  exporters:
+    otlphttp:
+      endpoint: https://otlp.nr-data.net:443
+      headers:
+        api-key: <NEW_RELIC_INGEST_KEY>
+
+  service:
+    pipelines:
+      metrics:
+        receivers: [prometheus]
+        processors: [batch]
+        exporters: [otlphttp]
+
