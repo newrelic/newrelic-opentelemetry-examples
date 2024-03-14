@@ -1,0 +1,15 @@
+version: "3.6"
+
+services:
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.92.0
+    command: --config=/etc/otelcol/config.yaml
+    volumes:
+      - ./collector.yaml:/etc/otelcol/config.yaml
+    environment:
+      - NEW_RELIC_OTLP_ENDPOINT
+      - NEW_RELIC_API_KEY
+      - SINGLESTORE_ORG
+      - SINGLESTORE_WORKSPACE_GROUP
+      - SINGLESTORE_API_KEY
