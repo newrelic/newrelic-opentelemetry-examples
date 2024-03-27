@@ -2,12 +2,14 @@ package com.example.demo;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.log4j.appender.v2_17.OpenTelemetryAppender;
-import io.opentelemetry.instrumentation.runtimemetrics.java8.BufferPools;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.Classes;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.Cpu;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.GarbageCollector;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.MemoryPools;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.Threads;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.internal.ExperimentalBufferPools;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.internal.ExperimentalCpu;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.internal.ExperimentalMemoryPools;
 import io.opentelemetry.instrumentation.spring.webmvc.v6_0.SpringWebMvcTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
@@ -28,12 +30,16 @@ public class Application {
     Application.openTelemetry = openTelemetrySdk;
 
     // Register runtime metrics instrumentation
-    BufferPools.registerObservers(openTelemetrySdk);
     Classes.registerObservers(openTelemetrySdk);
     Cpu.registerObservers(openTelemetrySdk);
     GarbageCollector.registerObservers(openTelemetrySdk);
     MemoryPools.registerObservers(openTelemetrySdk);
     Threads.registerObservers(openTelemetrySdk);
+
+    ExperimentalCpu.registerObservers(openTelemetrySdk);
+    ExperimentalBufferPools.registerObservers(openTelemetrySdk);
+    ExperimentalCpu.registerObservers(openTelemetrySdk);
+    ExperimentalMemoryPools.registerObservers(openTelemetrySdk);
 
     SpringApplication.run(Application.class, args);
 
