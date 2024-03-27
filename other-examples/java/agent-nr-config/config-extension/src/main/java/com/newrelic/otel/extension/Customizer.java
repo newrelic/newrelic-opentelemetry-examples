@@ -1,14 +1,14 @@
 package com.newrelic.otel.extension;
 
-import static io.opentelemetry.semconv.ResourceAttributes.SERVICE_INSTANCE_ID;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.contrib.sampler.RuleBasedRoutingSampler;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import io.opentelemetry.semconv.SemanticAttributes;
 import java.util.UUID;
 
 /**
@@ -16,6 +16,9 @@ import java.util.UUID;
  * resources/META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider}
  */
 public class Customizer implements AutoConfigurationCustomizerProvider {
+
+  private static final AttributeKey<String> SERVICE_INSTANCE_ID = stringKey("service.instance.id");
+  private static final AttributeKey<String> HTTP_ROUTE = stringKey("http.route");
 
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
@@ -32,9 +35,7 @@ public class Customizer implements AutoConfigurationCustomizerProvider {
             sdkTracerProviderBuilder.setSampler(
                 Sampler.parentBased(
                     RuleBasedRoutingSampler.builder(SpanKind.SERVER, Sampler.alwaysOn())
-                        // TODO: Update to url.path when semconv 1.22.0 is published and 2.0 version
-                        // of otel java agent available
-                        .drop(SemanticAttributes.HTTP_TARGET, "/actuator.*")
+                        .drop(HTTP_ROUTE, "/actuator.*")
                         .build())));
   }
 }
