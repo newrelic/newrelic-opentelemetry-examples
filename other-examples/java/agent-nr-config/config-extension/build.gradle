@@ -20,5 +20,5 @@ dependencies {
   compileOnly 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure'
   compileOnly 'io.opentelemetry.semconv:opentelemetry-semconv:1.23.1-alpha'
 
-  implementation "io.opentelemetry.contrib:opentelemetry-samplers:1.32.0-alpha"
+  implementation "io.opentelemetry.contrib:opentelemetry-samplers:1.34.0-alpha"
 }
