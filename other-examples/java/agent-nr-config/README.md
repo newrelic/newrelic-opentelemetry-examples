@@ -20,12 +20,8 @@ Set the following environment variables:
   * New Relic supports metrics in delta temporality, instead of the default cumulative.
 * `OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION=BASE2_EXPONENTIAL_BUCKET_HISTOGRAM`
   * Use exponential histogram instead of default explicit bucket histogram for better data compression.
-* `OTEL_LOGS_EXPORTER=otlp`
-  * Enable log export over OTLP. Log export is disabled by default.
 * `OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net`
   * Export data to New Relic's OTLP endpoint.
-* `OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf`
-  * Use OTLP http/protobuf version of protocol, which is tends to be less problematic without any downside in performance.
 * `OTEL_EXPORTER_OTLP_COMPRESSION=gzip`
   * Gzip compression has good performance and lowers data egress.
 * `OTEL_EXPERIMENTAL_EXPORTER_OTLP_RETRY_ENABLED=true`
@@ -47,9 +43,7 @@ export OTEL_EXPORTER_OTLP_HEADERS=api-key=your_license_key \
 && export OTEL_METRIC_EXPORT_INTERVAL=5000 \
 && export OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=DELTA \
 && export OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION=BASE2_EXPONENTIAL_BUCKET_HISTOGRAM \
-&& export OTEL_LOGS_EXPORTER=otlp \
 && export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net \
-&& export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf \
 && export OTEL_EXPORTER_OTLP_COMPRESSION=gzip \
 && export OTEL_EXPERIMENTAL_EXPORTER_OTLP_RETRY_ENABLED=true \
 && export OTEL_SERVICE_NAME=agent-nr-config \
