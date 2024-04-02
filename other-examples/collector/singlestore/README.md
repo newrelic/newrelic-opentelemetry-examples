@@ -2,7 +2,7 @@
 
 This example shows a setup for running a prometheus OpenTelemetry Collector in a docker container to scrape metrics from your SingleStore environment and post them the New Relic OTLP Collector Endpoint.
 
-For more information, please see our [SingleStore OTeL collector docs](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/collector/collector-configuration-examples/opentelemetry-collector-singlestore/).
+TODO: add link to doc site when available
 
 ## Prerequisites
 
