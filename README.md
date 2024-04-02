@@ -23,6 +23,7 @@ OpenTelemetry is a big ecosystem and everything doesn't fit into the goals of th
   * [OpenTelemetry Collector with OTLP Export to New Relic](./other-examples/collector/nr-config)
   * [OpenTelemetry Collector with Confluent Cloud and New Relic](./other-examples/collector/confluentcloud)
   * [OpenTelemetry Collector with Singlstore and New Relic](./other-examples/collector/singlestore)
+  * [OpenTelemetry Collector with HCP Consul and New Relic](./other-examples/collector/hcp-consul)
 * Java
   * [OpenTelemetry Agent New Relic Config](./other-examples/java/agent-nr-config)
   * [Micrometer Shim with OTLP Export](./other-examples/java/micrometer-shim)
