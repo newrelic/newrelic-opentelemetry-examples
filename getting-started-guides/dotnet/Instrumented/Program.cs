@@ -1,36 +1,32 @@
+using System.Diagnostics.Metrics;
+using OpenTelemetry;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Logs;
-using System.Diagnostics.Metrics;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-// Define an OpenTelemetry resource 
-// A resource represents a collection of attributes describing the
-// service. This collection of attributes will be associated with all
-// telemetry generated from this service (traces, metrics, logs).
-var resourceBuilder = ResourceBuilder
-    .CreateDefault()
-    .AddService(serviceName: "getting-started-dotnet",
-                serviceVersion: typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown");
-
 // Configure the OpenTelemetry SDK for traces and metrics
 builder.Services.AddOpenTelemetry()
+    .UseOtlpExporter()
+    .ConfigureResource(resourceBuilder =>
+    {
+        resourceBuilder
+            .AddService(serviceName: "getting-started-dotnet",
+                        serviceVersion: typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown");
+    })
     .WithTracing(tracerProviderBuilder =>
     {
         tracerProviderBuilder
-            .SetResourceBuilder(resourceBuilder)
             .AddSource(nameof(dotnet))
-            .AddAspNetCoreInstrumentation()
-            .AddOtlpExporter();
+            .AddAspNetCoreInstrumentation();
     })
     .WithMetrics(meterProviderBuilder =>
     {
         meterProviderBuilder
-            .SetResourceBuilder(resourceBuilder)
             .AddMeter(nameof(dotnet))
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
@@ -39,10 +35,6 @@ builder.Services.AddOpenTelemetry()
                 return instrument.GetType().GetGenericTypeDefinition() == typeof(Histogram<>)
                     ? new Base2ExponentialBucketHistogramConfiguration()
                     : null;
-            })
-            .AddOtlpExporter((exporterOptions, metricReaderOptions) =>
-            {
-                metricReaderOptions.TemporalityPreference = MetricReaderTemporalityPreference.Delta;
             });
     });
 
@@ -53,9 +45,6 @@ builder.Logging.AddOpenTelemetry(options =>
     options.IncludeFormattedMessage = true;
     options.ParseStateValues = true;
     options.IncludeScopes = true;
-    options
-        .SetResourceBuilder(resourceBuilder)
-        .AddOtlpExporter();
 });
 
 var app = builder.Build();
