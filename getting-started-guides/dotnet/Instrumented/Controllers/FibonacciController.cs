@@ -36,7 +36,7 @@ public class FibonacciController : ControllerBase
         }
         catch (ArgumentOutOfRangeException ex)
         {
-            Activity.Current.SetStatus(Status.Error.WithDescription(ex.Message));
+            Activity.Current?.SetStatus(Status.Error.WithDescription(ex.Message));
             return BadRequest(new { message = ex.Message });
         }
     }

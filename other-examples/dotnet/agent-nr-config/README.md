@@ -22,7 +22,8 @@ This example only requires setting the environment variable:
   * Replace `<your_license_key>` with your [Account License Key](https://one.newrelic.com/launcher/api-keys-ui.launcher).
 
 The other settings below have default values defined in the [Dockerfile](./Dockerfile), but can otherwise be overwritten/manually set:
-* `OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp.nr-data.net:4318"`
+* `OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp.nr-data.net"`
+* `OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf"`
 * `OTEL_SERVICE_NAME="my-test-service"`
   * Replace `my-test-service` with the name you wish to call the application.
 

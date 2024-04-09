@@ -3,7 +3,7 @@ package io.opentelemetry.example.micrometer;
 import io.micrometer.core.aop.TimedAspect;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.instrumentation.micrometer.v1_5.OpenTelemetryMeterRegistry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.Aggregation;
@@ -46,8 +46,8 @@ public class Application {
                         .build())
                 .registerMetricReader(
                     PeriodicMetricReader.builder(
-                            OtlpGrpcMetricExporter.builder()
-                                .setEndpoint("https://otlp.nr-data.net:4317")
+                            OtlpHttpMetricExporter.builder()
+                                .setEndpoint("https://otlp.nr-data.net")
                                 .addHeader(
                                     "api-key",
                                     Optional.ofNullable(System.getenv("NEW_RELIC_LICENSE_KEY"))

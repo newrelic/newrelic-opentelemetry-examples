@@ -33,7 +33,9 @@ ENV DOTNET_SHARED_STORE="/tracer-home/store"
 ENV OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE="delta"
 ENV OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION="base2_exponential_bucket_histogram"
 # This env variable points to the New Relic OTLP endpoint
-ENV OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp.nr-data.net:4318"
+ENV OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp.nr-data.net"
+# This env variable configures the exporter to use the HTTP protocol. The default is gRPC.
+ENV OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf"
 # This env variable adds your New Relic license key to the OTLP headers.
 # You should override this when running the container so that a valid license key is used.
 # The instructions in the README for this application shows how to override this value when starting the container.
