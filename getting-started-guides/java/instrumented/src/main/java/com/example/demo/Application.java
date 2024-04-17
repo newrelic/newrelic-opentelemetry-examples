@@ -38,7 +38,6 @@ public class Application {
 
     ExperimentalCpu.registerObservers(openTelemetrySdk);
     ExperimentalBufferPools.registerObservers(openTelemetrySdk);
-    ExperimentalCpu.registerObservers(openTelemetrySdk);
     ExperimentalMemoryPools.registerObservers(openTelemetrySdk);
 
     SpringApplication.run(Application.class, args);
