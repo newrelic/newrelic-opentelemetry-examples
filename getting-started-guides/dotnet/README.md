@@ -18,7 +18,7 @@ It demonstrates how to configure OpenTelemetry .NET to send data to New Relic.
     export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net
     export OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>
     export OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
-    export OTEL_SERVICE_NAME=getting-started-nodejs
+    export OTEL_SERVICE_NAME=getting-started-dotnet
     export OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
     ```
 
