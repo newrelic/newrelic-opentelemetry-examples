@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 
 COPY . /source
@@ -20,5 +22,7 @@ WORKDIR /app
 COPY --from=build /app .
 
 USER $APP_UID
+
+EXPOSE 8080
 
 ENTRYPOINT ["dotnet", "dotnet.dll"]
