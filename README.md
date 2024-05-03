@@ -8,12 +8,12 @@ This project contains examples illustrating usage of OpenTelemetry with New Reli
 
 The [Getting Started Guides](./getting-started-guides/README.md) demonstrate how to get started with OpenTelemetry and New Relic. Each of the languages listed illustrates how to add OpenTelemetry instrumentation to a simple web application, and configure OpenTelemetry to export data to New Relic.
 
-* .NET ([uninstrumented](./getting-started-guides/dotnet/Uninstrumented) / [instrumented](./getting-started-guides/dotnet/Instrumented))
-* Go ([uninstrumented](./getting-started-guides/go/uninstrumented) / [instrumented](./getting-started-guides/go/instrumented))
+* [.NET](./getting-started-guides/dotnet)
+* [Go](./getting-started-guides/go)
 * Java ([uninstrumented](./getting-started-guides/java/uninstrumented) / [instrumented](./getting-started-guides/java/instrumented))
-* Javascript ([uninstrumented](./getting-started-guides/javascript/uninstrumented) / [instrumented](./getting-started-guides/javascript/instrumented))
+* [JavaScript (Node.js)](./getting-started-guides/javascript)
 * Python ([uninstrumented](./getting-started-guides/python/Uninstrumented) / [instrumented](./getting-started-guides/python/Instrumented))
-* Ruby ([uninstrumented](./getting-started-guides/ruby/uninstrumented) / [instrumented](./getting-started-guides/ruby/instrumented))
+* [Ruby](./getting-started-guides/ruby)
 
 ## Other Examples
 
@@ -82,6 +82,7 @@ If you would like to contribute to this project, review [these guidelines](./CON
 To all contributors, we thank you!  Without your contribution, this project would not be what it is today.
 
 ## License
+
 `newrelic-opentelemetry-examples` is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
 
 `newrelic-opentelemetry-examples` also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in the third-party notices document.
