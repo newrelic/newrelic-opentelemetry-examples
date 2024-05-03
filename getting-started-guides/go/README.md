@@ -1,25 +1,37 @@
 # Getting Started Guide - Go
 
-Welcome to the Open Telemetry / New Relic Getting Started Guide!
+This is a simple application instrumented with [OpenTelemetry Go](https://github.com/open-telemetry/opentelemetry-go).
+It demonstrates how to configure OpenTelemetry Go to send data to New Relic.
 
-## Tutorial 1
+## Requirements
 
-Run the [pre-instrumented demo app](./instrumented/): This is the fastest way to send some demo data to New Relic and see how it is displayed in the UI. In this tutorial, the demo app has pre-loaded instrumentation and SDK configurations that follow our best practices to generate and export metrics and traces. You can inspect our code and apply relevant sections to your own apps.
+* [Go](https://go.dev/dl)
+* [A New Relic account](https://one.newrelic.com/)
+* [A New Relic license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)
 
-## Tutorial 2:
+## Running the application
 
-Set up the [demo app manually](./uninstrumented/): In this track, you'll roll up your sleeves and tinker with the engine of the car. This is the approach to take if you want to have the most control over what telemetry is reported and want to see details about how it's done. You'll manually insert instrumentation into our demo app to capture telemetry and you'll configure the SDK to export that data to New Relic.
+1. Set the following environment variables to configure OpenTelemetry to send
+   data to New Relic:
 
-## Teaser
+    ```shell
+    export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net
+    export OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>
+    export OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
+    export OTEL_SERVICE_NAME=getting-started-go
+    export OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
+    ```
 
-### Summary Page - Metric View
+    * If your account is based in the EU, set the endpoint to: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
 
-![`summary_metric_view`](./media/summary_metric_view.png)
+2. Run the application with the following command and open
+   [http://localhost:8080/fibonacci?n=1](http://localhost:8080/fibonacci?n=1)
+   in your web browser to ensure it is working.
 
-### Summary Page - Trace View
+    ```shell
+    go run *.go
+    ```
 
-![`summary_trace_view`](./media/summary_trace_view.png)
-
-### Distributed Tracing Page - Span Waterfall View
-
-![`span_waterfall_view`](./media/span_waterfall_view.png)
+3. Experiment with providing different values for `n` in the query string.
+   Valid values are between 1 and 90. Values outside this range cause an error
+   which will show up in New Relic.

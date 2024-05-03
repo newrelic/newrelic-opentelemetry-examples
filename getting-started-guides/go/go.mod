@@ -1,4 +1,4 @@
-module github.com/newrelic/newrelic-opentelemetry-examples/getting-started-guides/go/instrumented
+module github.com/newrelic/newrelic-opentelemetry-examples/getting-started-guides/go
 
 go 1.20
 

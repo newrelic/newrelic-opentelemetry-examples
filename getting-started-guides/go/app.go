@@ -74,7 +74,7 @@ func parseNum(
 	int64,
 	error,
 ) {
-	num, err := strconv.ParseInt(r.URL.Query().Get("num"), 10, 64)
+	num, err := strconv.ParseInt(r.URL.Query().Get("n"), 10, 64)
 	if err != nil {
 		log.Print(err.Error())
 	}
