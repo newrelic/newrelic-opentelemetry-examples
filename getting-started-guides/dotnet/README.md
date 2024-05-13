@@ -1,11 +1,11 @@
-# Getting Started Guide - Go
+# Getting Started Guide - .NET
 
-This is a simple application instrumented with [OpenTelemetry Go](https://github.com/open-telemetry/opentelemetry-go).
-It demonstrates how to configure OpenTelemetry Go to send data to New Relic.
+This is a simple application instrumented with [OpenTelemetry .NET](https://github.com/open-telemetry/opentelemetry-dotnet).
+It demonstrates how to configure OpenTelemetry .NET to send data to New Relic.
 
 ## Requirements
 
-* [Go](https://go.dev/dl)
+* [.NET SDK](https://dotnet.microsoft.com/en-us/download)
 * [A New Relic account](https://one.newrelic.com/)
 * [A New Relic license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)
 
@@ -18,7 +18,7 @@ It demonstrates how to configure OpenTelemetry Go to send data to New Relic.
     export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net
     export OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>
     export OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
-    export OTEL_SERVICE_NAME=getting-started-go
+    export OTEL_SERVICE_NAME=getting-started-dotnet
     export OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
     ```
 
@@ -29,7 +29,7 @@ It demonstrates how to configure OpenTelemetry Go to send data to New Relic.
    in your web browser to ensure it is working.
 
     ```shell
-    go run *.go
+    dotnet run
     ```
 
 3. Experiment with providing different values for `n` in the query string.

@@ -8,12 +8,12 @@ This project contains examples illustrating usage of OpenTelemetry with New Reli
 
 The [Getting Started Guides](./getting-started-guides/README.md) demonstrate how to get started with OpenTelemetry and New Relic. Each of the languages listed illustrates how to add OpenTelemetry instrumentation to a simple web application, and configure OpenTelemetry to export data to New Relic.
 
-* .NET ([uninstrumented](./getting-started-guides/dotnet/Uninstrumented) / [instrumented](./getting-started-guides/dotnet/Instrumented))
-* Go ([uninstrumented](./getting-started-guides/go/uninstrumented) / [instrumented](./getting-started-guides/go/instrumented))
+* [.NET](./getting-started-guides/dotnet)
+* [Go](./getting-started-guides/go)
 * Java ([uninstrumented](./getting-started-guides/java/uninstrumented) / [instrumented](./getting-started-guides/java/instrumented))
-* Javascript ([uninstrumented](./getting-started-guides/javascript/uninstrumented) / [instrumented](./getting-started-guides/javascript/instrumented))
+* [JavaScript (Node.js)](./getting-started-guides/javascript)
 * Python ([uninstrumented](./getting-started-guides/python/Uninstrumented) / [instrumented](./getting-started-guides/python/Instrumented))
-* Ruby ([uninstrumented](./getting-started-guides/ruby/uninstrumented) / [instrumented](./getting-started-guides/ruby/instrumented))
+* [Ruby](./getting-started-guides/ruby)
 
 ## Other Examples
 
@@ -47,7 +47,7 @@ OpenTelemetry is a big ecosystem and everything doesn't fit into the goals of th
 
 We encourage your contributions to improve `newrelic-opentelemetry-examples`! Keep in mind that when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. You only have to sign the CLA one time per project.
 
-Generally, we want to focus on the [getting started guides](#getting-started-guides). We're open to additional examples being added which are aligned with the [demo app specification](./getting-started-guides/demo-app-specification.md) and which have a volunteer [codeowner](#codeowners).
+Generally, we want to focus on the [getting started guides](#getting-started-guides). We're open to additional examples being added which have a volunteer [codeowner](#codeowners).
 
 We're more selective about additions to [other examples](#other-examples). We use the following criteria to evaluate additions:
 
@@ -82,6 +82,7 @@ If you would like to contribute to this project, review [these guidelines](./CON
 To all contributors, we thank you!  Without your contribution, this project would not be what it is today.
 
 ## License
+
 `newrelic-opentelemetry-examples` is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
 
 `newrelic-opentelemetry-examples` also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in the third-party notices document.
