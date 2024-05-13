@@ -47,7 +47,7 @@ OpenTelemetry is a big ecosystem and everything doesn't fit into the goals of th
 
 We encourage your contributions to improve `newrelic-opentelemetry-examples`! Keep in mind that when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. You only have to sign the CLA one time per project.
 
-Generally, we want to focus on the [getting started guides](#getting-started-guides). We're open to additional examples being added which are aligned with the [demo app specification](./getting-started-guides/demo-app-specification.md) and which have a volunteer [codeowner](#codeowners).
+Generally, we want to focus on the [getting started guides](#getting-started-guides). We're open to additional examples being added which have a volunteer [codeowner](#codeowners).
 
 We're more selective about additions to [other examples](#other-examples). We use the following criteria to evaluate additions:
 
