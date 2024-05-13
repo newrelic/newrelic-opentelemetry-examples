@@ -1,0 +1,57 @@
+services:
+  dotnet:
+    build: dotnet
+    environment:
+      - OTEL_SERVICE_NAME=getting-started-dotnet
+      - OTEL_EXPORTER_OTLP_ENDPOINT
+      - OTEL_EXPORTER_OTLP_HEADERS
+      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
+      - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
+    ports:
+      - 8080
+  go:
+    build: go
+    environment:
+      - OTEL_SERVICE_NAME=getting-started-go
+      - OTEL_EXPORTER_OTLP_ENDPOINT
+      - OTEL_EXPORTER_OTLP_HEADERS
+      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
+      - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
+    ports:
+      - 8080
+  javascript:
+    build: javascript
+    environment:
+      - OTEL_SERVICE_NAME=getting-started-javascript
+      - OTEL_EXPORTER_OTLP_ENDPOINT
+      - OTEL_EXPORTER_OTLP_HEADERS
+      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
+      - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
+    ports:
+      - 8080
+  ruby:
+    build: ruby
+    environment:
+      - OTEL_SERVICE_NAME=getting-started-ruby
+      - OTEL_EXPORTER_OTLP_ENDPOINT
+      - OTEL_EXPORTER_OTLP_HEADERS
+      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
+      - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
+    ports:
+      - 8080
+  envoy:
+    image: envoyproxy/envoy:v1.29.4
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./supporting-files/envoy.yaml:/etc/envoy/envoy.yaml
+  loadgenerator:
+    image: python:3.12.3
+    command: ["python", "/loadgenerator.py"]
+    volumes:
+      - ./supporting-files/loadgenerator.py:/loadgenerator.py
+    depends_on:
+      - dotnet
+      - go
+      - javascript
+      - ruby
