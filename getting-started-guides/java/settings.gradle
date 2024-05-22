@@ -7,5 +7,3 @@ pluginManagement {
 }
 
 rootProject.name = "newrelic-getting-started-guides-java"
-include 'instrumented'
-include 'uninstrumented'
