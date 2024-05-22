@@ -6,7 +6,7 @@ def signal_handler(signal, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-languages = ["dotnet", "go", "javascript", "ruby"]
+languages = ["dotnet", "go", "java", "javascript", "ruby"]
 
 while True:
     n = random.randint(1, 100)

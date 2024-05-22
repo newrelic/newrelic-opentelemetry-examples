@@ -1,9 +1,9 @@
 import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
 plugins {
-  id 'org.springframework.boot'
   id 'java'
-  id 'com.diffplug.spotless'
+  id 'com.diffplug.spotless' version '6.25.0'
+  id 'org.springframework.boot' version '3.2.5'
 }
 
 java {
@@ -22,29 +22,43 @@ repositories {
   mavenCentral()
 }
 
-bootRun {
-  mainClass.set 'com.example.demo.Application'
-}
-
-configurations.all {
-  exclude module: 'spring-boot-starter-logging'
+configurations {
+  // Create a new configuration to hold the otel java agent
+  agent
 }
 
 dependencies {
   implementation platform(SpringBootPlugin.BOM_COORDINATES)
   implementation 'org.springframework.boot:spring-boot-starter-web'
-  implementation 'org.springframework.boot:spring-boot-starter-log4j2'
 
-  // OpenTelemetry core
-  implementation platform('io.opentelemetry:opentelemetry-bom:1.38.0')
-  implementation 'io.opentelemetry:opentelemetry-api'
-  implementation 'io.opentelemetry:opentelemetry-sdk'
-  implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
-  implementation 'io.opentelemetry:opentelemetry-sdk-extension-autoconfigure'
+  implementation("io.opentelemetry:opentelemetry-api:1.38.0")
 
-  // OpenTelemetry instrumentation
-  implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.3.0-alpha')
-  implementation 'io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java8'
-  implementation 'io.opentelemetry.instrumentation:opentelemetry-log4j-appender-2.17'
-  implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-webmvc-6.0'
+  // Add OpenTelemetry java agent to the "agent" configuration we previously defined
+  agent("io.opentelemetry.javaagent:opentelemetry-javaagent:2.3.0")
+}
+
+tasks.register("copyAgent", Copy) {
+  from(configurations.agent.singleFile)
+  into(layout.buildDirectory.dir('agent'))
+  rename("opentelemetry-javaagent-.*\\.jar", "opentelemetry-javaagent.jar")
+}
+
+bootJar {
+  archiveBaseName.set('getting-started-java')
+  // Before running, copy the agent to a reliable place in the build dir
+  dependsOn("copyAgent")
+}
+
+bootRun {
+  // Before running, copy the agent to a reliable place in the build dir
+  dependsOn("copyAgent")
+
+  mainClass.set 'com.example.demo.Application'
+
+  def agentPath = project.buildDir.toString() + "/agent/opentelemetry-javaagent.jar"
+  jvmArgs = [
+    // Set the opentelemetry-java-instrumentation agent as the javaagent
+    "-javaagent:${agentPath}"
+  ]
+
 }

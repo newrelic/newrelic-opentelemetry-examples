@@ -22,6 +22,8 @@ static_resources:
                           route: { cluster: dotnet, prefix_rewrite: "/fibonacci" }
                         - match: { prefix: "/go/fibonacci" }
                           route: { cluster: go, prefix_rewrite: "/fibonacci" }
+                        - match: { prefix: "/java/fibonacci" }
+                          route: { cluster: java, prefix_rewrite: "/fibonacci" }
                         - match: { prefix: "/javascript/fibonacci" }
                           route: { cluster: javascript, prefix_rewrite: "/fibonacci" }
                         - match: { prefix: "/ruby/fibonacci" }
@@ -55,6 +57,18 @@ static_resources:
                   address:
                     socket_address:
                       address: go
+                      port_value: 8080
+    - name: java
+      type: STRICT_DNS
+      lb_policy: ROUND_ROBIN
+      load_assignment:
+        cluster_name: java
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: java
                       port_value: 8080
     - name: javascript
       type: STRICT_DNS
