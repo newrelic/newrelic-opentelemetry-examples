@@ -1,6 +1,6 @@
 # Confluent Cloud OpenTelemetry metrics example Kubernetes setup
 
-This example shows a setup for running a Prometheus OpenTelemetry Collector in a Kubernetes environment to scrape metrics from Confluent Cloud and post them to the New Relic OTLP Collector Endpoint.
+This example shows a setup for running a [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) in a Kubernetes environment to scrape metrics from Confluent Cloud and post them to the New Relic OTLP Collector Endpoint.
 This example also includes config for getting more Kafka metrics about brokers, topics and consumers using the OpenTelemetry Collector's `kafkametrics` receiver.
 
 For more information, please see our [Kafka with Confluent documentation](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/collector/collector-configuration-examples/opentelemetry-collector-kafka-confluentcloud/).
