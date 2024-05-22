@@ -12,25 +12,23 @@ cd ./getting-started-guides/python/Uninstrumented/
 ```
 
 ## Summary
-1. Install `virtualenv`, if not already done
-2. Create a virtual environment for the application, if needed
-3. Activate virtual environment
-4. Upgrade `pip` in virtual environment
-5. Install dependencies listed in `requirements.txt`
-6. Set the required environment variables
-7. Run the application
-8. Generate traffic
+1. Create a virtual environment for the application, if needed
+2. Activate virtual environment
+3. Upgrade `pip` in virtual environment
+4. Install dependencies
+5. Set the required environment variables
+6. Run the application
+7. Generate traffic
 
 | Step | Windows (PowerShell)                     | Linux / MacOS (bash)                      |
 |------|------------------------------------------|-------------------------------------------|
-| 1    | `pip install virtualenv`                 | `pip3 install virtualenv`                 |
-| 2    | `python -m venv venv`                    | `python3 -m venv venv`                    |
-| 3    | `.\venv\Scripts\Activate.ps1`            | `source venv/bin/activate`                |
-| 4    | `python -m pip install --upgrade pip`    | `python3 -m pip install --upgrade pip`    |
-| 5    | `pip install flask`<br>`pip install opentelemetry-instrumentation-flask`<br>`pip install opentelemetry-exporter-otlp`<br>`pip install opentelemetry-distro` | `pip install flask`<br>`pip install opentelemetry-instrumentation-flask`<br>`pip install opentelemetry-exporter-otlp`<br>`pip install opentelemetry-distro` |
-| 6    | Set environment variables with `$Env:`   | Set environment variables with `export`   |
-| 7    | `opentelemetry-instrument python app.py` | `opentelemetry-instrument python3 app.py` |
-| 8    | `.\load-generator.ps1`                   | `./load-generator.sh`                     |
+| 1    | `python -m venv venv`                    | `python3 -m venv venv`                    |
+| 2    | `.\venv\Scripts\Activate.ps1`            | `source venv/bin/activate`                |
+| 3    | `python -m pip install --upgrade pip`    | `python3 -m pip install --upgrade pip`    |
+| 4    | `pip install flask`<br>`pip install opentelemetry-instrumentation-flask`<br>`pip install opentelemetry-exporter-otlp`<br>`pip install opentelemetry-distro` | `pip install flask`<br>`pip install opentelemetry-instrumentation-flask`<br>`pip install opentelemetry-exporter-otlp`<br>`pip install opentelemetry-distro` |
+| 5    | Set environment variables with `$Env:`   | Set environment variables with `export`   |
+| 6    | `opentelemetry-instrument python app.py` | `opentelemetry-instrument python3 app.py` |
+| 7    | `.\load-generator.ps1`                   | `./load-generator.sh`                     |
 
 Set the Application Name and New Relic [Ingest - License Key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key).
 
@@ -61,12 +59,15 @@ Set the Application Name and New Relic [Ingest - License Key](https://docs.newre
     pip install opentelemetry-distro
     ```
 
-3. No changes to the code is needed, just run the app as usual but with `opentelemetry-instrument` before the command to start the application. For example:
+3. When the [auto-instrument](https://opentelemetry.io/docs/instrumentation/python/automatic/) package is used, no changes to the code is needed, just run the app as usual but with `opentelemetry-instrument` before the command to start the application. To get logging data you must also set the OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED environment variable to true.
+
+For example:
 
     ```
+    export OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED=true
     opentelemetry-instrument python app.py
     ```
-   
+
 4. To generate traffic, in a new terminal tab, run the following command:
    PowerShell:
    ```powershell
@@ -76,5 +77,19 @@ Set the Application Name and New Relic [Ingest - License Key](https://docs.newre
    ```bash
    ./load-generator.sh
    ```
-   
+
+5. This will only collect logs. In order to get traces and metrics you need to [make the following update to app.py](https://opentelemetry-python-contrib.readthedocs.io/en/latest/instrumentation/flask/flask.html#id1)
+    ```
+    from opentelemetry.instrumentation.flask import FlaskInstrumentor
+
+    app = Flask(__name__)
+
+    FlaskInstrumentor().instrument_app(app)
+    ```
+
+Then run the app again with:
+
+    opentelemetry-instrument --logs_exporter otlp python app.py
+
+
 5. To shut down the program, run the following in both shells or terminal tabs: `CTRL + C`.
