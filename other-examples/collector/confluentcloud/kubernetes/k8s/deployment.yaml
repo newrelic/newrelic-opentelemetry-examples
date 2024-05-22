@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-confluent
+  labels:
+    app.kubernetes.io/name: otel-confluent
+    app.kubernetes.io/part-of: otel-confluent
+    component: otel-confluent
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: otel-confluent
+      component: otel-confluent
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: otel-confluent
+        app.kubernetes.io/part-of: otel-confluent
+        component: otel-confluent
+    spec:
+      containers:
+      - command:
+          - "/otelcol-contrib"
+          - "--config=/conf/otel-agent-config.yaml"
+        image: otel/opentelemetry-collector-contrib:0.92.0
+        name: otel-confluent
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "500Mi"
+          requests:
+            cpu: "100m"
+            memory: "100Mi"
+        ports:
+        - containerPort: 4317 # Default OpenTelemetry receiver port.
+        - containerPort: 8888  # Metrics.
+        env:
+        - name: NEW_RELIC_API_KEY
+          value: "Your Newrelic API Key"
+        - name: NEW_RELIC_OTLP_ENDPOINT
+          value: "otlp.nr-data.net:4318"
+        - name: CONFLUENT_API_KEY
+          value: "Your Confluent API Key"
+        - name: CONFLUENT_API_SECRET
+          value: "Your Confluent API Secret"
+        - name: CLUSTER_ID
+          value: "Your Confluent cluster id"
+        - name: CLUSTER_NAME
+          value: "Your Confluent cluster name"
+        - name: BOOTSTRAP_SERVER
+          value: "Your Confluent bootstrap server Endpoint"
+        volumeMounts:
+        - name: otel-confluent-config-vol
+          mountPath: /conf
+      volumes:
+        - name: otel-confluent-config-vol
+          configMap:
+            name: otel-confluent-config
+            items:
+              - key: otel-confluent-config
+                path: otel-agent-config.yaml
