@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.name }}-config
+  labels:
+    app.kubernetes.io/name: {{ .Values.name }}-config
+    app.kubernetes.io/part-of: {{ .Values.name }}
+    component: {{ .Values.name }}-config
+data:
+  otel-confluent-config: |
+    receivers:
+      kafkametrics:
+        brokers: 
+          - {{ .Values.confluent.bootstrapServer }}
+        protocol_version: 2.0.0
+        scrapers:
+          - brokers
+          - topics
+          - consumers
+        auth:
+          sasl:
+            username: {{ .Values.confluent.apiKey }}
+            password: {{ .Values.confluent.apiSecret }}
+            mechanism: PLAIN
+          tls:
+            insecure_skip_verify: false
+        collection_interval: 5s
+    
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: "confluent"
+              scrape_interval: 60s # Do not go any lower than this or you'll hit rate limits
+              static_configs:
+                - targets: ["api.telemetry.confluent.cloud"]
+              scheme: https
+              basic_auth:
+                username: {{ .Values.confluent.apiKey }}
+                password: {{ .Values.confluent.apiSecret }}
+              metrics_path: /v2/metrics/cloud/export
+              params:
+                "resource.kafka.id":
+                  - {{ .Values.confluent.clusterId }}
+    exporters:
+      otlp:
+        endpoint: {{ .Values.newrelic.otlpEndpoint }}
+        tls:
+          insecure: false
+        sending_queue:
+          num_consumers: 4
+          queue_size: 100
+        retry_on_failure:
+          enabled: true
+        headers:
+          api-key: {{ .Values.newrelic.apiKey }}
+      logging:
+        loglevel: {{ .Values.logging.level }}
+    processors:
+      batch: # Turn this on if the need arises
+        # send_batch_size: 1000
+        # send_batch_max_size: 1500
+        # timeout: 1s
+      memory_limiter: # doc here: https://github.com/open-telemetry/opentelemetry-collector/tree/main/processor/memorylimiterprocessor
+        limit_percentage: 80 # Maximum amount of total memory targeted to be allocated by the process heap
+        spike_limit_percentage: 30 # Maximum spike expected between the measurements of memory usage 
+        check_interval: 5s # Time between measurements of memory usage
+      resource:
+        attributes: # This is necessary since confluent exposes only the cluster id in the metrics
+        - key: kafka.cluster_name
+          value: {{ .Values.confluent.clusterName }}
+          action: upsert
+    service:
+      pipelines:
+        metrics:
+          receivers: [prometheus, kafkametrics]
+          processors: [memory_limiter, resource, batch]
+          exporters: [logging, otlp]

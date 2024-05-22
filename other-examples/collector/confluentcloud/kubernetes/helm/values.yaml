@@ -1,0 +1,16 @@
+replicaCount: 1
+name: otel-confluent
+logging:
+  level: debug
+otel:
+  image: otel/opentelemetry-collector-contrib:0.92.0
+confluent:
+  apiKey: YOUR_CONFLUENT_API_KEY
+  apiSecret: YOUR_CONFLUENT_API_SECRET
+  clusterId: YOUR_CONFLUENT_CLUSTER_ID
+  clusterName: YOUR_CONFLUENT_CLUSTER_NAME
+  bootstrapServer: YOUR_CONFLUENT_BOOTSTRAP_SERVER
+newrelic:
+  apiKey: YOUR_NEWRELIC_API_KEY
+  otlpEndpoint: otlp.nr-data.net:4318
+
