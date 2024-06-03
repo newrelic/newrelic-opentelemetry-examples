@@ -12,7 +12,7 @@ The [Getting Started Guides](./getting-started-guides/README.md) demonstrate how
 * [Go](./getting-started-guides/go)
 * Java ([uninstrumented](./getting-started-guides/java/uninstrumented) / [instrumented](./getting-started-guides/java/instrumented))
 * [JavaScript (Node.js)](./getting-started-guides/javascript)
-* Python ([uninstrumented](./getting-started-guides/python/Uninstrumented) / [instrumented](./getting-started-guides/python/Instrumented))
+* [Python](./getting-started-guides/python)
 * [Ruby](./getting-started-guides/ruby)
 
 ## Other Examples
