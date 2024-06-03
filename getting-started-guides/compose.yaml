@@ -29,6 +29,16 @@ services:
       - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
     ports:
       - 8080
+  python:
+    build: python
+    environment:
+      - OTEL_SERVICE_NAME=getting-started-python
+      - OTEL_EXPORTER_OTLP_ENDPOINT
+      - OTEL_EXPORTER_OTLP_HEADERS
+      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
+      - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
+    ports:
+      - 8080
   ruby:
     build: ruby
     environment:
@@ -54,4 +64,5 @@ services:
       - dotnet
       - go
       - javascript
+      - python
       - ruby

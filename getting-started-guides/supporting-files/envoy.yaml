@@ -24,6 +24,8 @@ static_resources:
                           route: { cluster: go, prefix_rewrite: "/fibonacci" }
                         - match: { prefix: "/javascript/fibonacci" }
                           route: { cluster: javascript, prefix_rewrite: "/fibonacci" }
+                        - match: { prefix: "/python/fibonacci" }
+                          route: { cluster: python, prefix_rewrite: "/fibonacci" }
                         - match: { prefix: "/ruby/fibonacci" }
                           route: { cluster: ruby, prefix_rewrite: "/fibonacci" }
                 http_filters:
@@ -67,6 +69,18 @@ static_resources:
                   address:
                     socket_address:
                       address: javascript
+                      port_value: 8080
+    - name: python
+      type: STRICT_DNS
+      lb_policy: ROUND_ROBIN
+      load_assignment:
+        cluster_name: python
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: python
                       port_value: 8080
     - name: ruby
       type: STRICT_DNS
