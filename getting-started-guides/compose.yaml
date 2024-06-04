@@ -19,6 +19,20 @@ services:
       - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
     ports:
       - 8080
+  java:
+    build: java
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT
+      - OTEL_EXPORTER_OTLP_HEADERS
+      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
+      - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=DELTA
+      - OTEL_EXPERIMENTAL_EXPORTER_OTLP_RETRY_ENABLED=true
+      - OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION=BASE2_EXPONENTIAL_BUCKET_HISTOGRAM
+      - OTEL_EXPORTER_OTLP_COMPRESSION=gzip
+      - OTEL_SERVICE_NAME=getting-started-java
+      - OTEL_EXPERIMENTAL_RESOURCE_DISABLED_KEYS=process.command_args
+    ports:
+      - 8080
   javascript:
     build: javascript
     environment:

@@ -10,7 +10,7 @@ The [Getting Started Guides](./getting-started-guides/README.md) demonstrate how
 
 * [.NET](./getting-started-guides/dotnet)
 * [Go](./getting-started-guides/go)
-* Java ([uninstrumented](./getting-started-guides/java/uninstrumented) / [instrumented](./getting-started-guides/java/instrumented))
+* [Java](./getting-started-guides/java)
 * [JavaScript (Node.js)](./getting-started-guides/javascript)
 * [Python](./getting-started-guides/python)
 * [Ruby](./getting-started-guides/ruby)
