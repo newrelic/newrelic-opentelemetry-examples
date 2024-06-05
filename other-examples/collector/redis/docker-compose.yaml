@@ -1,0 +1,23 @@
+version: '3'
+services:
+  redis:
+    image: redis:7.2-alpine
+    user: redis
+    deploy:
+      resources:
+        limits:
+          memory: 20M
+    restart: unless-stopped
+    ports:
+      - "6379"
+
+  collector:
+    image: otel/opentelemetry-collector-contrib:0.92.0
+    command: --config=/etc/otelcol/config.yaml
+    volumes:
+      - ./collector.yaml:/etc/otelcol/config.yaml
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - NEW_RELIC_OTLP_ENDPOINT
+      - NEW_RELIC_API_KEY
