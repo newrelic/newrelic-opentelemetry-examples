@@ -4,27 +4,46 @@ This simple example demonstrates monitoring redis with the [OpenTelemetry collec
 
 ## Requirements
 
-* [Docker compose](https://docs.docker.com/compose/) must be installed and the docker daemon must be running.
+* You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. Docker desktop [includes a standalone Kubernetes server and client](https://docs.docker.com/desktop/kubernetes/) which is useful for local testing.
 * [A New Relic account](https://one.newrelic.com/)
 * [A New Relic license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)
 
-## Running the application
+## Running the example
 
-1. Set the following environment variables to configure OpenTelemetry to send
-   data to New Relic:
+1. Update the `NEW_RELIC_API_KEY` value in [secrets.yaml](./k8s/secrets.yaml) to your New Relic license key.
 
-    ```shell
-    export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net
-    export OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>
+    ```yaml
+    # ...omitted for brevity
+    stringData:
+      # New Relic API key to authenticate the export requests.
+      # docs: https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key
+      NEW_RELIC_API_KEY: <INSERT_API_KEY>
     ```
+   
+    * Note, be careful to avoid inadvertent secret sharing when modifying `secrets.yaml`. To ignore changes to this file from git, run `git update-index --skip-worktree k8s/secrets.yaml`.
 
-    * If your account is based in the EU, set the endpoint to: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
+    * If your account is based in the EU, update the `NEW_RELIC_OTLP_ENDPOINT` value in [collector.yaml](./k8s/collector.yaml) the endpoint to: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
+
+    ```yaml
+    # ...omitted for brevity
+   env:
+     # The default US endpoint is set here. You can change the endpoint and port based on your requirements if needed.
+     # docs: https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/best-practices/opentelemetry-otlp/#configure-endpoint-port-protocol
+     - name: NEW_RELIC_OTLP_ENDPOINT
+       value: https://otlp.eu01.nr-data.net
+    ```
 
 2. Run the application with the following command.
 
     ```shell
-    docker compose up
+    kubectl apply -f k8s/
     ```
+   
+   * When finished, cleanup resources with the following command. This is also useful to reset if modifying configuration.
+
+   ```shell
+   kubectl delete -f k8s/
+   ```
 
 ## Viewing your data
 
@@ -32,4 +51,4 @@ To review your redis data in New Relic, navigate to "New Relic -> All Entities -
 
 ## Additional notes
 
-This example monitors a redis instance defined in [docker-compose.yaml](docker-compose.yaml), which is not receiving any load. To use in production, you'll need to modify the `.receivers.redis.endpoint` value in [collector.yaml](./collector.yaml) to point to the endpoint of your redis instance.
+This example monitors a redis instance defined in [redis.yaml](./k8s/redis.yaml), which is not receiving any load. To use in production, you'll need to modify the `.receivers.redis.endpoint` value in [collector.yaml](k8s/collector.yaml) ConfigMap to point to the endpoint of your redis instance. Additionally, update the `server.address` and `server.port` resource attributes defined in `attributes/redis_metrics` to values which reflect the redis instance being monitored.
