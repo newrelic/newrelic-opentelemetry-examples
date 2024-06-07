@@ -31,7 +31,7 @@ dependencies {
   implementation platform(SpringBootPlugin.BOM_COORDINATES)
   implementation 'org.springframework.boot:spring-boot-starter-web'
 
-  implementation("io.opentelemetry:opentelemetry-api:1.38.0")
+  implementation("io.opentelemetry:opentelemetry-api:1.39.0")
 
   // Add OpenTelemetry java agent to the "agent" configuration we previously defined
   agent("io.opentelemetry.javaagent:opentelemetry-javaagent:2.3.0")
