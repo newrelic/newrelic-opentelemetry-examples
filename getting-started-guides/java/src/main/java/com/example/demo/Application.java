@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import com.newrelic.opentelemetry.NewRelicOpenTelemetry;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import org.springframework.boot.SpringApplication;
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 public class Application {
 
   public static void main(String[] args) {
+    NewRelicOpenTelemetry.autoConfigureGlobal();
     SpringApplication.run(Application.class, args);
   }
 

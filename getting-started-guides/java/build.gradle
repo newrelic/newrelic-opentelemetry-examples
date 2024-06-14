@@ -20,6 +20,9 @@ spotless {
 
 repositories {
   mavenCentral()
+  maven {
+    url 'https://artifacts.datanerd.us/newrelic-release'
+  }
 }
 
 configurations {
@@ -31,16 +34,16 @@ dependencies {
   implementation platform(SpringBootPlugin.BOM_COORDINATES)
   implementation 'org.springframework.boot:spring-boot-starter-web'
 
-  implementation("io.opentelemetry:opentelemetry-api:1.38.0")
+  implementation "com.newrelic.opentelemetry:opentelemetry-common:3.22.0"
 
   // Add OpenTelemetry java agent to the "agent" configuration we previously defined
-  agent("io.opentelemetry.javaagent:opentelemetry-javaagent:2.3.0")
+  agent("com.newrelic.agent.java:newrelic-agent:8.12.0")
 }
 
 tasks.register("copyAgent", Copy) {
   from(configurations.agent.singleFile)
   into(layout.buildDirectory.dir('agent'))
-  rename("opentelemetry-javaagent-.*\\.jar", "opentelemetry-javaagent.jar")
+  rename("newrelic-agent-.*\\.jar", "newrelic-agent.jar")
 }
 
 bootJar {
@@ -55,7 +58,7 @@ bootRun {
 
   mainClass.set 'com.example.demo.Application'
 
-  def agentPath = project.buildDir.toString() + "/agent/opentelemetry-javaagent.jar"
+  def agentPath = project.buildDir.toString() + "/agent/newrelic-agent.jar"
   jvmArgs = [
     // Set the opentelemetry-java-instrumentation agent as the javaagent
     "-javaagent:${agentPath}"
