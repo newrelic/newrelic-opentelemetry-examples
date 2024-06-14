@@ -29,7 +29,7 @@ It demonstrates how to configure OpenTelemetry Go to send data to New Relic.
    in your web browser to ensure it is working.
 
     ```shell
-    go run *.go
+    go run .
     ```
 
 3. Experiment with providing different values for `n` in the query string.

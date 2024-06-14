@@ -11,8 +11,9 @@ import (
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/metric"
-	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -97,41 +98,35 @@ func calculateFibonacci(r *http.Request, n int64) (int64, error) {
 	ctx, span := tracer.Start(r.Context(), "fibonacci")
 	defer span.End()
 
-	fibonacciSpanAttrs := []attribute.KeyValue{
-		attribute.Int64("fibonacci.n", n),
-	}
+	span.SetAttributes(attribute.Int64("fibonacci.n", n))
 
-	if n <= 1 || n > 90 {
-		log.Print(INPUT_IS_OUTSIDE_OF_RANGE)
-
-		// Set error span attributes
-		fibonacciSpanAttrs = append(fibonacciSpanAttrs,
-			semconv.OtelStatusCodeError,
-			semconv.OtelStatusDescriptionKey.String(INPUT_IS_OUTSIDE_OF_RANGE),
-		)
-		span.SetAttributes(fibonacciSpanAttrs...)
-
+	if n < 1 || n > 90 {
+		err := errors.New("n must be between 1 and 90")
+		span.SetStatus(codes.Error, err.Error())
+		span.RecordError(err, trace.WithStackTrace(true))
 		fibonacciInvocations.Add(ctx, 1, metric.WithAttributes(attribute.Bool("fibonacci.valid.n", false)))
-
-		return 0, errors.New("invalid input")
+		msg := fmt.Sprintf("Failed to compute fib(%d).", n)
+		logger.InfoContext(ctx, msg, "fibonacci.n", n)
+		return 0, err
 	}
 
-	var n2, n1 int64 = 0, 1
-	for i := int64(2); i < n; i++ {
-		n2, n1 = n1, n1+n2
+	var result = int64(1)
+	if n > 2 {
+		var a = int64(0)
+		var b = int64(1)
+
+		for i := int64(1); i < n; i++ {
+			result = a + b
+			a = b
+			b = result
+		}
 	}
-	res := n2 + n1
 
-	fibonacciSpanAttrs = append(fibonacciSpanAttrs,
-		attribute.Int64("fibonacci.result", res),
-	)
-	span.SetAttributes(fibonacciSpanAttrs...)
-
-	msg := fmt.Sprintf("Computed fib({%d}) = {%d}.", n, res)
-	logger.InfoContext(ctx, msg, "fibonacci.n", n, "fibonacci.result", res)
+	span.SetAttributes(attribute.Int64("fibonacci.result", result))
 	fibonacciInvocations.Add(ctx, 1, metric.WithAttributes(attribute.Bool("fibonacci.valid.n", true)))
-
-	return res, nil
+	msg := fmt.Sprintf("Computed fib(%d) = %d.", n, result)
+	logger.InfoContext(ctx, msg, "fibonacci.n", n, "fibonacci.result", result)
+	return result, nil
 }
 
 func createHttpResponse(w http.ResponseWriter, statusCode int, res *responseObject) {
