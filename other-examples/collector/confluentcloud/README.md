@@ -1,4 +1,4 @@
-# Monitoring Confluent Cloud with OpenTelemetry Collector
+# Monitoring Confluent Cloud Kafka with OpenTelemetry Collector
 
 This simple example demonstrates monitoring Confluent Cloud prometheus metrics with the [OpenTelemetry collector](https://opentelemetry.io/docs/collector/), using the [prometheus receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/prometheusreceiver) and sending the data to New Relic via OTLP.
 

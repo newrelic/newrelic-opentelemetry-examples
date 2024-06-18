@@ -21,7 +21,7 @@ OpenTelemetry is a big ecosystem and everything doesn't fit into the goals of th
 
 * [Collector for data processing](./other-examples/collector/nr-config)
 * Collector for infrastructure monitoring
-  * [Confluent cloud monitoring](./other-examples/collector/confluentcloud)
+  * [Confluent cloud kafka monitoring](./other-examples/collector/confluentcloud)
   * [HCP Consul monitoring](./other-examples/collector/hcp-consul)
   * [Host monitoring](./other-examples/collector/host-monitoring)
   * [Singlestore monitoring](./other-examples/collector/singlestore)
