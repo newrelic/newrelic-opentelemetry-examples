@@ -46,7 +46,7 @@ This example demonstrates monitoring hosts with the [OpenTelemetry collector](ht
 
 ## Viewing your data
 
-To review your squid data in New Relic, navigate to "New Relic -> All Entities -> Hosts" and click on the instance with name corresponding to the collector pod name to view the instance summary. Use [NRQL](https://docs.newrelic.com/docs/query-your-data/explore-query-data/get-started/introduction-querying-new-relic-data/) to perform ad-hoc analysis.
+To review your host data in New Relic, navigate to "New Relic -> All Entities -> Hosts" and click on the instance with name corresponding to the collector pod name to view the instance summary. Use [NRQL](https://docs.newrelic.com/docs/query-your-data/explore-query-data/get-started/introduction-querying-new-relic-data/) to perform ad-hoc analysis.
 
 ```
 FROM Metric SELECT uniques(metricName) WHERE otel.library.name like 'otelcol/hostmetricsreceiver/%'
