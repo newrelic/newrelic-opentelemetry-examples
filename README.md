@@ -22,10 +22,14 @@ OpenTelemetry is a big ecosystem and everything doesn't fit into the goals of th
 * [Collector for data processing](./other-examples/collector/nr-config)
 * Collector for infrastructure monitoring
   * [Confluent cloud kafka monitoring](./other-examples/collector/confluentcloud)
+  * [Docker monitoring](./other-examples/collector/docker)
   * [HCP Consul monitoring](./other-examples/collector/hcp-consul)
   * [Host monitoring](./other-examples/collector/host-monitoring)
-  * [Singlestore monitoring](./other-examples/collector/singlestore)
+  * [Prometheus monitoring](./other-examples/collector/prometheus)
   * [Redis monitoring](./other-examples/collector/redis)
+  * [Singlestore monitoring](./other-examples/collector/singlestore)
+  * [Singlestore monitoring](./other-examples/collector/singlestore)
+  * [StatsD monitoring](./other-examples/collector/statsd)
 * Java
   * [OpenTelemetry Agent New Relic Config](./other-examples/java/agent-nr-config)
   * [Micrometer Shim with OTLP Export](./other-examples/java/micrometer-shim)
