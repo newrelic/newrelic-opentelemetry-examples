@@ -1,0 +1,9 @@
+version: '3'
+services:
+  collector:
+    image: otel/opentelemetry-collector-contrib:0.98.0
+    volumes:
+    - ./config.yaml:/etc/otelcol-contrib/config.yaml
+    environment:
+      - NEW_RELIC_API_KEY
+      - NEW_RELIC_OTLP_ENDPOINT

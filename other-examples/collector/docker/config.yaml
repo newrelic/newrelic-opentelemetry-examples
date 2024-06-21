@@ -1,0 +1,60 @@
+receivers:
+  docker_stats:
+    metrics:
+      container.cpu.usage.total:
+        enabled: true
+      container.cpu.throttling_data.periods:
+        enabled: true
+      container.cpu.throttling_data.throttled_periods:
+        enabled: true
+      container.cpu.utilization:
+        enabled: true
+      container.memory.usage.limit:
+        enabled: true
+      container.memory.usage.total:
+        enabled: true
+      container.memory.percent:
+        enabled: true
+      container.blockio.io_service_bytes_recursive:
+        enabled: true
+      container.network.io.usage.rx_bytes:
+        enabled: true
+      container.network.io.usage.tx_bytes:
+        enabled: true
+      container.network.io.usage.rx_dropped:
+        enabled: true
+      container.network.io.usage.tx_dropped:
+        enabled: true
+      container.network.io.usage.rx_errors:
+        enabled: true
+      container.network.io.usage.tx_errors:
+        enabled: true
+      container.network.io.usage.rx_packets:
+        enabled: true
+      container.network.io.usage.tx_packets:
+        enabled: true
+      container.pids.count:
+        enabled: true
+
+processors:
+  batch:
+  resourcedetection:
+    detectors: ["env", "system"]
+#
+#  resourcedetection/cloud:
+#    detectors: [ "gcp", "ec2", "azure" ]
+#    timeout: 2s
+#    override: false
+
+exporters:
+  otlphttp:
+    endpoint: ${NEW_RELIC_OTLP_ENDPOINT}
+    headers:
+      api-key: ${NEW_RELIC_API_KEY}
+
+service:
+  pipelines:
+    metrics:
+      receivers: [docker_stats]
+      processors: [resourcedetection, batch]
+      exporters: [otlphttp]
