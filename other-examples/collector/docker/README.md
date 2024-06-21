@@ -1,54 +1,84 @@
-# Monitoring Redis with OpenTelemetry Collector
+# Monitoring Docker with OpenTelemetry Collector
 
-This simple example demonstrates monitoring redis with the [OpenTelemetry collector](https://opentelemetry.io/docs/collector/), using the [redis receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/redisreceiver) and sending the data to New Relic via OTLP.
+This simple example demonstrates monitoring docker with the [OpenTelemetry collector](https://opentelemetry.io/docs/collector/), using the [docker stats receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/dockerstatsreceiver) and sending the data to New Relic via OTLP.
 
 ## Requirements
 
-* You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. Docker desktop [includes a standalone Kubernetes server and client](https://docs.docker.com/desktop/kubernetes/) which is useful for local testing.
+* A linux machine with docker daemon and docker compose (docker stats receiver only supports Linux).
 * [A New Relic account](https://one.newrelic.com/)
 * [A New Relic license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)
 
 ## Running the example
 
-1. Update the `NEW_RELIC_API_KEY` value in [secrets.yaml](./k8s/secrets.yaml) to your New Relic license key.
+1. Update the `NEW_RELIC_API_KEY` value in [.env](./.env) to your New Relic license key.
 
-    ```yaml
-    # ...omitted for brevity
-    stringData:
-      # New Relic API key to authenticate the export requests.
-      # docs: https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key
-      NEW_RELIC_API_KEY: <INSERT_API_KEY>
+    ```
+    # New Relic API key to authenticate the call.
+    # docs: https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key
+    NEW_RELIC_API_KEY=
     ```
    
-    * Note, be careful to avoid inadvertent secret sharing when modifying `secrets.yaml`. To ignore changes to this file from git, run `git update-index --skip-worktree k8s/secrets.yaml`.
+    * Note, be careful to avoid inadvertent secret sharing when modifying `.env`. To ignore changes to this file from git, run `git update-index --skip-worktree .env`.
 
-    * If your account is based in the EU, update the `NEW_RELIC_OTLP_ENDPOINT` value in [collector.yaml](./k8s/collector.yaml) the endpoint to: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
+    * If your account is based in the EU, update the `NEW_RELIC_OTLP_ENDPOINT` value in `.env` to: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
 
-    ```yaml
+    ```
     # ...omitted for brevity
-   env:
-     # The default US endpoint is set here. You can change the endpoint and port based on your requirements if needed.
-     # docs: https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/best-practices/opentelemetry-otlp/#configure-endpoint-port-protocol
-     - name: NEW_RELIC_OTLP_ENDPOINT
-       value: https://otlp.eu01.nr-data.net
+    # The default US endpoint is set here. You can change the endpoint and port based on your requirements if needed.
+    # docs: https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/get-started/opentelemetry-set-up-your-app/#review-settings
+    NEW_RELIC_OTLP_ENDPOINT=https://otlp.nr-data.net/
     ```
 
-2. Run the application with the following command.
+2. Update the `HOST_USER_ID` to the id of a user with permission to access the docker socket.
+
+   The docker stats receiver reads from docker daemon socket. This example runs the collector and docker stats receiver inside a docker container, and makes the host docker socket accessible to the container by mounting a volume with `/var/run/docker.sock` from the host machine. By default, the collector contrib image runs with a user with limited permissions. We must override the user and run it with permission to access the docker socket.
+
+   Update the `HOST_USER_ID` value in [.env](./.env) to a user with required permissions. It's set to `0` by default, which corresponds to the root user. Its good practice to run with a user with more limited access in production.
+
+    ```
+    # ...omitted for brevity
+    # User ID used to run the collector. Must have permission to access the docker socket.
+    # Obtain for a given user via "id -g <username>"
+    HOST_USER_ID=0
+    ```
+
+3. Run the application with the following command.
 
     ```shell
-    kubectl apply -f k8s/
+    docker compose up
     ```
    
-   * When finished, cleanup resources with the following command. This is also useful to reset if modifying configuration.
+   * Optionally include `-d` to run in the background.
+   
+   * When finished, cleanup resources by exiting the command with `Ctrl-D` or `Ctrl-C`. If running in the background, run the following command to stop containers.
 
    ```shell
-   kubectl delete -f k8s/
+   docker compose stop
    ```
 
 ## Viewing your data
 
-To review your redis data in New Relic, navigate to "New Relic -> All Entities -> Redis instances" and click on the instance with name "redis" to view the instance summary. Click on "Metric explorer" to view all metrics associated with the redis instance, or use [NRQL](https://docs.newrelic.com/docs/query-your-data/explore-query-data/get-started/introduction-querying-new-relic-data/) to perform ad-hoc analysis.
+To review your docker data in New Relic, navigate to "New Relic -> All Entities -> Containers". You should see entities named `docker-collector-1` and `docker-nginx-1` corresponding to the services defined in `docker-compose.yaml`. Click to view the container summary.
+
+Optionally, install the [Docker OpenTelemetry quickstart](https://newrelic.com/instant-observability/docker-otel) which includes a dashboard and alerts based on the data produced by the docker stats reciever.
+
+Optionally, use [NRQL](https://docs.newrelic.com/docs/query-your-data/explore-query-data/get-started/introduction-querying-new-relic-data/) to perform ad-hoc analysis. To list the metrics reported, query for:
+
+```
+FROM Metric SELECT uniques(metricName) WHERE otel.library.name = 'otelcol/dockerstatsreceiver'
+```
+
+See [get started with querying](https://docs.newrelic.com/docs/query-your-data/explore-query-data/get-started/introduction-querying-new-relic-data/) for additional details on querying data in New Relic.
 
 ## Additional notes
 
-This example monitors a redis instance defined in [redis.yaml](./k8s/redis.yaml), which is not receiving any load. To use in production, you'll need to modify the `.receivers.redis.endpoint` value in [collector.yaml](k8s/collector.yaml) ConfigMap to point to the endpoint of your redis instance. Additionally, update the `server.address` and `server.port` resource attributes defined in `attributes/redis_metrics` to values which reflect the redis instance being monitored.
+New Relic depends on docker container data including the `host.id` resource attribute. The collector [config.yaml](./config.yaml) contains several resource detectors in `.processors.resourcedetection.detectors` which attempt to fetch `host.id`. If `host.id` is not detected, you can manually set it by uncommenting and editing the `OTEL_RESOURCE_ATTRIBUTES` env var in [docker-compose.yaml](./docker-compose.yaml).
+
+```yaml
+# ...omitted for brevity
+# host.id is required for New Relic.
+# Optionally manually set it if one of the resource detectors in config.yaml is unable to identify it.
+# - OTEL_RESOURCE_ATTRIBUTES=host.id=<INSERT_HOST_ID>
+```
+
+This example runs a dummy nginx image defined in [docker-compose.yaml](./docker-compose.yaml). This only exists to produce more interesting data and should be removed for production deployments.

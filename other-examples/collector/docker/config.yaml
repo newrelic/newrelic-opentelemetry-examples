@@ -38,13 +38,9 @@ receivers:
 
 processors:
   batch:
+
   resourcedetection:
-    detectors: ["env", "system"]
-#
-#  resourcedetection/cloud:
-#    detectors: [ "gcp", "ec2", "azure" ]
-#    timeout: 2s
-#    override: false
+    detectors: ["env", "system" "gcp", "ec2", "azure"]
 
 exporters:
   otlphttp:
