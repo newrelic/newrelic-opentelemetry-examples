@@ -21,9 +21,10 @@ OpenTelemetry is a big ecosystem and everything doesn't fit into the goals of th
 
 * [Collector for data processing](./other-examples/collector/nr-config)
 * Collector for infrastructure monitoring
-  * [Confluent cloud kafka monitoring](./other-examples/collector/confluentcloud)
+  * [Confluent Cloud Kafka monitoring](./other-examples/collector/confluentcloud)
   * [Docker monitoring](./other-examples/collector/docker)
   * [HCP Consul monitoring](./other-examples/collector/hcp-consul)
+  * [HiveMQ monitoring](./other-examples/collector/hivemq)
   * [Host monitoring](./other-examples/collector/host-monitoring)
   * [Prometheus monitoring](./other-examples/collector/prometheus)
   * [Redis monitoring](./other-examples/collector/redis)
