@@ -28,7 +28,7 @@ OpenTelemetry is a big ecosystem and everything doesn't fit into the goals of th
   * [Prometheus monitoring](./other-examples/collector/prometheus)
   * [Redis monitoring](./other-examples/collector/redis)
   * [Singlestore monitoring](./other-examples/collector/singlestore)
-  * [Singlestore monitoring](./other-examples/collector/singlestore)
+  * [Squid cache manager monitoring](./other-examples/collector/squid)
   * [StatsD monitoring](./other-examples/collector/statsd)
 * Java
   * [OpenTelemetry Agent New Relic Config](./other-examples/java/agent-nr-config)
