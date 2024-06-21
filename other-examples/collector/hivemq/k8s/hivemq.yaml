@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hivemq
+  namespace: nr-hivemq
+  labels:
+    app.kubernetes.io/name: hivemq
+spec:
+  containers:
+    - name: hivemq
+      image: hivemq/hivemq-ce:2024.5
+      volumeMounts:
+        - name: hivemq-prometheus-extension
+          mountPath: /opt/hivemq/extensions/hivemq-prometheus-extension
+      ports:
+        - containerPort: 9399
+  volumes:
+    # This volume contains the hivemq-prometheus-extension, which is downloaded via ../download-prometheus-extension.sh
+    # Replace <INSERT_PATH_TO_HIVEMQ_EXAMPLE> with the fully qualified path to the root of the hivemq example.
+    - name: hivemq-prometheus-extension
+      hostPath:
+        path: <INSERT_PATH_TO_HIVEMQ_EXAMPLE>/hivemq-prometheus-extension
+        type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hivemq
+  namespace: nr-hivemq
+  labels:
+    app.kubernetes.io/name: hivemq
+spec:
+  ports:
+    - name: metrics
+      port: 9399
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: hivemq

@@ -1,0 +1,41 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: squid
+  namespace: nr-squid
+  labels:
+    app.kubernetes.io/name: squid
+spec:
+  containers:
+    - name: squid
+      image: ubuntu/squid:5.2-22.04_beta
+      env:
+        - name: TZ
+          value: UTC
+    - name: squid-exporter
+      image: boynux/squid-exporter
+      env:
+        - name: SQUID_HOSTNAME
+          value: localhost
+        - name: SQUID_PORT
+          value: "3128"
+        - name: SQUID_EXPORTER_LISTEN
+          value: "0.0.0.0:9301"
+      ports:
+        - containerPort: 9301
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: squid
+  namespace: nr-squid
+  labels:
+    app.kubernetes.io/name: squid
+spec:
+  ports:
+    - name: metrics
+      port: 9301
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: squid

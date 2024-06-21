@@ -1,36 +1,75 @@
-# HCP Consul OpenTelemetry metrics example setup
+# Monitoring HCP Consul with OpenTelemetry Collector
 
-This example shows a setup for running a prometheus OpenTelemetry Collector in a docker container to scrape metrics from [HCP Consul](https://developer.hashicorp.com/hcp/docs/consul) and post them the New Relic OTLP Collector Endpoint.
+This simple example demonstrates monitoring [HCP Consul](https://developer.hashicorp.com/hcp/docs/consul) prometheus metrics with the [OpenTelemetry collector](https://opentelemetry.io/docs/collector/), using the [prometheus receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/prometheusreceiver) and sending the data to New Relic via OTLP.
 
-**NOTE**: This is *not* for self-managed Consul, and will only work with HCP managed Consul. For self-managed Consul you will have to communicate with the [agent API](https://developer.hashicorp.com/consul/api-docs/agent).
+## Requirements
 
-## Prerequisites
-
-1. You must have a Docker daemon running.
-2. You must have [Docker compose](https://docs.docker.com/compose/) installed .
-3. You must have a [Consul cluster](https://developer.hashicorp.com/hcp/docs/consul) running in Consul Cloud.
+* You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. Docker desktop [includes a standalone Kubernetes server and client](https://docs.docker.com/desktop/kubernetes/) which is useful for local testing.
+* [A New Relic account](https://one.newrelic.com/)
+* [A New Relic license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)
+* [An HCP Consul Account](https://developer.hashicorp.com/sign-up) with a running [cluster](https://developer.hashicorp.com/hcp/docs/consul)
+* [A HCP Consul admin access token](https://developer.hashicorp.com/hcp/docs/consul/dedicated/access#generate-admin-token)
 
 ## Running the example
 
-First, set your environment variables in the `.env` file in this directory. For more information on the individual variables, reference the docs available below.
+1. Update the `NEW_RELIC_API_KEY` values `HCP_ACCESS_TOKEN` values in [secrets.yaml](./k8s/secrets.yaml) to your New Relic license key, and HCP Consule admin access token respectively. See [HCP Consule docs](https://developer.hashicorp.com/hcp/docs/consul/hcp-managed/access#generate-admin-token) for obtaining an access token.
 
-Once the variables are set, run the following command from the root directory to start the collector.
+    ```yaml
+    # ...omitted for brevity
+    stringData:
+       # New Relic API key to authenticate the export requests.
+       # docs: https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key
+       NEW_RELIC_API_KEY: <INSERT_API_KEY>
+       # Set your HCP Access Token API Key.
+       # docs: https://developer.hashicorp.com/hcp/docs/consul/hcp-managed/access#generate-admin-token
+       HCP_ACCESS_TOKEN: <INSERT_API_KEY>>
+    ```
+   
+    * Note, be careful to avoid inadvertent secret sharing when modifying `secrets.yaml`. To ignore changes to this file from git, run `git update-index --skip-worktree k8s/secrets.yaml`.
 
-```shell
-cd ./other-examples/collector/hcp-consul
+    * If your account is based in the EU, update the `NEW_RELIC_OTLP_ENDPOINT` value in [collector.yaml](./k8s/collector.yaml) the endpoint to: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
 
-docker compose up
-```
+    ```yaml
+    # ...omitted for brevity
+   env:
+     # The default US endpoint is set here. You can change the endpoint and port based on your requirements if needed.
+     # docs: https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/best-practices/opentelemetry-otlp/#configure-endpoint-port-protocol
+     - name: NEW_RELIC_OTLP_ENDPOINT
+       value: https://otlp.eu01.nr-data.net
+    ```
+   
+2. Set the `HCP_ACCESS_URL` env var value in [collector.yaml](./k8s/collector.yaml). See [HCP Consul docs](https://developer.hashicorp.com/hcp/docs/consul/hcp-managed/access#get-access-url) for details on obtaining org and workspace group ids.
+
+    ```yaml
+   # ...omitted for brevity
+   # The HCP Consul access url.
+   # docs: https://developer.hashicorp.com/hcp/docs/consul/hcp-managed/access#get-access-url
+   - name: HCP_ACCESS_URL
+     value: <INSERT_HCP_ACCESS_URL>
+    ```
+
+3. Run the application with the following command.
+
+    ```shell
+    kubectl apply -f k8s/
+    ```
+   
+   * When finished, cleanup resources with the following command. This is also useful to reset if modifying configuration.
+
+   ```shell
+   kubectl delete -f k8s/
+   ```
 
 ## Viewing your data
 
-To review your HCP Consul data in New Relic, navigate to your [metrics explorer](https://docs.newrelic.com/docs/query-your-data/explore-query-data/browse-data/introduction-data-explorer/) and filter for `consul`.
+To review your HCP Consul data in New Relic, navigate to "New Relic -> Query Your Data". To list the metrics reported, query for:
 
-## Local Variable information
+```
+FROM Metric SELECT uniques(metricName) WHERE otel.library.name = 'otelcol/prometheusreceiver' AND metricName LIKE 'consul%'
+```
 
-| Variable | Description | Docs |
-| -------- | ----------- | ---- |
-| **NEW_RELIC_API_KEY** |New Relic Ingest API Key |[API Key docs](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/) |
-| **NEW_RELIC_OTLP_ENDPOINT** |Default US OTLP endpoint is `https://otlp.nr-data.net` | [OTLP endpoint config docs](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/get-started/opentelemetry-set-up-your-app/#review-settings) |
-| **HCP_ACCESS_URL** | URL for communicating with your HCP managed Consul cluster |[Consul URL docs](https://developer.hashicorp.com/hcp/docs/consul/hcp-managed/access#get-access-url)|
-| **HCP_ACCESS_TOKEN** | Consul admin token to authenticate with your HCP managed Consul Cluster| [Consul token docs](https://developer.hashicorp.com/hcp/docs/consul/hcp-managed/access#generate-admin-token) |
+See [get started with querying](https://docs.newrelic.com/docs/query-your-data/explore-query-data/get-started/introduction-querying-new-relic-data/) for additional details on querying data in New Relic.
+
+## Additional notes
+
+The prometheus receiver includes `service.name` and `service.instance.id` resource attributes derived from job name and target configured in `.receivers.prometheus.config.scrape_configs`. As documented [here](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/best-practices/opentelemetry-best-practices-resources/#services), New Relic considers any data with `service.name` as a service despite the fact that not all prometheus data sources are services. As a result, you can find a `hcp-consul` entity under "New Relic -> All Entities -> Services - OpenTelemetry", although the panels will not contain data because the scraped metrics do not represent APM data.

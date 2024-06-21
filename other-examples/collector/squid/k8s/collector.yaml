@@ -1,0 +1,82 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nr-squid
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: collector-config
+  namespace: nr-squid
+  labels:
+    app.kubernetes.io/name: collector-config
+data:
+  collector-config: |
+    receivers:
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: "squid"
+              static_configs:
+                - targets: [ "${SQUID_SERVICE_HOST}:${SQUID_SERVICE_PORT_METRICS}" ]
+                  labels:
+                    squid_cachemgr: ${SQUID_CACHEMGR}
+              metrics_path: /metrics
+              metric_relabel_configs:
+                - source_labels: [__name__]
+                  regex: "^squid_.*"
+                  action: keep
+    
+    processors:
+      batch:
+
+    exporters:
+      otlphttp:
+        endpoint: ${NEW_RELIC_OTLP_ENDPOINT}
+        headers:
+          api-key: ${NEW_RELIC_API_KEY}
+
+    service:
+      pipelines:
+        metrics:
+          receivers: [prometheus]
+          processors: [batch]
+          exporters: [otlphttp]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: collector
+  namespace: nr-squid
+  labels:
+    app.kubernetes.io/name: collector
+spec:
+  containers:
+    - name: collector
+      image: otel/opentelemetry-collector-contrib:0.98.0
+      env:
+        # The default US endpoint is set here. You can change the endpoint and port based on your requirements if needed.
+        # docs: https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/best-practices/opentelemetry-otlp/#configure-endpoint-port-protocol
+        - name: NEW_RELIC_OTLP_ENDPOINT
+          value: https://otlp.nr-data.net/
+        # The New Relic API key used to authenticate export requests.
+        # Defined in secrets.yaml
+        - name: NEW_RELIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: nr-squid-secret
+              key: NEW_RELIC_API_KEY
+        # A unique identifier for the instance of the squid cache manager being monitored, used as the entity name in New Relic.
+        - name: SQUID_CACHEMGR
+          value: <INSERT_SQUID_IDENTIFIER>
+      volumeMounts:
+        - name: collector-config-vol
+          mountPath: /etc/otelcol-contrib
+  volumes:
+    - name: collector-config-vol
+      configMap:
+        name: collector-config
+        items:
+          - key: collector-config
+            path: config.yaml
