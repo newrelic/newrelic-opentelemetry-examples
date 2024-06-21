@@ -2,6 +2,8 @@
 
 This example demonstrates monitoring hosts with the [OpenTelemetry collector](https://opentelemetry.io/docs/collector/), using the [host metrics receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver) and sending the data to New Relic via OTLP.
 
+Additionally, it demonstrates correlating APM entities with hosts, using the OpenTelemetry collector to enrich APM OTLP data with host metadata before sending to New Relic via OTLP.
+
 ## Requirements
 
 * You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. Docker desktop [includes a standalone Kubernetes server and client](https://docs.docker.com/desktop/kubernetes/) which is useful for local testing.
@@ -57,3 +59,5 @@ See [get started with querying](https://docs.newrelic.com/docs/query-your-data/e
 ## Additional notes
 
 This example deploys the collector as a kubernetes DaemonSet to run a collector instance on each node in the kubernetes cluster. When running in this type of configuration, it's common to route application telemetry from pods to the collector instance each pod is respectively running on, and to enrich that telemetry with additional metadata via the [kubernetes attributes processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/k8sattributesprocessor). This example omits that configuration for brevity. See [important components for kubernetes](https://opentelemetry.io/docs/kubernetes/collector/components/#filelog-receiver) for common configuration running the collector in kubernetes.
+
+In order to demonstrate correlation between OpenTelemetry APM entities and host entities, this example deploys an instance of the opentelemetry demo [AdService](https://opentelemetry.io/docs/demo/services/ad/), defined in [adservice.yaml](./k8s/adservice.yaml). The AdService application is configured to export OTLP data to the collector DaemonSet pod running on the same host. The collector enriches the AdService telemetry with `host.id` (and other attributes) which New Relic uses to create a relationship with the host entity.

@@ -1,8 +1,4 @@
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: nr-host-monitoring
+
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -65,6 +61,11 @@ data:
           - /var/log/messages
           - /var/log/secure
           - /var/log/yum.log
+      
+      otlp:
+        protocols:
+          http:
+          grpc:
     
     processors:
       batch:
@@ -92,14 +93,26 @@ data:
 
     service:
       pipelines:
-        metrics:
+        metrics/host:
           receivers: [hostmetrics]
           processors: [resourcedetection, resourcedetection/cloud, batch]
           exporters: [otlphttp]
-        logs:
+        logs/host:
           receivers: [filelog]
           processors: [resourcedetection, resourcedetection/cloud, batch]
           exporters: [logging, otlphttp]
+        traces:
+          receivers: [otlp]
+          processors: [resourcedetection, resourcedetection/cloud, batch]
+          exporters: [otlphttp]
+        metrics:
+          receivers: [otlp]
+          processors: [resourcedetection, resourcedetection/cloud, batch]
+          exporters: [otlphttp]
+        logs:
+          receivers: [otlp]
+          processors: [resourcedetection, resourcedetection/cloud, batch]
+          exporters: [otlphttp]
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -147,6 +160,9 @@ spec:
               mountPath: /hostfs
               readOnly: true
               mountPropagation: HostToContainer
+          ports:
+            - containerPort: 4318
+              hostPort: 4318
       volumes:
         - name: collector-config-vol
           configMap:
