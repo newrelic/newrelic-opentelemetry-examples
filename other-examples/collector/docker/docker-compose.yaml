@@ -1,0 +1,20 @@
+version: '3'
+services:
+  collector:
+    image: otel/opentelemetry-collector-contrib:0.98.0
+    volumes:
+    - ./config.yaml:/etc/otelcol-contrib/config.yaml
+    - /var/run/docker.sock:/var/run/docker.sock
+    # Set the user id used to run the collector. HOST_USER_ID is defined in .env, and MUST have permission to access the docker socket.
+    user: ${HOST_USER_ID}
+    # Expose the env vars defined in .env
+    environment:
+      - NEW_RELIC_API_KEY
+      - NEW_RELIC_OTLP_ENDPOINT
+      # host.id is required for New Relic.
+      # Optionally manually set it if one of the resource detectors in config.yaml is unable to identify it.
+      # - OTEL_RESOURCE_ATTRIBUTES=host.id=<INSERT_HOST_ID>
+
+  # Run a dummy nginx image to generate more interesting data.
+  nginx:
+    image: nginx

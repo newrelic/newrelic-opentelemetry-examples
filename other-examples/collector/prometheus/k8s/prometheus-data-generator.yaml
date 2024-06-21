@@ -1,0 +1,88 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-data-generator-config
+  namespace: nr-prometheus
+data:
+  config: |
+    ---
+    config:
+      - name: number_of_fruits
+        description: The number of fruits we have.
+        type: gauge
+        labels: [name, color]
+        sequence:
+          - time: 5
+            values: 0-20
+            operation: inc
+            labels:
+              name: apple
+              color: red
+          - eval_time: 5
+            operation: set
+            labels:
+              name: apple
+              color: red
+          - time: 5
+            eval_time: 1
+            values: 0-20
+            operation: inc
+            labels:
+              name: apple
+              color: green
+          - time: 5
+            eval_time: 1
+            values: 0-5
+            operation: dec
+            labels:
+              name: apple
+              color: green
+          - time: 5
+            eval_time: 1
+            value: 3
+            operation: inc
+            labels:
+              name: apple
+              color: yellow
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: prometheus-data-generator
+  namespace: nr-prometheus
+  labels:
+    app.kubernetes.io/name: prometheus-data-generator
+spec:
+  containers:
+    - name: prometheus-data-generator
+      image: littleangryclouds/prometheus-data-generator:0.2
+      env:
+        - name: PDG_CONFIG
+          value: /pdg/config.yaml
+      volumeMounts:
+        - name: prometheus-data-generator-config-vol
+          mountPath: /pdg/
+      ports:
+        - containerPort: 9000
+  volumes:
+    - name: prometheus-data-generator-config-vol
+      configMap:
+        name: prometheus-data-generator-config
+        items:
+          - key: config
+            path: config.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-data-generator
+  namespace: nr-prometheus
+  labels:
+    app.kubernetes.io/name: prometheus-data-generator
+spec:
+  ports:
+    - port: 9000
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: prometheus-data-generator
