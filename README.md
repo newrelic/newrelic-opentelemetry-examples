@@ -20,6 +20,7 @@ The [Getting Started Guides](./getting-started-guides/README.md) demonstrate how
 OpenTelemetry is a big ecosystem and everything doesn't fit into the goals of the [getting started guides](#getting-started-guides). These "other examples" demonstrate how other areas of OpenTelemetry fit in with New Relic.
 
 * Collector
+  * [Docker monitoring](./other-examples/collector/docker)
   * [Telemetry data processing](./other-examples/collector/nr-config)
   * [Host monitoring](./other-examples/collector/host-monitoring)
   * [Confluent cloud monitoring](./other-examples/collector/confluentcloud)
