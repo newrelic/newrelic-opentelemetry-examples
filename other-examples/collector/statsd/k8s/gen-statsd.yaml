@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gen-statsd
+  namespace: nr-statsd
+  labels:
+    app.kubernetes.io/name: gen-statsd
+spec:
+  containers:
+    - name: gen-statsd
+      image: circonus/gen-statsd:1.0.0
+      env:
+        - name: STATSD_HOST
+          value: $(COLLECTOR_SERVICE_HOST):$(COLLECTOR_SERVICE_PORT_STATSD)
+        - name: PROTOCOL
+          value: udp
+        - name: AGENTS
+          value: "1"
