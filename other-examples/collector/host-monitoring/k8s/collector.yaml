@@ -12,7 +12,8 @@ data:
     receivers:
       hostmetrics:
         root_path: /hostfs
-        collection_interval: 20s
+        # Default collection interval is 60s. Lower if you need finer granularity.
+        collection_interval: 60s
         scrapers:
           cpu:
             metrics:
