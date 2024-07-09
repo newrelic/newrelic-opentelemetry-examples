@@ -1,0 +1,108 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: loadbalancer-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  verbs:
+  - list
+  - watch
+  - get
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: loadbalancer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: loadbalancer-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: loadbalancer-role
+subjects:
+- kind: ServiceAccount
+  name: loadbalancer
+---
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otelcol-loadbalancer
+spec:
+  image: otel/opentelemetry-collector-contrib:0.103.1
+  serviceAccount: loadbalancer
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc: {}
+
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: 'otelcol-loadbalancer'
+              scrape_interval: 10s
+              static_configs:
+                - targets: ['0.0.0.0:8888']
+              metric_relabel_configs:
+                - source_labels: [__name__]
+                  regex: '.*grpc_io.*'
+                  action: drop
+
+    processors:
+      resource:
+        attributes:
+        - key: service.name
+          value: loadbalancer
+          action: update
+
+    exporters:
+      debug: {}
+      loadbalancing:
+        protocol:
+          otlp:
+            tls:
+              insecure: true
+        resolver:
+          k8s:
+            service: otelcol-sampling-collector-headless
+      otlp:
+        endpoint: "otlp.nr-data.net:4317"
+        tls:
+          insecure: false
+        headers:
+          api-key: ${NEW_RELIC_LICENSE_KEY}
+
+    service:
+      extensions: [ ]
+      pipelines:
+        traces:
+          receivers:  [ otlp ]
+          processors: [ ]
+          exporters:  [ loadbalancing, debug ]
+        logs:
+          receivers:  [ otlp ]
+          processors: [  ]
+          exporters:  [ loadbalancing, debug ]
+        metrics:
+          receivers:  [ otlp, prometheus ]
+          processors: [ ]
+          exporters:  [ otlp ]
+      telemetry:
+        metrics:
+          level: detailed
+          address: 0.0.0.0:8888
+
+  env:
+  - name: NEW_RELIC_LICENSE_KEY
+    valueFrom:
+      secretKeyRef:
+        name: newrelic-license-key
+        key: licensekey
+      

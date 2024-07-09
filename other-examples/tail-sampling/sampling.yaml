@@ -1,0 +1,115 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otelcol-sampling
+spec:
+  image: otel/opentelemetry-collector-contrib:0.103.1
+  replicas: 3
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc: {}
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: 'otelcol-sampler'
+              scrape_interval: 10s
+              static_configs:
+                - targets: ['0.0.0.0:8888']
+              metric_relabel_configs:
+                - source_labels: [__name__]
+                  regex: '.*grpc_io.*'
+                  action: drop
+
+    processors:
+      k8sattributes:
+        passthrough: true
+      tail_sampling:
+        decision_wait: 5s
+        num_traces: 50000
+        expected_new_traces_per_sec: 500
+        policies:
+          [
+            {
+              name: non-vip-policy,
+              type: and,
+              and: {
+                and_sub_policy: [
+                  {
+                    name: non-vip,
+                    type: string_attribute,
+                    string_attribute: { key: vip, values: ["false"] },
+                  },
+                  {
+                    # apply probabilistic sampling
+                    name: only-10-percent,
+                    type: probabilistic,
+                    probabilistic: { sampling_percentage: 10 },
+                  },
+                ]
+              },
+            },
+            {
+              name: vip-policy,
+              type: and,
+              and: {
+                and_sub_policy: [
+                  {
+                    name: vip,
+                    type: string_attribute,
+                    string_attribute: { key: vip, values: ["true"] },
+                  },
+                  {
+                    name: always-sample,
+                    type: always_sample
+                  },
+                ]
+              }
+            }
+          ]
+
+      # resource:
+      #   attributes:
+      #   - key: service.name
+      #     value: sampler
+      #     action: update
+
+    exporters:
+      debug: {}
+      otlp:
+        endpoint: "otlp.nr-data.net:4317"
+        tls:
+          insecure: false
+        headers:
+          api-key: ${NEW_RELIC_LICENSE_KEY}
+
+    service:
+      extensions: [ ]
+      pipelines:
+        traces:
+          receivers:  [ otlp ]
+          processors: [ tail_sampling ]
+          exporters:  [ otlp, debug ]
+        # logs:
+        #   receivers:  [ ]
+        #   processors: [  ]
+        #   exporters:  [ nop ]
+        metrics:
+          receivers:  [ otlp, prometheus ]
+          processors: [ ]
+          exporters:  [ otlp ]
+      telemetry:
+        metrics:
+          level: detailed
+          address: 0.0.0.0:8888
+        # resource:
+        #   "service.name": "otelcol-sampling"
+
+  env:
+  - name: NEW_RELIC_LICENSE_KEY
+    valueFrom:
+      secretKeyRef:
+        name: newrelic-license-key
+        key: licensekey
+  
