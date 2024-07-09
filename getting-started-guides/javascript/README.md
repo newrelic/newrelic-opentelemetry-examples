@@ -15,11 +15,14 @@ It demonstrates how to configure OpenTelemetry JavaScript to send data to New Re
    data to New Relic:
 
     ```shell
+    export OTEL_SERVICE_NAME=getting-started-nodejs
+    export OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
     export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net
     export OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>
     export OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
-    export OTEL_SERVICE_NAME=getting-started-nodejs
-    export OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
+    export OTEL_EXPORTER_OTLP_COMPRESSION=gzip
+    export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+    export OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=delta
     ```
 
     * If your account is based in the EU, set the endpoint to: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
