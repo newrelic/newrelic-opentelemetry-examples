@@ -89,20 +89,36 @@ kubectl create ns demo && kubectl create secret generic newrelic-license-key --f
 
 ### Install OpenTelemetry Collectors
 
+You'll be setting up a total of 4 OTel Collectors in this example.  The `loadbalancer` collector instance will use the [loadbalancing](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/loadbalancingexporter/README.md) exporter to ship spans to one of three `sampling` collector instances based on `trace.id` (the default `routing_key`).
+
+Run the following commands to install all collector instances:
 ```shell
 kubectl apply -f lb.yaml -n demo
 kubectl apply -f sampling.yaml -n demo
 ```
+
+You can validate that all are up and running by running `kubectl get pods -n demo`:
+
+```shell
+$ kubectl get pods -n demo
+NAME                                              READY   STATUS    RESTARTS   AGE
+demo-app-57cf4bdc99-57x2n                         2/2     Running   0          46h
+otelcol-loadbalancer-collector-7fdc8fd969-vsfq6   1/1     Running   0          32h
+otelcol-sampling-collector-6db8f8c5c7-9hz2d       1/1     Running   0          34m
+otelcol-sampling-collector-6db8f8c5c7-pr7b2       1/1     Running   0          34m
+otelcol-sampling-collector-6db8f8c5c7-shv69       1/1     Running   0          34m
+```
+
 
 ### Port forward
 
 You'll need to utilize port forwarding to open a port on your local machine to the OTel collector running in your cluster.  The following command will open up port 4317 on your localhost, which is what the `telemetrygen` tool uses by default.
 
 ```shell
-kubectl port-forward svc/otelcol-loadbalancer-collector -n demo 4317
+kubectl port-forward svc/otelcol-loadbalancer-collector -n demo 4317 2>&1 >/dev/null &
 ```
 
-Use `ctrl + c` to cancel out of the port forward session.
+To cancel out of the port forward session, enter the `fg` command to foreground it and then `ctrl + c` to cancel.
 
 ### Generate Traces
 
