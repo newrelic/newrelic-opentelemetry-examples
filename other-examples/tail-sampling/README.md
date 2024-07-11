@@ -1,6 +1,6 @@
 # Tail-Sampling with OpenTelemetry Collector
 
-This example demonstrates Tail Sampling with the [OpenTelemetry collector](https://opentelemetry.io/docs/collector/) by using the [Tail Sampling Processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/tailsamplingprocessor/README.md).  Traces are sampled based on the [defined sampling policy](https://linksomethinghere) and sent to New Relic via OTLP.
+This example demonstrates Tail Sampling with the [OpenTelemetry collector](https://opentelemetry.io/docs/collector/) by using the [Tail Sampling Processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/tailsamplingprocessor/README.md).  Traces are sampled based on the [defined sampling policy](https://github.com/bpschmitt/newrelic-opentelemetry-examples/blob/tail-sampling/other-examples/tail-sampling/sampling.yaml) and sent to New Relic via OTLP.
 
 
 ```mermaid
