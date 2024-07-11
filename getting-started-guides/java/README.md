@@ -16,15 +16,16 @@ It demonstrates how to configure OpenTelemetry Java to send data to New Relic.
    data to New Relic:
 
     ```shell
+    export OTEL_SERVICE_NAME=getting-started-java
+    export OTEL_EXPERIMENTAL_EXPORTER_OTLP_RETRY_ENABLED=true
+    export OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION=BASE2_EXPONENTIAL_BUCKET_HISTOGRAM
+    export OTEL_EXPERIMENTAL_RESOURCE_DISABLED_KEYS=process.command_args
     export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net
     export OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>
     export OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
-    export OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=DELTA
-    export OTEL_EXPERIMENTAL_EXPORTER_OTLP_RETRY_ENABLED=true
-    export OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION=BASE2_EXPONENTIAL_BUCKET_HISTOGRAM
     export OTEL_EXPORTER_OTLP_COMPRESSION=gzip
-    export OTEL_SERVICE_NAME=getting-started-java
-    export OTEL_EXPERIMENTAL_RESOURCE_DISABLED_KEYS=process.command_args
+    export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+    export OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=delta
     ```
 
     * If your account is based in the EU, set the endpoint to: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)

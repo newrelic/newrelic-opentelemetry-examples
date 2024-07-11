@@ -3,64 +3,84 @@ services:
     build: dotnet
     environment:
       - OTEL_SERVICE_NAME=getting-started-dotnet
+      # No need to set service.instance.id because otel dot net generates random UUID
+      #- OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
       - OTEL_EXPORTER_OTLP_ENDPOINT
       - OTEL_EXPORTER_OTLP_HEADERS
-      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
-      - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
+      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT
+      - OTEL_EXPORTER_OTLP_COMPRESSION
+      - OTEL_EXPORTER_OTLP_PROTOCOL
+      - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
     ports:
       - 8080
   go:
     build: go
     environment:
       - OTEL_SERVICE_NAME=getting-started-go
+      - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
       - OTEL_EXPORTER_OTLP_ENDPOINT
       - OTEL_EXPORTER_OTLP_HEADERS
-      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
-      - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
+      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT
+      - OTEL_EXPORTER_OTLP_COMPRESSION
+      - OTEL_EXPORTER_OTLP_PROTOCOL
+      - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
     ports:
       - 8080
   java:
     build: java
     environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT
-      - OTEL_EXPORTER_OTLP_HEADERS
-      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
-      - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=DELTA
+      - OTEL_SERVICE_NAME=getting-started-java
+      # No need to set service.instance.id because otel java agent generates random UUID
+      # - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
       - OTEL_EXPERIMENTAL_EXPORTER_OTLP_RETRY_ENABLED=true
       - OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION=BASE2_EXPONENTIAL_BUCKET_HISTOGRAM
-      - OTEL_EXPORTER_OTLP_COMPRESSION=gzip
-      - OTEL_SERVICE_NAME=getting-started-java
       - OTEL_EXPERIMENTAL_RESOURCE_DISABLED_KEYS=process.command_args
+      - OTEL_EXPORTER_OTLP_ENDPOINT
+      - OTEL_EXPORTER_OTLP_HEADERS
+      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT
+      - OTEL_EXPORTER_OTLP_COMPRESSION
+      - OTEL_EXPORTER_OTLP_PROTOCOL
+      - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
     ports:
       - 8080
   javascript:
     build: javascript
     environment:
       - OTEL_SERVICE_NAME=getting-started-javascript
+      - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
       - OTEL_EXPORTER_OTLP_ENDPOINT
       - OTEL_EXPORTER_OTLP_HEADERS
-      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
-      - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
+      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT
+      - OTEL_EXPORTER_OTLP_COMPRESSION
+      - OTEL_EXPORTER_OTLP_PROTOCOL
+      - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
     ports:
       - 8080
   python:
     build: python
     environment:
       - OTEL_SERVICE_NAME=getting-started-python
+      - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
       - OTEL_EXPORTER_OTLP_ENDPOINT
       - OTEL_EXPORTER_OTLP_HEADERS
-      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
-      - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
+      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT
+      - OTEL_EXPORTER_OTLP_COMPRESSION
+      - OTEL_EXPORTER_OTLP_PROTOCOL
+      - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
     ports:
       - 8080
   ruby:
     build: ruby
     environment:
       - OTEL_SERVICE_NAME=getting-started-ruby
+      - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
       - OTEL_EXPORTER_OTLP_ENDPOINT
       - OTEL_EXPORTER_OTLP_HEADERS
-      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
-      - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
+      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT
+      - OTEL_EXPORTER_OTLP_COMPRESSION
+      - OTEL_EXPORTER_OTLP_PROTOCOL
+      # Ruby doesn't support metrics yet
+      # - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
     ports:
       - 8080
   envoy:
