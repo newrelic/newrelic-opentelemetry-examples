@@ -42,28 +42,37 @@ spec:
       otlp:
         protocols:
           grpc: {}
-
+      
+      # Scrape OTel collector Prometheus metrics
       prometheus:
         config:
           scrape_configs:
             - job_name: 'otelcol-loadbalancer'
-              scrape_interval: 10s
+              scrape_interval: 15s
               static_configs:
                 - targets: ['0.0.0.0:8888']
-              metric_relabel_configs:
-                - source_labels: [__name__]
-                  regex: '.*grpc_io.*'
-                  action: drop
 
     processors:
-      resource:
-        attributes:
-        - key: service.name
-          value: loadbalancer
-          action: update
+      batch:
+        send_batch_size: 10000
+        timeout: 1s
+
+      resourcedetection:
+        detectors: [env]
+        timeout: 1s
+
+      # Resurrecting Prometheus job labels from service.name
+      transform/prom:
+        metric_statements:
+        - context: resource
+          statements:
+          - set(attributes["job"], attributes["service.name"])
+          - delete_key(attributes, "service.name")
 
     exporters:
+
       debug: {}
+
       loadbalancing:
         protocol:
           otlp:
@@ -72,6 +81,8 @@ spec:
         resolver:
           k8s:
             service: otelcol-sampling-collector-headless
+
+      # Export to New Relic's OTLP endpoint
       otlp:
         endpoint: "otlp.nr-data.net:4317"
         tls:
@@ -80,29 +91,40 @@ spec:
           api-key: ${NEW_RELIC_LICENSE_KEY}
 
     service:
+
       extensions: [ ]
+
       pipelines:
         traces:
           receivers:  [ otlp ]
-          processors: [ ]
-          exporters:  [ loadbalancing, debug ]
-        logs:
-          receivers:  [ otlp ]
-          processors: [  ]
+          processors: [ batch ]
           exporters:  [ loadbalancing, debug ]
         metrics:
           receivers:  [ otlp, prometheus ]
-          processors: [ ]
+          processors: [ resourcedetection, transform/prom, batch ]
           exporters:  [ otlp ]
       telemetry:
         metrics:
           level: detailed
           address: 0.0.0.0:8888
 
+  # Set up some ENV vars
   env:
   - name: NEW_RELIC_LICENSE_KEY
     valueFrom:
       secretKeyRef:
         name: newrelic-license-key
         key: licensekey
+  # Although we accept both cumulative and delta temporality metrics, New Relic is generally a delta metrics system, and we encourage users to configure your OTLP exporter to prefer delta temporality.
+  # https://docs.newrelic.com/docs/opentelemetry/best-practices/opentelemetry-best-practices-metrics/#aggregation-temporality
+  - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+    value: delta
+  - name: K8S_POD_NAME
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.name
+  - name: OTEL_RESOURCE_ATTRIBUTES
+    value: >-
+      k8s.pod.name=$(K8S_POD_NAME)
       
