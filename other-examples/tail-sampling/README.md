@@ -166,3 +166,6 @@ You can also validate that load balancing is working in your cluster by looking 
 
 ![k9s](./images/k9s.jpg)
 
+## Conclusion
+
+Congratulations!  You've successfully completed the OpenTelemetry tail sampling example.  Hopefully this helped to illustrate how valuable tail sampling can be and be sure to check out [the documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/tailsamplingprocessor/README.md) for more advanced tail sampling policy examples that you can enable in your own environment.
