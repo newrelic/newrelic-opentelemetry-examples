@@ -39,18 +39,19 @@ data:
             metrics:
               system.paging.utilization:
                 enabled: true
-          processes:
-          process:
-            metrics:
-              process.cpu.utilization:
-                enabled: true
-              process.cpu.time:
-                enabled: false
-            # Mute various errors reading process metrics running locally in docker.
-            # Delete for production deployments.
-            mute_process_exe_error: true
-            mute_process_user_error: true
-            mute_process_io_error: true
+          # Uncomment to enable process metrics, which can be noisy but valuable.
+          # processes:
+          # process:
+          #  metrics:
+          #    process.cpu.utilization:
+          #      enabled: true
+          #    process.cpu.time:
+          #      enabled: false
+          # Mute various errors reading process metrics running locally in docker.
+          # Delete for production deployments.
+          #   mute_process_exe_error: true
+          #   mute_process_user_error: true
+          #   mute_process_io_error: true
     
       filelog:
         include:
@@ -70,6 +71,15 @@ data:
     
     processors:
       batch:
+    
+      cumulativetodelta:
+    
+      transform:
+        metric_statements:
+          - context: metric
+            statements:
+              - set(description, "")
+              - set(unit, "")
     
       resourcedetection:
         detectors: ["env", "system"]
@@ -96,7 +106,7 @@ data:
       pipelines:
         metrics/host:
           receivers: [hostmetrics]
-          processors: [resourcedetection, resourcedetection/cloud, batch]
+          processors: [resourcedetection, resourcedetection/cloud, transform, cumulativetodelta, batch]
           exporters: [otlphttp]
         logs/host:
           receivers: [filelog]
