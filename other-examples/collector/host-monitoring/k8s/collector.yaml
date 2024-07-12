@@ -10,6 +10,7 @@ metadata:
 data:
   collector-config: |
     receivers:
+      # Keep configuration in sync with: https://github.com/newrelic/opentelemetry-collector-releases/blob/main/configs/nr-otel-collector-agent-linux.yaml
       hostmetrics:
         root_path: /hostfs
         # Default collection interval is 60s. Lower if you need finer granularity.
@@ -17,6 +18,8 @@ data:
         scrapers:
           cpu:
             metrics:
+              system.cpu.time:
+                enabled: false
               system.cpu.utilization:
                 enabled: true
           load:
@@ -24,7 +27,12 @@ data:
             metrics:
               system.memory.utilization:
                 enabled: true
-          disk:
+          paging:
+            metrics:
+              system.paging.utilization:
+                enabled: false
+              system.paging.faults:
+                enabled: false
           filesystem:
             metrics:
               system.filesystem.utilization:
@@ -34,11 +42,18 @@ data:
             exclude_mount_points:
               mount_points: ["/containers/services"]
               match_type: strict
-          network:
-          paging:
+          disk:
             metrics:
-              system.paging.utilization:
-                enabled: true
+              system.disk.merged:
+                enabled: false
+              system.disk.pending_operations:
+                enabled: false
+              system.disk.weighted_io_time:
+                enabled: false
+          network:
+            metrics:
+              system.network.connections:
+                enabled: false
           # Uncomment to enable process metrics, which can be noisy but valuable.
           # processes:
           # process:
@@ -72,6 +87,82 @@ data:
     processors:
       batch:
     
+      # group system.cpu metrics by cpu
+      metricstransform:
+        transforms:
+          - include: system.cpu.utilization
+            action: update
+            operations:
+              - action: aggregate_labels
+                label_set: [ state ]
+                aggregation_type: mean
+          - include: system.paging.operations
+            action: update
+            operations:
+              - action: aggregate_labels
+                label_set: [ direction ]
+                aggregation_type: sum
+    
+      # remove system.cpu metrics for states
+      filter/exclude_cpu_utilization:
+        metrics:
+          datapoint:
+            - 'metric.name == "system.cpu.utilization" and attributes["state"] == "interrupt"'
+            - 'metric.name == "system.cpu.utilization" and attributes["state"] == "nice"'
+            - 'metric.name == "system.cpu.utilization" and attributes["state"] == "softirq"'
+      filter/exclude_memory_utilization:
+        metrics:
+          datapoint:
+            - 'metric.name == "system.memory.utilization" and attributes["state"] == "slab_unreclaimable"'
+            - 'metric.name == "system.memory.utilization" and attributes["state"] == "inactive"'
+            - 'metric.name == "system.memory.utilization" and attributes["state"] == "cached"'
+            - 'metric.name == "system.memory.utilization" and attributes["state"] == "buffered"'
+            - 'metric.name == "system.memory.utilization" and attributes["state"] == "slab_reclaimable"'
+      filter/exclude_memory_usage:
+        metrics:
+          datapoint:
+            - 'metric.name == "system.memory.usage" and attributes["state"] == "slab_unreclaimable"'
+            - 'metric.name == "system.memory.usage" and attributes["state"] == "inactive"'
+      filter/exclude_filesystem_utilization:
+        metrics:
+          datapoint:
+            - 'metric.name == "system.filesystem.utilization" and attributes["type"] == "squashfs"'
+      filter/exclude_filesystem_usage:
+        metrics:
+          datapoint:
+            - 'metric.name == "system.filesystem.usage" and attributes["type"] == "squashfs"'
+            - 'metric.name == "system.filesystem.usage" and attributes["state"] == "reserved"'
+      filter/exclude_filesystem_inodes_usage:
+        metrics:
+          datapoint:
+            - 'metric.name == "system.filesystem.inodes.usage" and attributes["type"] == "squashfs"'
+            - 'metric.name == "system.filesystem.inodes.usage" and attributes["state"] == "reserved"'
+      filter/exclude_system_disk:
+        metrics:
+          datapoint:
+            - 'metric.name == "system.disk.operations" and IsMatch(attributes["device"], "^loop.*") == true'
+            - 'metric.name == "system.disk.merged" and IsMatch(attributes["device"], "^loop.*") == true'
+            - 'metric.name == "system.disk.io" and IsMatch(attributes["device"], "^loop.*") == true'
+            - 'metric.name == "system.disk.io_time" and IsMatch(attributes["device"], "^loop.*") == true'
+            - 'metric.name == "system.disk.operation_time" and IsMatch(attributes["device"], "^loop.*") == true'
+      filter/exclude_system_paging:
+        metrics:
+          datapoint:
+            - 'metric.name == "system.paging.usage" and attributes["state"] == "cached"'
+            - 'metric.name == "system.paging.operations" and attributes["type"] == "cached"'
+      filter/exclude_network:
+        metrics:
+          datapoint:
+            - 'IsMatch(metric.name, "^system.network.*") == true and attributes["device"] == "lo"'
+      attributes/exclude_system_paging:
+        include:
+          match_type: strict
+          metric_names:
+            - system.paging.operations
+        actions:
+          - key: type
+            action: delete
+    
       cumulativetodelta:
     
       transform:
@@ -92,7 +183,10 @@ data:
       resourcedetection/cloud:
         detectors: ["gcp", "ec2", "azure"]
         timeout: 2s
-        override: false
+        ec2:
+          resource_attributes:
+            host.name:
+              enabled: false
 
     exporters:
       logging:
@@ -106,7 +200,22 @@ data:
       pipelines:
         metrics/host:
           receivers: [hostmetrics]
-          processors: [resourcedetection, resourcedetection/cloud, transform, cumulativetodelta, batch]
+          processors:
+            - metricstransform
+            - filter/exclude_cpu_utilization
+            - filter/exclude_memory_utilization
+            - filter/exclude_memory_usage
+            - filter/exclude_filesystem_utilization
+            - filter/exclude_filesystem_usage
+            - filter/exclude_filesystem_inodes_usage
+            - filter/exclude_system_disk
+            - filter/exclude_network
+            - attributes/exclude_system_paging
+            - transform
+            - resourcedetection
+            - resourcedetection/cloud 
+            - cumulativetodelta
+            - batch
           exporters: [otlphttp]
         logs/host:
           receivers: [filelog]
