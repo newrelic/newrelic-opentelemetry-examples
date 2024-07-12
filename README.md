@@ -88,9 +88,9 @@ opensource@newrelic.com.
 This repository has a few areas of emphasis, each with their own criteria for
 additions:
 
-* [OpenTelemetry APM monitoring](#opentelemetry-apm-monitoring-criteria)
-* [OpenTelemetry infrastructure monitoring](#opentelemetry-infrastructure-monitoring-criteria)
-* [Other examples](#other-examples-criteria)
+* [OpenTelemetry APM monitoring criteria](#opentelemetry-apm-monitoring-criteria)
+* [OpenTelemetry infrastructure monitoring criteria](#opentelemetry-infrastructure-monitoring-criteria)
+* [OpenTelemetry other examples criteria](#opentelemetry-other-examples-criteria)
 
 We do not accept examples demonstrating workflows which are not related to New
 Relic. These should be contributed upstream to the appropriate OpenTelemetry
@@ -133,7 +133,7 @@ with the collector, we only accept examples which meet the following criteria:
   some other arrangement. If the example integrates with a vendor, credentials
   must be supplied so the workflow can be verified on an ongoing basis.
 
-### Other examples criteria
+### OpenTelemetry other examples criteria
 
 These are examples that demonstrate important integrations which do not fall
 into the core areas of emphasis, e.g. for historical reasons.
