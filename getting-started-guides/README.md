@@ -4,9 +4,10 @@ The examples within this directory demonstrate how to send data to New Relic
 using OpenTelemetry.
 
 Each language directory illustrates how to add OpenTelemetry instrumentation to
-a simple web application and configure OpenTelemetry for an optimal New Relic
-experience. This includes exporting over OTLP, limiting attributes according to
-New Relic ingest limits, and more.
+a simple web application (see [demo app spec](./demo-app-specification.md) for
+details) and configure OpenTelemetry for an optimal New Relic experience. This
+includes exporting over OTLP, limiting attributes according to New Relic ingest
+limits, and more.
 
 To get started quickly, you can use Docker Compose to spin up all the example
 applications.
