@@ -47,8 +47,10 @@ OpenTelemetry and New Relic.
 ## OpenTelemetry other examples
 
 OpenTelemetry is a big ecosystem and everything doesn't fit into the goals of
-the [getting started guides](#getting-started-guides). These "other examples"
-demonstrate how other areas of OpenTelemetry fit in with New Relic.
+the [OpenTelemetry APM monitoring](#opentelemetry-apm-monitoring)
+or [OpenTelemetry infrastructure monitoring](#opentelemetry-infrastructure-monitoring).
+These "other examples" demonstrate how other areas of OpenTelemetry fit in with
+New Relic.
 
 * Collector
   * [Collector for data processing](./other-examples/collector/nr-config)
