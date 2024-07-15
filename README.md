@@ -74,6 +74,11 @@ demonstrate how other areas of OpenTelemetry fit in with New Relic.
 
 We encourage your contributions to improve `newrelic-opentelemetry-examples`!
 
+For example additions, create an issue in this repo and describe the proposed
+example. Follow the issue workflow and make sure the issue is accepted before
+creating a PR. If an issue has not been accepted then do create a PR since it
+will be rejected.
+
 Trivial changes, wording changes, spelling/grammar
 corrections, etc. can be made directly via pull requests and do not require
 an associated issue.
