@@ -2,11 +2,21 @@
 
 # New Relic OpenTelemetry Examples
 
-This project contains examples illustrating usage of OpenTelemetry with New Relic. The examples aim to demonstrate the most common configurations we expect users to encounter, but isn't an exhaustive set of the ways you can use OpenTelemetry with New Relic. See [getting started guides](#getting-started-guides) and [other examples](#other-examples) for an index of available examples.
+This project contains examples illustrating usage of OpenTelemetry with New
+Relic. The examples aim to demonstrate the most common configurations we expect
+users to encounter, but isn't an exhaustive set of the ways you can use
+OpenTelemetry with New Relic.
 
-## Getting Started Guides
+See [OpenTelemetry APM monitoring](#opentelemetry-apm-monitoring), [OpenTelemetry infrastructure monitoring](#opentelemetry-infrastructure-monitoring)
+and [OpenTelemetry other examples](#opentelemetry-other-examples) for an index
+of available examples.
 
-The [Getting Started Guides](./getting-started-guides/README.md) demonstrate how to get started with OpenTelemetry and New Relic. Each of the languages listed illustrates how to add OpenTelemetry instrumentation to a simple web application, and configure OpenTelemetry to export data to New Relic.
+## OpenTelemetry APM monitoring
+
+The [getting started guides](./getting-started-guides/README.md) demonstrate APM
+monitoring with OpenTelemetry and New Relic. Each of the languages listed
+illustrates how to add OpenTelemetry instrumentation to a simple web
+application, and configure OpenTelemetry to export data to New Relic.
 
 * [.NET](./getting-started-guides/dotnet)
 * [Go](./getting-started-guides/go)
@@ -15,22 +25,35 @@ The [Getting Started Guides](./getting-started-guides/README.md) demonstrate how
 * [Python](./getting-started-guides/python)
 * [Ruby](./getting-started-guides/ruby)
 
-## Other Examples
+See [OpenTelemetry APM monitoring](https://docs.newrelic.com/docs/opentelemetry/get-started/apm-monitoring/opentelemetry-apm-intro/)
+for more information.
 
-OpenTelemetry is a big ecosystem and everything doesn't fit into the goals of the [getting started guides](#getting-started-guides). These "other examples" demonstrate how other areas of OpenTelemetry fit in with New Relic.
+## OpenTelemetry infrastructure monitoring
 
-* [Collector for data processing](./other-examples/collector/nr-config)
-* Collector for infrastructure monitoring
-  * [Confluent Cloud Kafka monitoring](./other-examples/collector/confluentcloud)
-  * [Docker monitoring](./other-examples/collector/docker)
-  * [HCP Consul monitoring](./other-examples/collector/hcp-consul)
-  * [HiveMQ monitoring](./other-examples/collector/hivemq)
-  * [Host monitoring](./other-examples/collector/host-monitoring)
-  * [Prometheus monitoring](./other-examples/collector/prometheus)
-  * [Redis monitoring](./other-examples/collector/redis)
-  * [Singlestore monitoring](./other-examples/collector/singlestore)
-  * [Squid cache manager monitoring](./other-examples/collector/squid)
-  * [StatsD monitoring](./other-examples/collector/statsd)
+These examples demonstrate how to monitor various infrastructure components with
+OpenTelemetry and New Relic.
+
+* [Monitor Confluent Cloud Kafka with Collector](./other-examples/collector/confluentcloud)
+* [Monitor Docker with Collector](./other-examples/collector/docker)
+* [Monitor HCP Consul with Collector](./other-examples/collector/hcp-consul)
+* [Monitor HiveMQ with Collector](./other-examples/collector/hivemq)
+* [Monitor Hosts with Collector](./other-examples/collector/host-monitoring)
+* [Monitor Prometheus target with Collector](./other-examples/collector/prometheus)
+* [Monitor Redis with Collector](./other-examples/collector/redis)
+* [Monitor Singlestore with Collector](./other-examples/collector/singlestore)
+* [Monitor Squid cache manager with Collector](./other-examples/collector/squid)
+* [Monitor StatsD with Collector](./other-examples/collector/statsd)
+
+## OpenTelemetry other examples
+
+OpenTelemetry is a big ecosystem and everything doesn't fit into the goals of
+the [OpenTelemetry APM monitoring](#opentelemetry-apm-monitoring)
+or [OpenTelemetry infrastructure monitoring](#opentelemetry-infrastructure-monitoring).
+These "other examples" demonstrate how other areas of OpenTelemetry fit in with
+New Relic.
+
+* Collector
+  * [Collector for data processing](./other-examples/collector/nr-config)
 * Java
   * [OpenTelemetry Agent New Relic Config](./other-examples/java/agent-nr-config)
   * [Micrometer Shim with OTLP Export](./other-examples/java/micrometer-shim)
@@ -53,32 +76,10 @@ OpenTelemetry is a big ecosystem and everything doesn't fit into the goals of th
 
 We encourage your contributions to improve `newrelic-opentelemetry-examples`!
 
-Generally, we want to focus on the
-[getting started guides](#getting-started-guides)
-which all have a strict uniform structure. We're open to additional examples
-being added which have a volunteer [codeowner](#codeowners).
-
-We're more selective about additions or substantial changes to
-[other examples](#other-examples).
-
-We use the following criteria to evaluate additions:
-
-* Does the example demonstrate a very popular use case or recurring pain point?
-* Has someone has volunteered to be a [codeowner](#codeowners)?
-* Is there documentation - either in the readme or
-  [docs.newrelic.com](https://docs.newrelic.com/) - which describes how to use
-  the data produced by the example in New Relic?
-* Is there continuous integration (i.e.
-  [github action](.github/workflows/pull_request.yml)) ensuring that the
-  example code functions?
-
-If the answer is yes to all those questions, please follow this process:
-
-* Create an issue in this repo and describe the proposed example.
-* Follow the issue workflow and make sure the issue is accepted before creating
-  a PR. If an issue has not been accepted then do not create a PR since it will
-  be rejected.
-* Once the issue is accepted a PR can be created and we will review it.
+For example additions, create an issue in this repo and describe the proposed
+example. Follow the issue workflow and make sure the issue is accepted before
+creating a PR. If an issue has not been accepted then do create a PR since it
+will be rejected.
 
 Trivial changes, wording changes, spelling/grammar
 corrections, etc. can be made directly via pull requests and do not require
@@ -86,35 +87,105 @@ an associated issue.
 
 Keep in mind that when you submit your pull request, you'll need to sign the
 CLA via the click-through using CLA-Assistant. You only have to sign the CLA
-one time per project.
-
-If you have any questions, or to execute our corporate CLA (which is required
-if your contribution is on behalf of a company), drop us an email at
+one time per project. If you have any questions, or to execute our corporate
+CLA (which is required if your contribution is on behalf of a company), drop us
+an email at
 opensource@newrelic.com.
+
+This repository has a few areas of emphasis, each with their own criteria for
+additions:
+
+* [OpenTelemetry APM monitoring criteria](#opentelemetry-apm-monitoring-criteria)
+* [OpenTelemetry infrastructure monitoring criteria](#opentelemetry-infrastructure-monitoring-criteria)
+* [OpenTelemetry other examples criteria](#opentelemetry-other-examples-criteria)
+
+We do not accept examples demonstrating workflows which are not related to New
+Relic. These should be contributed upstream to the appropriate OpenTelemetry
+project.
+
+### OpenTelemetry APM monitoring criteria
+
+Examples demonstrating APM monitoring based on OpenTelemetry instrumentation
+based in [getting started guides](./getting-started-guides), and supporting
+this [documentation](https://docs.newrelic.com/docs/opentelemetry/get-started/apm-monitoring/opentelemetry-apm-intro/).
+
+We are open to extending the guides to other languages in the OpenTelemetry
+ecosystem as long as they follow the uniform application structure defined in
+the [demo app specification](./getting-started-guides/demo-app-specification.md).
+
+### OpenTelemetry infrastructure monitoring criteria
+
+Examples demonstrating infrastructure monitoring with the OpenTelemetry
+collector based in [other-examples/collector](./other-examples/collector), and
+supporting
+this [documentation](https://docs.newrelic.com/docs/opentelemetry/get-started/collector-infra-monitoring/opentelemetry-collector-infra-intro/).
+
+While there are many different infrastructure components which can be monitored
+with the collector, we only accept examples which meet the following criteria:
+
+* Examples must follow a common format.
+  See [host monitoring](./other-examples/collector/host-monitoring) for an
+  example.
+  * Demonstrate configuration in kubernetes.
+  * Include a `README.md` explaining what the example does, how to run, and how
+    to view data in New Relic.
+  * Generate load, for example by running an instance of whatever infrastructure
+    component is being monitored.
+* Examples produce data with a corresponding workflow in New Relic. This might
+  be a dashboard the user installs or a curated experience and participation in
+  entity synthesis.
+* Contributors must work with the maintainers to ensure the example can be
+  maintained going forward. This may include some automated verification,
+  volunteering to maintain it going forward as a [codeowner](#codeowners), or
+  some other arrangement. If the example integrates with a vendor, credentials
+  must be supplied so the workflow can be verified on an ongoing basis.
+
+### OpenTelemetry other examples criteria
+
+These are examples that demonstrate important integrations which do not fall
+into the core areas of emphasis, e.g. for historical reasons.
+
+If you wish to contribute an example like this, please reach out to us or open
+an issue. To avoid unnecessary work, please make sure the issue is accepted
+before opening a PR.
 
 ### Codeowners
 
-Codeowners for each example are defined in [codeowner](.github/CODEOWNERS). Each codeowner is responsible for:
+Codeowners for each example are defined in [codeowner](.github/CODEOWNERS). Each
+codeowner is responsible for:
 
 * Keeping dependencies (relatively) up to date.
 * Responding to issues related to the example.
 
-Codeowners are added as collaborators individually and given "write" permissions to the repository.
+Codeowners are added as collaborators individually and given "write" permissions
+to the repository.
 
 Examples without a codeowner may be deleted.
 
 ## Vulnerabilities
 
-As noted in our [security policy](https://github.com/newrelic/newrelic-opentelemetry-examples/security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
+As noted in
+our [security policy](https://github.com/newrelic/newrelic-opentelemetry-examples/security/policy),
+New Relic is committed to the privacy and security of our customers and their
+data. We believe that providing coordinated disclosure by security researchers
+and engaging with the security community are important means to achieve our
+security goals.
 
-If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through [HackerOne](https://hackerone.com/newrelic).
+If you believe you have found a security vulnerability in this project or any of
+New Relic's products or websites, we welcome and greatly appreciate you
+reporting it to New Relic through [HackerOne](https://hackerone.com/newrelic).
 
-If you would like to contribute to this project, review [these guidelines](./CONTRIBUTING.md).
+If you would like to contribute to this project,
+review [these guidelines](./CONTRIBUTING.md).
 
-To all contributors, we thank you!  Without your contribution, this project would not be what it is today.
+To all contributors, we thank you!  Without your contribution, this project
+would not be what it is today.
 
 ## License
 
-`newrelic-opentelemetry-examples` is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
+`newrelic-opentelemetry-examples` is licensed under
+the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
 
-`newrelic-opentelemetry-examples` also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in the third-party notices document.
+`newrelic-opentelemetry-examples` also uses source code from third-party
+libraries. You can find full details on which libraries are used and the terms
+under which they are licensed in the third-party notices document.
