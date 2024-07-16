@@ -36,6 +36,8 @@ dependencies {
 
   implementation "com.newrelic.opentelemetry:opentelemetry-common:3.22.0"
 
+  implementation "io.opentelemetry:opentelemetry-exporter-logging-otlp"
+
   // Add OpenTelemetry java agent to the "agent" configuration we previously defined
   agent("com.newrelic.agent.java:newrelic-agent:8.12.0")
 }
