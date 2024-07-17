@@ -34,7 +34,7 @@ dependencies {
   implementation("io.opentelemetry:opentelemetry-api:1.40.0")
 
   // Add OpenTelemetry java agent to the "agent" configuration we previously defined
-  agent("io.opentelemetry.javaagent:opentelemetry-javaagent:2.5.0")
+  agent("io.opentelemetry.javaagent:opentelemetry-javaagent:2.6.0")
 }
 
 tasks.register("copyAgent", Copy) {
