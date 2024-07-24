@@ -12,10 +12,10 @@ bootRun {
 dependencies {
   implementation 'io.opentelemetry:opentelemetry-api'
   implementation 'io.opentelemetry:opentelemetry-sdk'
+  implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
 
   //alpha modules
   implementation 'io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5'
-  implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
 
   //spring modules
   implementation platform(SpringBootPlugin.BOM_COORDINATES)
