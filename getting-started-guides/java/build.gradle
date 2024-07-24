@@ -27,14 +27,18 @@ configurations {
   agent
 }
 
+def otelInstrumentationVersion = "2.6.0-alpha";
+
 dependencies {
   implementation platform(SpringBootPlugin.BOM_COORDINATES)
   implementation 'org.springframework.boot:spring-boot-starter-web'
 
-  implementation("io.opentelemetry:opentelemetry-api:1.40.0")
+  implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationVersion}")
+  implementation("io.opentelemetry:opentelemetry-api")
 
   // Add OpenTelemetry java agent to the "agent" configuration we previously defined
-  agent("io.opentelemetry.javaagent:opentelemetry-javaagent:2.6.0")
+  agent(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationVersion}"))
+  agent("io.opentelemetry.javaagent:opentelemetry-javaagent")
 }
 
 tasks.register("copyAgent", Copy) {

@@ -16,7 +16,8 @@ configurations {
 dependencies {
   implementation 'io.opentelemetry:opentelemetry-api'
 
-  agent("io.opentelemetry.javaagent:opentelemetry-javaagent:2.6.0")
+  agent(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${project.property('otelInstrumentationVersion')}"))
+  agent("io.opentelemetry.javaagent:opentelemetry-javaagent")
 
   implementation platform(SpringBootPlugin.BOM_COORDINATES)
   implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -41,9 +42,6 @@ bootRun {
   def extensionPath = project(":agent-nr-config:config-extension").buildDir.toString() + "/libs/config-extension.jar"
 
   def agentPath = project.buildDir.toString() + "/agent/opentelemetry-javaagent.jar"
-
-  println(agentPath)
-  println(extensionPath)
 
   jvmArgs = [
       // Set the opentelemetry-java-instrumentation agent as the javaagent
