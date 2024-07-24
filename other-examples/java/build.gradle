@@ -30,7 +30,7 @@ subprojects {
 
     dependencies {
       implementation platform("io.opentelemetry:opentelemetry-bom-alpha:1.40.0-alpha")
-      implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.5.0-alpha")
+      implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.6.0-alpha")
     }
   }
 }
