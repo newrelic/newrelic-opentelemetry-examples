@@ -54,3 +54,4 @@ service:
       receivers: [docker_stats]
       processors: [resourcedetection, batch]
       exporters: [otlphttp]
+
