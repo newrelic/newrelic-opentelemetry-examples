@@ -40,7 +40,7 @@ processors:
   batch:
 
   resourcedetection:
-    detectors: ["env", "system" "gcp", "ec2", "azure"]
+    detectors: [env, system, gcp, ec2, azure]
 
 exporters:
   otlphttp:
@@ -54,3 +54,4 @@ service:
       receivers: [docker_stats]
       processors: [resourcedetection, batch]
       exporters: [otlphttp]
+
