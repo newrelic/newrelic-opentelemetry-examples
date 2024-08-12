@@ -17,18 +17,35 @@ struct FibonacciRequest {
 
 #[derive(Serialize)]
 struct FibonacciResult {
+    #[serde(skip_serializing_if = "is_zero")]
+    #[serde(default)]
     n: i64,
-    result: i64
+    #[serde(skip_serializing_if = "is_zero")]
+    #[serde(default)]
+    result: i64,
+    #[serde(skip_serializing_if = "is_empty")]
+    #[serde(default)]
+    message: String,
+}
+
+fn is_zero(num: &i64) -> bool {
+    *num == 0
+}
+
+fn is_empty(str: &String) -> bool {
+    str.is_empty()
 }
 
 async fn fibonacci(req: web::Query<FibonacciRequest>) -> web::Json<FibonacciResult> {
-    web::Json(FibonacciResult {
-        n: req.n,
-        result: compute_fibonacci(req.n)
-    })
+    let result_or_error = compute_fibonacci(req.n);
+
+    match result_or_error {
+        Ok(result) => web::Json(FibonacciResult { n: req.n, result: result, message: String::new()}),
+        Err(error) => web::Json(FibonacciResult { n: 0, result: 0, message: format!("{}", error)}),
+    }
 }
 
-fn compute_fibonacci(n: i64) -> i64 {
+fn compute_fibonacci(n: i64) -> Result<i64, Box<dyn std::error::Error>> {
     let tracer = global::tracer("fibonacci_server");
 
     let mut span = tracer
@@ -38,9 +55,10 @@ fn compute_fibonacci(n: i64) -> i64 {
     span.set_attribute(KeyValue::new("fibonacci.n", n));
 
     if n < 1 || n > 90 {
-        let err = Err("n must be between 1 and 90");
-        span.set_status(Status::error("n must be between 1 and 90"));
-        span.record_error(err.unwrap());
+        let err_msg = "n must be between 1 and 90";
+        span.set_status(Status::error(err_msg));
+        // span.record_error(err);
+        return Err(Box::from(err_msg));
     }
 
     let mut result: i64 = 1;
@@ -57,7 +75,7 @@ fn compute_fibonacci(n: i64) -> i64 {
         }
     }
     span.set_attribute(KeyValue::new("fibonacci.result", result));
-    result
+    Ok(result)
 }
 
 #[actix_web::main]
