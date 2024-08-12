@@ -6,6 +6,8 @@ build/
 .gradle/
 .DS_STORE
 
+getting-started-guides/rust/target
+
 # Ignore .NET build output
 [Bb]in/
 [Oo]bj/
