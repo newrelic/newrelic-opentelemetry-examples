@@ -30,6 +30,8 @@ static_resources:
                           route: { cluster: python, prefix_rewrite: "/fibonacci" }
                         - match: { prefix: "/ruby/fibonacci" }
                           route: { cluster: ruby, prefix_rewrite: "/fibonacci" }
+                        - match: { prefix: "/rust/fibonacci" }
+                          route: { cluster: rust, prefix_rewrite: "/fibonacci" }
                 http_filters:
                   - name: envoy.filters.http.router
                     typed_config:
@@ -107,4 +109,16 @@ static_resources:
                   address:
                     socket_address:
                       address: ruby
+                      port_value: 8080
+    - name: rust
+      type: STRICT_DNS
+      lb_policy: ROUND_ROBIN
+      load_assignment:
+        cluster_name: rust
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: rust
                       port_value: 8080

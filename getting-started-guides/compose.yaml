@@ -83,6 +83,19 @@ services:
       # - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
     ports:
       - 8080
+  rust:
+    build: rust
+    environment:
+      - OTEL_SERVICE_NAME=getting-started-rust
+      - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
+      - OTEL_EXPORTER_OTLP_ENDPOINT
+      - OTEL_EXPORTER_OTLP_HEADERS
+      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT
+      - OTEL_EXPORTER_OTLP_COMPRESSION
+      - OTEL_EXPORTER_OTLP_PROTOCOL
+      - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+    ports:
+      - 8080
   envoy:
     image: envoyproxy/envoy:v1.29.4
     ports:
@@ -97,6 +110,8 @@ services:
     depends_on:
       - dotnet
       - go
+      - java
       - javascript
       - python
       - ruby
+      - rust

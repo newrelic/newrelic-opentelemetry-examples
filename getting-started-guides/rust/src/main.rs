@@ -6,7 +6,7 @@ use opentelemetry::{global, KeyValue};
 use opentelemetry::trace::{Span, Status, Tracer};
 use opentelemetry_sdk::runtime;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
-use opentelemetry_sdk::resource::{Resource, ResourceDetector, TelemetryResourceDetector};
+use opentelemetry_sdk::resource::{EnvResourceDetector, ResourceDetector, SdkProvidedResourceDetector, TelemetryResourceDetector};
 use opentelemetry_sdk::trace::Config;
 use serde::{Serialize, Deserialize};
 
@@ -82,13 +82,12 @@ fn compute_fibonacci(n: i64) -> Result<i64, Box<dyn std::error::Error>> {
 async fn main() -> std::io::Result<()> {
     global::set_text_map_propagator(TraceContextPropagator::new());
 
+    let sdk_provided_resource = SdkProvidedResourceDetector.detect(Duration::from_secs(0));
+    let env_resource = EnvResourceDetector::new().detect(Duration::from_secs(0));
     let telemetry_resource = TelemetryResourceDetector.detect(Duration::from_secs(0));
-    let service_name_resource = Resource::new(vec![KeyValue::new(
-        "service.name",
-        "getting-started-rust"
-    )]);
-
-    let resource = service_name_resource.merge(&telemetry_resource);
+    let resource = sdk_provided_resource
+        .merge(&env_resource)
+        .merge(&telemetry_resource);
 
     let _tracer = opentelemetry_otlp::new_pipeline()
         .tracing()
@@ -102,7 +101,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(RequestTracing::new())
             .route("/fibonacci", web::get().to(fibonacci))
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("0.0.0.0", 8080))?
     .run()
     .await?;
 
