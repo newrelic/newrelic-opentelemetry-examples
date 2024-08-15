@@ -89,12 +89,15 @@ async fn main() -> std::io::Result<()> {
         .merge(&env_resource)
         .merge(&telemetry_resource);
 
-    let _tracer = opentelemetry_otlp::new_pipeline()
+    let tracer_provider = opentelemetry_otlp::new_pipeline()
         .tracing()
-        .with_exporter(opentelemetry_otlp::new_exporter().tonic())
+        .with_exporter(opentelemetry_otlp::new_exporter().tonic()
+            .with_tls_config(tonic::transport::ClientTlsConfig::new().with_native_roots()))
         .with_trace_config(Config::default().with_resource(resource))
         .install_batch(runtime::Tokio)
         .expect("failed to initialize the trace pipeline");
+
+    global::set_tracer_provider(tracer_provider);
 
     HttpServer::new(|| {
         App::new()
