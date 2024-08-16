@@ -27,7 +27,7 @@ configurations {
   agent
 }
 
-def otelInstrumentationVersion = "2.6.0-alpha";
+def otelInstrumentationVersion = "2.7.0-alpha";
 
 dependencies {
   implementation platform(SpringBootPlugin.BOM_COORDINATES)
