@@ -47,7 +47,7 @@ public class Application {
                 .registerMetricReader(
                     PeriodicMetricReader.builder(
                             OtlpHttpMetricExporter.builder()
-                                .setEndpoint("https://otlp.nr-data.net")
+                                .setEndpoint("https://otlp.nr-data.net/v1/metrics")
                                 .addHeader(
                                     "api-key",
                                     Optional.ofNullable(System.getenv("NEW_RELIC_LICENSE_KEY"))
