@@ -11,6 +11,7 @@ getting-started-guides/rust/target
 # Ignore .NET build output
 [Bb]in/
 [Oo]bj/
+[Ll]ogs/
 
 # Python
 venv
