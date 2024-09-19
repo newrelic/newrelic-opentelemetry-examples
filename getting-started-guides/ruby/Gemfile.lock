@@ -3,9 +3,9 @@ GEM
   specs:
     daemons (1.4.1)
     eventmachine (1.2.7)
-    google-protobuf (3.23.3-arm64-darwin)
-    google-protobuf (3.23.3-x86_64-darwin)
-    google-protobuf (3.23.3-x86_64-linux)
+    google-protobuf (3.25.5-arm64-darwin)
+    google-protobuf (3.25.5-x86_64-darwin)
+    google-protobuf (3.25.5-x86_64-linux)
     googleapis-common-protos-types (1.6.0)
       google-protobuf (~> 3.14)
     mustermann (3.0.0)
