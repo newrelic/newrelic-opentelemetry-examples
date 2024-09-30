@@ -1,10 +1,10 @@
 use std::time::Duration;
 
 use actix_web::{web, App, HttpServer};
-use actix_web_opentelemetry::RequestTracing;
+use actix_web_opentelemetry::{RequestMetrics, RequestTracing};
 use opentelemetry::{global, KeyValue};
 use opentelemetry::trace::{Span, Status, Tracer};
-use opentelemetry_sdk::runtime;
+use opentelemetry_sdk::{runtime, Resource};
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::resource::{EnvResourceDetector, ResourceDetector, SdkProvidedResourceDetector, TelemetryResourceDetector};
 use opentelemetry_sdk::trace::Config;
@@ -57,7 +57,10 @@ fn compute_fibonacci(n: i64) -> Result<i64, Box<dyn std::error::Error>> {
     if n < 1 || n > 90 {
         let err_msg = "n must be between 1 and 90";
         span.set_status(Status::error(err_msg));
+
+        // TODO: Figure out how to record the error
         // span.record_error(err);
+
         return Err(Box::from(err_msg));
     }
 
@@ -78,30 +81,46 @@ fn compute_fibonacci(n: i64) -> Result<i64, Box<dyn std::error::Error>> {
     Ok(result)
 }
 
+fn create_resource() -> Resource {
+    let sdk_provided_resource = SdkProvidedResourceDetector.detect(Duration::from_secs(0));
+    let env_resource = EnvResourceDetector::new().detect(Duration::from_secs(0));
+    let telemetry_resource = TelemetryResourceDetector.detect(Duration::from_secs(0));
+    sdk_provided_resource
+        .merge(&env_resource)
+        .merge(&telemetry_resource)
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     global::set_text_map_propagator(TraceContextPropagator::new());
 
-    let sdk_provided_resource = SdkProvidedResourceDetector.detect(Duration::from_secs(0));
-    let env_resource = EnvResourceDetector::new().detect(Duration::from_secs(0));
-    let telemetry_resource = TelemetryResourceDetector.detect(Duration::from_secs(0));
-    let resource = sdk_provided_resource
-        .merge(&env_resource)
-        .merge(&telemetry_resource);
+    
 
     let tracer_provider = opentelemetry_otlp::new_pipeline()
         .tracing()
         .with_exporter(opentelemetry_otlp::new_exporter().tonic()
             .with_tls_config(tonic::transport::ClientTlsConfig::new().with_native_roots()))
-        .with_trace_config(Config::default().with_resource(resource))
+        .with_trace_config(Config::default().with_resource(create_resource()))
         .install_batch(runtime::TokioCurrentThread)
         .expect("failed to initialize the trace pipeline");
 
     global::set_tracer_provider(tracer_provider);
 
+    let meter_provider = opentelemetry_otlp::new_pipeline()
+        .metrics(runtime::TokioCurrentThread)
+        .with_exporter(opentelemetry_otlp::new_exporter().tonic()
+            .with_tls_config(tonic::transport::ClientTlsConfig::new().with_native_roots()))
+        .with_resource(create_resource())
+        .with_delta_temporality()
+        .build()
+        .expect("failed to initialize the metrics pipeline");
+
+    global::set_meter_provider(meter_provider);
+
     HttpServer::new(|| {
         App::new()
             .wrap(RequestTracing::new())
+            .wrap(RequestMetrics::default())
             .route("/fibonacci", web::get().to(fibonacci))
     })
     .bind(("0.0.0.0", 8080))?
@@ -109,6 +128,9 @@ async fn main() -> std::io::Result<()> {
     .await?;
 
     global::shutdown_tracer_provider();
+    
+    // TODO: Figure out how to shutdown the meter provider cleanly
+    // meter_provider.shutdown()?;
 
     Ok({})
 }
