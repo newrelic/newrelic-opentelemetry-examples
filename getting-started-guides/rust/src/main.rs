@@ -94,7 +94,7 @@ async fn main() -> std::io::Result<()> {
         .with_exporter(opentelemetry_otlp::new_exporter().tonic()
             .with_tls_config(tonic::transport::ClientTlsConfig::new().with_native_roots()))
         .with_trace_config(Config::default().with_resource(resource))
-        .install_batch(runtime::Tokio)
+        .install_batch(runtime::TokioCurrentThread)
         .expect("failed to initialize the trace pipeline");
 
     global::set_tracer_provider(tracer_provider);
