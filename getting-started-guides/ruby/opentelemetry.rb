@@ -22,8 +22,8 @@ OpenTelemetry::SDK::Configurator.prepend(MetricsPatch)
 
 OpenTelemetry::SDK.configure do |c|
   # c.use_all() # enables all instrumentation!
-  # c.use 'OpenTelemetry::Instrumentation::Sinatra'
   c.use 'OpenTelemetry::Instrumentation::Rack', { send_metrics: true }
+  c.use 'OpenTelemetry::Instrumentation::Sinatra'
   # c.use 'OpenTelemetry::Instrumentation::Net::HTTP'
 end
 
