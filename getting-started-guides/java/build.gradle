@@ -3,7 +3,7 @@ import org.springframework.boot.gradle.plugin.SpringBootPlugin
 plugins {
   id 'java'
   id 'com.diffplug.spotless' version '6.25.0'
-  id 'org.springframework.boot' version '3.3.3'
+  id 'org.springframework.boot' version '3.3.4'
 }
 
 java {
