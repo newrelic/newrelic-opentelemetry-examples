@@ -20,7 +20,7 @@ processors:
           - replace_pattern(body, "\"trace_id\":", "\"trace.id\":")
           - replace_pattern(body, "\"span_id\":", "\"span.id\":")
 exporters:
-  logging:
+  debug:
     verbosity: $LOG_EXPORTER_LOG_VERBOSITY
   otlphttp:
     endpoint: $NEW_RELIC_OTLP_ENDPOINT
@@ -36,8 +36,8 @@ service:
     traces:
       receivers: [otlp]
       processors: [ batch ]
-      exporters: [ logging, otlphttp]
+      exporters: [ debug, otlphttp]
     logs:
       receivers: [fluentforward]
       processors: [ transform, batch ]
-      exporters: [logging, otlphttp]
+      exporters: [debug, otlphttp]

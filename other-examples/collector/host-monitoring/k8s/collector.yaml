@@ -189,7 +189,7 @@ data:
               enabled: false
 
     exporters:
-      logging:
+      debug:
         verbosity: detailed
       otlphttp:
         endpoint: ${NEW_RELIC_OTLP_ENDPOINT}
@@ -220,7 +220,7 @@ data:
         logs/host:
           receivers: [filelog]
           processors: [resourcedetection, resourcedetection/cloud, batch]
-          exporters: [logging, otlphttp]
+          exporters: [otlphttp]
         traces:
           receivers: [otlp]
           processors: [resourcedetection, resourcedetection/cloud, batch]

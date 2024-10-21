@@ -28,4 +28,4 @@ The collector is configured with the following components.
 
 ### Exporters
 * The [OTLP HTTP exporter](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/otlphttpexporter). This exporter is configured to send data to New Relic. See [documentation](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/get-started/opentelemetry-set-up-your-app/) for more information about New Relic OTLP support.
-* The [Logging exporter](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/loggingexporter). This exporter logs data the collector processes to standard out. It can be useful for troubleshooting.
+* The [Debug exporter](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/debugexporter). This exporter logs data the collector processes to standard out. It can be useful for troubleshooting.
