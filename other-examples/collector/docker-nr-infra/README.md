@@ -1,4 +1,4 @@
-# Monitoring apllication OpenTelemetry Collector and Docker with NR infra agent
+# Monitoring Apllication  with OpenTelemetry Collector and Docker with NR infra agent
 
 This is a simple application instrumented with OpenTelemetry JavaScript. It demonstrates how to configure OpenTelemetry JavaScript to send data to New Relic.
 
@@ -82,7 +82,7 @@ Additionally, it demonstrates correlating OpenTelemetry entities with docker.
       ```shell
         docker-compose up -d
       ```
-    
+      
     * Optionally include `-d` to run in the background.
 
 ## Viewing your data
