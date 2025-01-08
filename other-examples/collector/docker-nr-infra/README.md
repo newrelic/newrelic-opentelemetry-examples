@@ -75,13 +75,13 @@ Additionally, it demonstrates correlating OpenTelemetry entities with docker.
       
   3. Run the application with the following command.
 
-    ```shell
-      docker-compose build
-    ```
+      ```shell
+        docker-compose build
+      ```
 
-    ```shell
-      docker-compose up -d
-    ```
+      ```shell
+        docker-compose up -d
+      ```
     
     * Optionally include `-d` to run in the background.
 
