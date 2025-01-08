@@ -1,0 +1,29 @@
+{
+  "name": "k8s-nr-agent",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "node -r ./telemetry.js server.js"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.4.1",
+    "@opentelemetry/auto-instrumentations-node": "^0.39.2",
+    "@opentelemetry/exporter-metrics-otlp-grpc": "0.45.0",
+    "@opentelemetry/exporter-metrics-otlp-http": "0.45.0",
+    "@opentelemetry/exporter-metrics-otlp-proto": "0.45.0",
+    "@opentelemetry/exporter-trace-otlp-http": "0.45.0",
+    "@opentelemetry/exporter-zipkin": "^1.23.0",
+    "@opentelemetry/host-metrics": "^0.33.1",
+    "@opentelemetry/resource-detector-container": "^0.3.11",
+    "@opentelemetry/resource-detector-docker": "^0.1.2",
+    "@opentelemetry/resources": "^1.23.0",
+    "@opentelemetry/sdk-metrics": "1.17.0",
+    "@opentelemetry/sdk-node": "^0.41.2",
+    "@opentelemetry/sdk-trace-node": "^1.23.0",
+    "@opentelemetry/semantic-conventions": "^1.23.0",
+    "dotenv": "^16.4.5"
+  },
+  "author": "akola",
+  "license": "ISC"
+}
