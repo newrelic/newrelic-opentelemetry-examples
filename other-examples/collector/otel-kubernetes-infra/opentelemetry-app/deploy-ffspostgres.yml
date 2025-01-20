@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opentelemetry-demo-ffspostgres
+  labels:
+    
+    opentelemetry.io/name: opentelemetry-demo-ffspostgres
+    app.kubernetes.io/instance: opentelemetry-demo
+    app.kubernetes.io/component: ffspostgres
+    app.kubernetes.io/name: opentelemetry-demo-ffspostgres
+    app.kubernetes.io/version: "1.5.0"
+    app.kubernetes.io/part-of: opentelemetry-demo
+spec:
+  selector:
+    matchLabels:
+      
+      opentelemetry.io/name: opentelemetry-demo-ffspostgres
+  template:
+    metadata:
+      labels:
+        
+        opentelemetry.io/name: opentelemetry-demo-ffspostgres
+        app.kubernetes.io/instance: opentelemetry-demo
+        app.kubernetes.io/component: ffspostgres
+        app.kubernetes.io/name: opentelemetry-demo-ffspostgres
+    spec:
+      serviceAccountName: opentelemetry-demo
+      containers:
+        - name: ffspostgres
+          image: 'postgres:14'
+          imagePullPolicy: IfNotPresent
+          ports:
+          
+          - containerPort: 5432
+            name: postgres
+          env:
+          - name: OTEL_SERVICE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_COLLECTOR_NAME
+            value: 'opentelemetry-demo-otelcol'
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
+          - name: POSTGRES_DB
+            value: ffs
+          - name: POSTGRES_USER
+            value: ffs
+          - name: POSTGRES_PASSWORD
+            value: ffs
+          - name: OTEL_RESOURCE_ATTRIBUTES
+            value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo
+          resources:
+            limits:
+              memory: 120Mi
+          securityContext:
+            runAsGroup: 999
+            runAsNonRoot: true
+            runAsUser: 999

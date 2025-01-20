@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: opentelemetry-demo-otelcol
+  labels:
+    app.kubernetes.io/name: otelcol
+    app.kubernetes.io/instance: opentelemetry-demo
+    app.kubernetes.io/version: "0.82.0"

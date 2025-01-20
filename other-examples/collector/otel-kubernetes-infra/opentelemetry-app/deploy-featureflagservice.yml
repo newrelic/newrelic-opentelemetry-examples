@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opentelemetry-demo-featureflagservice
+  labels:
+    
+    opentelemetry.io/name: opentelemetry-demo-featureflagservice
+    app.kubernetes.io/instance: opentelemetry-demo
+    app.kubernetes.io/component: featureflagservice
+    app.kubernetes.io/name: opentelemetry-demo-featureflagservice
+    app.kubernetes.io/version: "1.5.0"
+    app.kubernetes.io/part-of: opentelemetry-demo
+spec:
+  selector:
+    matchLabels:
+      
+      opentelemetry.io/name: opentelemetry-demo-featureflagservice
+  template:
+    metadata:
+      labels:
+        
+        opentelemetry.io/name: opentelemetry-demo-featureflagservice
+        app.kubernetes.io/instance: opentelemetry-demo
+        app.kubernetes.io/component: featureflagservice
+        app.kubernetes.io/name: opentelemetry-demo-featureflagservice
+    spec:
+      serviceAccountName: opentelemetry-demo
+      containers:
+        - name: featureflagservice
+          image: 'ghcr.io/open-telemetry/demo:1.5.0-featureflagservice'
+          imagePullPolicy: IfNotPresent
+          ports:
+          
+          - containerPort: 50053
+            name: grpc
+          - containerPort: 8081
+            name: http
+          env:
+          - name: OTEL_SERVICE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_COLLECTOR_NAME
+            value: 'opentelemetry-demo-otelcol'
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
+          - name: FEATURE_FLAG_SERVICE_PORT
+            value: "8081"
+          - name: FEATURE_FLAG_GRPC_SERVICE_PORT
+            value: "50053"
+          - name: DATABASE_URL
+            value: ecto://ffs:ffs@opentelemetry-demo-ffspostgres:5432/ffs
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://$(OTEL_COLLECTOR_NAME):4317
+          - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+            value: grpc
+          - name: OTEL_RESOURCE_ATTRIBUTES
+            value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo
+          resources:
+            limits:
+              memory: 175Mi
+          livenessProbe:
+            httpGet:
+              path: /featureflags/
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      initContainers:
+        - command:
+          - sh
+          - -c
+          - until nc -z -v -w30 opentelemetry-demo-ffspostgres 5432; do echo
+            waiting for ffspostgres; sleep 2; done
+          image: busybox:latest
+          name: wait-for-ffspostgres

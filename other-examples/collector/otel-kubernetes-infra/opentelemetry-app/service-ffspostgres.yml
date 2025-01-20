@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: opentelemetry-demo-ffspostgres
+  labels:
+    
+    opentelemetry.io/name: opentelemetry-demo-ffspostgres
+    app.kubernetes.io/instance: opentelemetry-demo
+    app.kubernetes.io/component: ffspostgres
+    app.kubernetes.io/name: opentelemetry-demo-ffspostgres
+    app.kubernetes.io/version: "1.5.0"
+    app.kubernetes.io/part-of: opentelemetry-demo
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      name: postgres
+      targetPort: 5432
+  selector:
+    
+    opentelemetry.io/name: opentelemetry-demo-ffspostgres

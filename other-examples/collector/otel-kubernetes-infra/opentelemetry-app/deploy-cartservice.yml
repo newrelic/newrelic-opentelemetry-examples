@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opentelemetry-demo-cartservice
+  labels:
+    
+    opentelemetry.io/name: opentelemetry-demo-cartservice
+    app.kubernetes.io/instance: opentelemetry-demo
+    app.kubernetes.io/component: cartservice
+    app.kubernetes.io/name: opentelemetry-demo-cartservice
+    app.kubernetes.io/version: "1.5.0"
+    app.kubernetes.io/part-of: opentelemetry-demo
+spec:
+  selector:
+    matchLabels:
+      
+      opentelemetry.io/name: opentelemetry-demo-cartservice
+  template:
+    metadata:
+      labels:
+        
+        opentelemetry.io/name: opentelemetry-demo-cartservice
+        app.kubernetes.io/instance: opentelemetry-demo
+        app.kubernetes.io/component: cartservice
+        app.kubernetes.io/name: opentelemetry-demo-cartservice
+    spec:
+      serviceAccountName: opentelemetry-demo
+      containers:
+        - name: cartservice
+          image: 'ghcr.io/open-telemetry/demo:1.5.0-cartservice'
+          imagePullPolicy: IfNotPresent
+          ports:
+          
+          - containerPort: 8080
+            name: service
+          env:
+          - name: OTEL_SERVICE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels['app.kubernetes.io/component']
+          - name: OTEL_COLLECTOR_NAME
+            value: 'opentelemetry-demo-otelcol'
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: cumulative
+          - name: CART_SERVICE_PORT
+            value: "8080"
+          - name: ASPNETCORE_URLS
+            value: http://*:$(CART_SERVICE_PORT)
+          - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
+            value: 'opentelemetry-demo-featureflagservice:50053'
+          - name: REDIS_ADDR
+            value: 'opentelemetry-demo-redis:6379'
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: http://$(OTEL_COLLECTOR_NAME):4317
+          - name: OTEL_RESOURCE_ATTRIBUTES
+            value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo
+          resources:
+            limits:
+              memory: 160Mi
+      initContainers:
+        - command:
+          - sh
+          - -c
+          - until nc -z -v -w30 opentelemetry-demo-redis 6379; do echo waiting
+            for redis; sleep 2; done;
+          image: busybox:latest
+          name: wait-for-redis
