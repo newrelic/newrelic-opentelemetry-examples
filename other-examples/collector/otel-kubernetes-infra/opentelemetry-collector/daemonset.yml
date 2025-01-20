@@ -528,7 +528,7 @@ data:
       otlp:
         endpoint: https://otlp.nr-data.net:4318
         headers:
-          api-key: eb19fcf3deba8baebfe24f2082948607FFFFNRAL
+          api-key: #NEW_RELIC_API_KEY
 
     service:
       telemetry:
@@ -645,7 +645,7 @@ spec:
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: service.instance.id=$(POD_NAME),k8s.pod.uid=$(POD_UID)
             - name: NR_LICENSE_KEY
-              value: eb19fcf3deba8baebfe24f2082948607FFFFNRAL
+              value: # NEW_RELIC_API_KEY
           livenessProbe:
             httpGet:
               path: /

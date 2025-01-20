@@ -16,7 +16,7 @@ data:
       otlp:
         endpoint: https://otlp.nr-data.net:4318
         headers:
-          api-key: eb19fcf3deba8baebfe24f2082948607FFFFNRAL
+          api-key: #NEW_RELIC_API_KEY
           insecure: true
       prometheus:
         enable_open_metrics: true
