@@ -15,7 +15,7 @@ Additionally, it demonstrates correlating OTEL entities with kubernetes, using t
  1. Update the `NEW_RELIC_API_KEY` value in [configmap.yaml](./opentelemetry-collector/configmap.yml) to your New Relic license key.
     ```yaml
     # ...omitted for brevity
-     otlphttp:
+     otlp:
         endpoint: https://otlp.nr-data.net:4318
         headers:
           api-key: #NEW_RELIC_API_KEY
@@ -28,7 +28,7 @@ Additionally, it demonstrates correlating OTEL entities with kubernetes, using t
 
     ```yaml
      # ...omitted for brevity
-         otlphttp:
+         otlp:
             endpoint: https://otlp.nr-data.net:4318
             headers:
             api-key: #NEW_RELIC_API_KEY
