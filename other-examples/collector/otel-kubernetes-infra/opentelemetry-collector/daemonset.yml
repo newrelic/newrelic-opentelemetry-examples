@@ -525,10 +525,10 @@ data:
     exporters:
       logging:
         verbosity: detailed
-      otlp:
-        endpoint: https://staging-otlp.nr-data.net:4318
+      otlphttp:
+        endpoint: https://otlp.nr-data.net:4318
         headers:
-          api-key: a8dba6f3f5dc0912bc0e579992f72596FFFFNRAL
+          api-key: #NEW_RELIC_API_KEY
 
     service:
       telemetry:

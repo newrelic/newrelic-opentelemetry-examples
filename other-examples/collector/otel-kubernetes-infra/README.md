@@ -28,8 +28,10 @@ Additionally, it demonstrates correlating OTEL entities with kubernetes, using t
 
     ```yaml
      # ...omitted for brevity
-         - name: NR_LICENSE_KEY
-              value: #NEW_RELIC_API_KEY
+         otlphttp:
+            endpoint: https://otlp.nr-data.net:4318
+            headers:
+            api-key: #NEW_RELIC_API_KEY
         # New Relic API key to authenticate the export requests.
         # 
      ```
