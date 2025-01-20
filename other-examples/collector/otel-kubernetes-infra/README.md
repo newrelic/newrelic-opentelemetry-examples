@@ -23,16 +23,25 @@ Additionally, it demonstrates correlating OTEL entities with kubernetes, using t
         # New Relic API key to authenticate the export requests.
         # docs: https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key
     ```
+2. Update the `NEW_RELIC_API_KEY` value in [daemonset.yaml](./opentelemetry-collector/daemonset.yml) to your New Relic license key.
+    ```yaml
 
-    * If your account is based in the EU, update the `endpoint` value in [configmap.yaml](./opentelemetry-collector/configmap.yml) the endpoint to: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
+    ```yaml
+     # ...omitted for brevity
+         - name: NR_LICENSE_KEY
+              value: #NEW_RELIC_API_KEY
+        # New Relic API key to authenticate the export requests.
+        # 
+     ```
 
- 2. Install and Configure Microservices Application:  
+
+ 3. Install and Configure Microservices Application:  
 
     cd opentelemetry-app
     kubectl create namespace otel-demo
     kubectl apply -n otel-demo -f .
 
- 3. Install and Configure Open Telemetry Collector:  
+ 4. Install and Configure Open Telemetry Collector:  
 
     This will collect traces from application and captures at the collector port.
 

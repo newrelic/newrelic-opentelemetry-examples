@@ -645,7 +645,7 @@ spec:
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: service.instance.id=$(POD_NAME),k8s.pod.uid=$(POD_UID)
             - name: NR_LICENSE_KEY
-              value: 99678c0219618397c9a3b67959ad5dd0FFFFNRAL
+              value: #NEW_RELIC_API_KEY
           livenessProbe:
             httpGet:
               path: /
