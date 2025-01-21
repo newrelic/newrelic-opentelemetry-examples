@@ -525,7 +525,7 @@ data:
     exporters:
       logging:
         verbosity: detailed
-      otlp:
+      otlphttp:
         endpoint: https://otlp.nr-data.net:4318
         headers:
           api-key: #NEW_RELIC_API_KEY
@@ -557,7 +557,7 @@ data:
             memory_limiter,
             batch
           ]
-          exporters: [otlp]
+          exporters: [otlphttp]
         metrics:
           receivers: [otlp, kubeletstats, prometheus]
           processors: [
@@ -587,7 +587,7 @@ data:
             memory_limiter,
             batch
           ]
-          exporters: [otlp]
+          exporters: [otlphttp]
 ---
 apiVersion: apps/v1
 kind: DaemonSet

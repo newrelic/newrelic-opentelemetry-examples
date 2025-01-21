@@ -13,7 +13,7 @@ data:
     exporters:
       logging:
         verbosity: detailed
-      otlp:
+      otlphttp:
         endpoint: https://otlp.nr-data.net:4318
         headers:
           api-key: #NEW_RELIC_API_KEY
@@ -180,7 +180,7 @@ data:
           - otlp
         metrics:
           exporters:
-          - otlp
+          - otlphttp
           - prometheus
           - logging
           processors:
@@ -201,7 +201,7 @@ data:
           - httpcheck/frontendproxy
         traces:
           exporters:
-          - otlp
+          - otlphttp
           - logging
           - spanmetrics
           processors:
