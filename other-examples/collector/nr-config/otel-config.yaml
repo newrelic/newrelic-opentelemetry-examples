@@ -26,7 +26,7 @@ exporters:
   debug:
     verbosity: $LOG_EXPORTER_LOG_VERBOSITY
   otlphttp:
-    endpoint: https://otlp.nr-data.net:4317
+    endpoint: https://otlp.nr-data.net
     headers:
       api-key: $NEW_RELIC_API_KEY
 service:
