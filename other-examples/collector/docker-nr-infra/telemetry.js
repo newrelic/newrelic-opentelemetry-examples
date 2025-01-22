@@ -18,24 +18,21 @@ const {
 const {
   containerDetector,
 } = require('@opentelemetry/resource-detector-container');
+
+const {
+  OTLPTraceExporter,
+} = require('@opentelemetry/exporter-trace-otlp-proto');
+
+const os = require('os');
+
 require("dotenv").config({ path: __dirname + "/.env" });
 
-const collectorOptions = {
-  // url is optional and can be omitted - default is http://localhost:4317
-  // Unix domain sockets are also supported: 'unix:///path/to/socket.sock'
-  url: "http://otel-collector-container-nr-agent:4317",
-};
 
 const {
   dockerCGroupV1Detector,
 } = require('@opentelemetry/resource-detector-docker');
 
-const metricExporter = new OTLPMetricExporter(collectorOptions);
-
-const zipkinExporter = new ZipkinExporter({
-  url: `${process.env.ZIPKIN_EXPORTER_ENDPOINT}`,
-  serviceName: `${process.env.OTEL_SERVICE_NAME_NODE}`,
-});
+const metricExporter = new OTLPMetricExporter();
 
 const metricReader = new PeriodicExportingMetricReader({
   exporter: metricExporter,
@@ -43,17 +40,22 @@ const metricReader = new PeriodicExportingMetricReader({
 });
 console.log(
   "FFFFFFF OTEL_SERVICE_NAME_NODE",
-  process.env.OTEL_SERVICE_NAME_NODE
+  process.env.OTEL_SERVICE_NAME
 );
+
+const hostId = os.hostname(); 
+
 const sdk = new NodeSDK({
   resource: new Resource({
-    [SEMRESATTRS_SERVICE_NAME]: `${process.env.OTEL_SERVICE_NAME_NODE}`,
-    [SEMRESATTRS_SERVICE_INSTANCE_ID]: `${process.env.OTEL_SERVICE_NAME_NODE}-instance`,
+    [SEMRESATTRS_SERVICE_NAME]: `${process.env.OTEL_SERVICE_NAME}`,
+    [SEMRESATTRS_SERVICE_INSTANCE_ID]: `${process.env.OTEL_SERVICE_NAME}-instance`,
     [SEMRESATTRS_SERVICE_VERSION]: "1.0.0",
+    "host.id": hostId,
+    "host.name": hostId,
   }),
   resourceDetectors: [containerDetector, dockerCGroupV1Detector],
   metricReader: metricReader,
-  traceExporter: zipkinExporter,
+  traceExporter: new OTLPTraceExporter(),
   instrumentations: [getNodeAutoInstrumentations()],
 });
 

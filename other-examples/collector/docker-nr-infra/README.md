@@ -23,35 +23,31 @@ Additionally, it demonstrates correlating OpenTelemetry entities with docker.
       license_key: <NEW_RELIC_API_KEY>
       ```
 
-      * [otel-config.yaml](./otel-config.yaml)
+      Update the `NEW_RELIC_API_KEY` value in [.env](./.env) to your New Relic license key.
 
-      ```yaml
-      # ...omitted for brevity
-        # New Relic API key to authenticate the export requests.
-        # docs: https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key
-        otlp:
-          endpoint: otlp.nr-data.net:4318
-          headers:
-            api-key: <NEW_RELIC_API_KEY>
       ```
+        # New Relic API key to authenticate the call.
+        # docs: https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key
+        OTEL_EXPORTER_OTLP_HEADERS="api-key=<NEW_RELIC_API_KEY>"
+      ```
+    
+      * Note, be careful to avoid inadvertent secret sharing when modifying `.env`. To ignore changes to this file from git, run `git update-index --skip-worktree .env`.
 
-      * If your account is based in the EU, update the `NEW_RELIC_OTLP_ENDPOINT` value in [otel-config.yaml](./otel-config.yaml) the endpoint to: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
+      * If your account is based in the EU, update the `NEW_RELIC_OTLP_ENDPOINT` value in `.env` to: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
 
-      ```yaml
-      # ...omitted for brevity
-      # The default US endpoint is set here. You can change the endpoint and port based on your requirements if needed.
-      # docs: https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/best-practices/opentelemetry-otlp/#configure-endpoint-port-protocol
-
-      exporters:
-        debug:
-          verbosity: detailed
-        otlp:
-          endpoint: https://otlp.eu01.nr-data.net:4317
+      ```
+        # ...omitted for brevity
+        # The default US endpoint is set here. You can change the endpoint and port based on your requirements if needed.
+        # docs: https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/get-started/opentelemetry-set-up-your-app/#review-settings
+        OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net/
       ```
 
   2. Run the NR Infra agent with the following command.
 
+    
+
       ```shell
+      # https://docs.newrelic.com/docs/infrastructure/infrastructure-agent/linux-installation/infra-agent-as-container/
       cd newrelic-infra
       ```
       ```shell
@@ -90,7 +86,7 @@ Additionally, it demonstrates correlating OpenTelemetry entities with docker.
   To review your OpenTelemetry data in New Relic, navigate to "New Relic -> All Entities -> OpenTelemetry" and You should see entities named `docker-app-nr-infra-agent`  defined in `.env`. Click to view the OpenTelemetry summary.
 
 
-  To review your docker data in New Relic, navigate to "New Relic -> All Entities -> Containers". You should see entities named `otel-collector-container-nr-agent` defined in `docker-compose.yaml`. Click to view the container summary.
+  To review your docker data in New Relic, navigate to "New Relic -> All Entities -> Containers". You should see entities named `docker-nr-infra-otel-service-1`. Click to view the container summary.
 
 
   See [get started with querying](https://docs.newrelic.com/docs/query-your-data/explore-query-data/get-started/introduction-querying-new-relic-data/) for additional details on querying data in New Relic.

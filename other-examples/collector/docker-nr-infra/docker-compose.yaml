@@ -13,21 +13,4 @@ services:
       - "9411"
     networks:
       - my-net
-    depends_on:
-      - collector
-
-  collector:
-    image: otel/opentelemetry-collector-contrib:0.98.0
-    volumes:
-      - ./otel-config.yaml:/otel-config.yaml
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: ["--config", "/otel-config.yaml"]
-    networks:
-      - my-net
-    ports:
-      - "4317:4317" # grpc
-      - "9411:9411" #zipkin
-      - "13133:13133" # health
-    container_name: otel-collector-container-nr-agent
-
 

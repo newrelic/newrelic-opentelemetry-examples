@@ -13,7 +13,5 @@ COPY . /usr/src/app
 
 EXPOSE 3000
 
-ENV OTEL_SERVICE_NAME_NODE=docker-app-nr-infra-agent
-ENV ZIPKIN_EXPORTER_ENDPOINT=http://otel-collector-container-nr-agent:9411
 
 CMD ["npm", "start"]
