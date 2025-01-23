@@ -28,7 +28,7 @@ Additionally, it demonstrates correlating OpenTelemetry entities with docker.
       ```
         # New Relic API key to authenticate the call.
         # docs: https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key
-        OTEL_EXPORTER_OTLP_HEADERS="api-key=<NEW_RELIC_API_KEY>"
+        NEW_RELIC_API_KEY="<NEW_RELIC_API_KEY>"
       ```
     
       * Note, be careful to avoid inadvertent secret sharing when modifying `.env`. To ignore changes to this file from git, run `git update-index --skip-worktree .env`.
@@ -72,10 +72,6 @@ Additionally, it demonstrates correlating OpenTelemetry entities with docker.
   3. Run the application with the following command.
 
       ```shell
-        docker-compose build
-      ```
-
-      ```shell
         docker-compose up -d
       ```
 
@@ -83,10 +79,10 @@ Additionally, it demonstrates correlating OpenTelemetry entities with docker.
 
 ## Viewing your data
 
-  To review your OpenTelemetry data in New Relic, navigate to "New Relic -> All Entities -> OpenTelemetry" and You should see entities named `docker-app-nr-infra-agent`  defined in `.env`. Click to view the OpenTelemetry summary.
+  To review your OpenTelemetry data in New Relic, navigate to "New Relic -> All Entities -> OpenTelemetry" and You should see entities named `adservicetest`  defined in `.env`. Click to view the OpenTelemetry summary.
 
 
-  To review your docker data in New Relic, navigate to "New Relic -> All Entities -> Containers". You should see entities named `docker-nr-infra-otel-service-1`. Click to view the container summary.
+  To review your docker data in New Relic, navigate to "New Relic -> All Entities -> Containers". You should see entities named `docker-nr-infra-adservice-1`. Click to view the container summary.
 
 
   See [get started with querying](https://docs.newrelic.com/docs/query-your-data/explore-query-data/get-started/introduction-querying-new-relic-data/) for additional details on querying data in New Relic.
