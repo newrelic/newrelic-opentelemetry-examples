@@ -3,14 +3,36 @@ networks:
   my-net:
     driver: bridge
 services:
-  otel-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  adservice:
+    image: otel/demo:1.10.0-adservice
     ports:
-      - "3000:3000"
+      - "8080:8080"
       - "4317"
-      - "9411"
+    environment:
+      - AD_SERVICE_PORT=8080
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector-container-nr-agent:4318
+      - OTEL_SERVICE_NAME
+    depends_on:
+      - otel-collector
     networks:
       - my-net
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.98.0
+    volumes:
+      - ./otel-config.yaml:/otel-config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: ["--config", "/otel-config.yaml"]
+    ports:
+      - "4317:4317" # OTLP gRPC Receiver
+    networks:
+      - my-net
+    environment:
+      - NEW_RELIC_API_KEY
+      - NEW_RELIC_OTLP_ENDPOINT
+    container_name: otel-collector-container-nr-agent
+
+  # Optionally, add Jaeger or another service here
+
+  
 
