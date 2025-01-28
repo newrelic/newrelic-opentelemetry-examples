@@ -14,8 +14,11 @@ services:
       # docker run --detach --name newrelic-infra --network=host --cap-add=SYS_PTRACE --privileged --pid=host --cgroupns=host --volume "/:/host:ro" --volume "/var/run/docker.sock:/var/run/docker.sock" --env NRIA_LICENSE_KEY=<NEW_RELIC_API_KEY> newrelic/infrastructure:latest
       #- "/:/host:ro"
       - "/var/run/docker.sock:/var/run/docker.sock"
+      # Enable container metrics collection from Docker API. For more details, see: https://docs.newrelic.com/docs/infrastructure/infrastructure-agent/linux-installation/instrument-container/#enable-container-metrics-collection-from-docker-api
+      - "./docker-config.yml:/etc/newrelic-infra/integrations.d/docker-config.yml"
     environment:
       - NRIA_LICENSE_KEY=${NEW_RELIC_API_KEY}
+      - USER_DOCKER_API=true
     restart: unless-stopped
 
   adservice:
