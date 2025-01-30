@@ -1,6 +1,6 @@
 ## OpenTelemetry Tracing Enhancements in Backend Fibonacci Route Observability
 
-This README file describes the changes made to an Express.js API server [routes.js](./routes.js) file (compared to [uninstrumented routes.js]('./../../../../uninstrumented/src/api/routes.js)) to introduce OpenTelemetry tracing capabilities.
+This README file describes the changes made to an Express.js API server [routes.js](./routes.js) file to introduce OpenTelemetry tracing capabilities.
 
 It showcases custom instrumentation capabilities with granular control over the spans and traces created.
 
