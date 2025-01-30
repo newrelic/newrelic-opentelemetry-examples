@@ -44,7 +44,7 @@ git clone https://github.com/newrelic/newrelic-opentelemetry-examples.git
 2. Navigate to the project folder:
 
 ```bash
-cd getting-started-guides/javascript/instrumented
+cd other-examples/aws/memcached/nodejs
 ```
 
 3. Install the required dependencies:
@@ -81,25 +81,6 @@ npm install @opentelemetry/auto-instrumentations-web \
 
 Refer to the [auto-otel-web.js](./src/public/auto-otel-web.js) file for the implementation details.
 
-## Open Telemetry manual instrumentation for Web
-
-To enable OpenTelemetry custom/manual instrumentation for the web, the following modules have been installed:
-
-```bash
-npm install @opentelemetry/api \
-  @opentelemetry/sdk-trace-web \
-  @opentelemetry/sdk-trace-base \
-  @opentelemetry/instrumentation \
-  @opentelemetry/context-zone \
-  @opentelemetry/instrumentation-document-load \
-  @opentelemetry/instrumentation-user-interaction \
-  @opentelemetry/instrumentation-fetch \
-  @opentelemetry/exporter-trace-otlp-proto \
-  @opentelemetry/resources \
-  @opentelemetry/semantic-conventions
-```
-Refer to the [manual-otel-web.js](./src/public/manual-otel-web.js) file for the implementation details.
-
 ## Open Telemetry Auto Instrumentation for Backend (Node.js)
 
 To enable OpenTelemetry auto instrumentation for the backend, the following modules have been installed:
@@ -135,45 +116,6 @@ Notice the `npm server` command has been updated to include the `-r` option to l
 "scripts": {
     ...
     "server": "node -r ./src/auto-otel-node.js src/server.js",
-    ...
-  },
-```
-
-## Open Telemetry manual instrumentation for Backend (Node.js)
-
-To enable OpenTelemetry custom/manual instrumentation for the backend, the following modules have been installed:
-
-```bash
-npm install @opentelemetry/api \
-  @opentelemetry/sdk-trace-node \
-  @opentelemetry/sdk-metrics \
-  @opentelemetry/instrumentation \
-  @opentelemetry/resources \
-  @opentelemetry/semantic-conventions
-```
-
-To be able to send traces and metrics to New Relic, exporter modules have to be installed:
-
-```bash
-npm install @opentelemetry/exporter-trace-otlp-proto \
-  @opentelemetry/exporter-metrics-otlp-proto
-```
-
-And the New Relic Api Key has been added to the `.env` file:
-
-```bash
-NEW_RELIC_LICENSE_INGEST_KEY=<NEW_RELIC_LICENSE_INGEST_KEY>
-```
-
-Refer to the [manual-otel-node.js](./src/manual-otel-node.js) file for the implementation details.
-
-Notice the `npm server` command has been updated to include the `-r` option to load the `manual-otel-node.js` file.
-
-```json
-// package.json
-"scripts": {
-    ...
-    "server": "node -r ./src/manual-otel-node.js src/server.js",
     ...
   },
 ```
