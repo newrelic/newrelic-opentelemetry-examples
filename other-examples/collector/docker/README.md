@@ -1,6 +1,8 @@
 # Monitoring Docker with OpenTelemetry Collector
 
-This simple example demonstrates monitoring docker with the [OpenTelemetry collector](https://opentelemetry.io/docs/collector/), using the [docker stats receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/dockerstatsreceiver) and sending the data to New Relic via OTLP.
+This simple example demonstrates monitoring docker with the [OpenTelemetry collector](https://opentelemetry.io/docs/collector/), using the [docker stats receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/dockerstatsreceiver) and sending the data to New Relic via OTLP. An OpenTelemetry APM service also runs, and its container is monitored with the docker stats receiver. 
+
+The OpenTelemetry APM service automatically detects and reports [container resource attributes](https://github.com/open-telemetry/semantic-conventions/blob/main/docs/resource/container.md) which New Relic uses to create a relationship between the container and APM service entities.
 
 ## Requirements
 
@@ -58,9 +60,11 @@ This simple example demonstrates monitoring docker with the [OpenTelemetry colle
 
 ## Viewing your data
 
-To review your docker data in New Relic, navigate to "New Relic -> All Entities -> Containers". You should see entities named `docker-collector-1` and `docker-nginx-1` corresponding to the services defined in `docker-compose.yaml`. Click to view the container summary.
+To review your docker data in New Relic, navigate to "New Relic -> All Entities -> Containers". You should see entities named `docker-collector` and `docker-adservice` corresponding to the services defined in `docker-compose.yaml`. Click to view the container summary.
 
-Optionally, install the [Docker OpenTelemetry quickstart](https://newrelic.com/instant-observability/docker-otel) which includes a dashboard and alerts based on the data produced by the docker stats reciever.
+To review your OpenTelemetry APM data in New Relic, navigate to "New Relic -> All Entities -> OpenTelemetry" and You should see an entity named `adservice` as defined in `OTEL_SERVICE_NAME` in `docker-compose.yaml`. Click to view the OpenTelemetry summary. Click "Service Map" in the left navigation, and notice the relationship to the `docker-adservice` container entity.
+
+Optionally, install the [Docker OpenTelemetry quickstart](https://newrelic.com/instant-observability/docker-otel) which includes a dashboard and alerts based on the data produced by the docker stats receiver.
 
 Optionally, use [NRQL](https://docs.newrelic.com/docs/query-your-data/explore-query-data/get-started/introduction-querying-new-relic-data/) to perform ad-hoc analysis. To list the metrics reported, query for:
 
@@ -72,13 +76,4 @@ See [get started with querying](https://docs.newrelic.com/docs/query-your-data/e
 
 ## Additional notes
 
-New Relic depends on docker container data including the `host.id` resource attribute. The collector [config.yaml](./config.yaml) contains several resource detectors in `.processors.resourcedetection.detectors` which attempt to fetch `host.id`. If `host.id` is not detected, you can manually set it by uncommenting and editing the `OTEL_RESOURCE_ATTRIBUTES` env var in [docker-compose.yaml](./docker-compose.yaml).
-
-```yaml
-# ...omitted for brevity
-# host.id is required for New Relic.
-# Optionally manually set it if one of the resource detectors in config.yaml is unable to identify it.
-# - OTEL_RESOURCE_ATTRIBUTES=host.id=<INSERT_HOST_ID>
-```
-
-This example runs a dummy nginx image defined in [docker-compose.yaml](./docker-compose.yaml). This only exists to produce more interesting data and should be removed for production deployments.
+This example deploys an instance of the opentelemetry demo [AdService](https://opentelemetry.io/docs/demo/services/ad/), defined in `docker-compose.yaml` `.services.adservice`. The AdService is instrumented with the [OpenTelemetry Java Agent](https://opentelemetry.io/docs/languages/java/instrumentation/#zero-code-java-agent) and is configured to export data via OTLP to New Relic. The OpenTelemetry Java Agent comes with a number of [resource detectors](https://opentelemetry.io/docs/languages/java/configuration/#resourceprovider) which enrich the telemetry with contextual information about the environment. One of these detects and includes the `container.id` attribute, which New Relic depends on for correlation with container entities. When adapting this example to your workflow, please ensure that your application is set up to detect and include `container.id` as described in the [container resource semantic conventions](https://github.com/open-telemetry/semantic-conventions/blob/main/docs/resource/container.md).
