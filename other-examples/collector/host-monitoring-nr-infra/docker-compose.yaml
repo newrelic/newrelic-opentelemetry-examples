@@ -17,6 +17,6 @@ services:
     environment:
       - AD_SERVICE_PORT=8080
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otelcol:4318
-      - OTEL_SERVICE_NAME
+      - OTEL_SERVICE_NAME=hostadservice
     depends_on:
       - otelcol

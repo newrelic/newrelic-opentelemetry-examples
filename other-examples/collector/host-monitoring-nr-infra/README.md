@@ -1,4 +1,4 @@
-# Monitoring APM with OpenTelemetry Collector and Host monitoring Host with Newrelic infra agent
+# Monitor Host with New Relic infrastructure agent and correlate with OpenTelemetry APM services
 
 This example demonstrates Monitoring APM with OpenTelemetry Collector and monitoring hosts with the [Newrelic infra agent](https://docs.newrelic.com/docs/infrastructure/infrastructure-agent/linux-installation/package-manager-install).
 
