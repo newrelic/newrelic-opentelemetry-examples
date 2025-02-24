@@ -12,5 +12,5 @@ roleRef:
   name: opentelemetry-demo-otelcol
 subjects:
 - kind: ServiceAccount
-  name: opentelemetry-demo-otelcol
-  namespace: otel-demo
+  name: default
+  namespace: opentelemetry-demo

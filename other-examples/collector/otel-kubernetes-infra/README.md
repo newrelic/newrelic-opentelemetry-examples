@@ -12,26 +12,23 @@ Additionally, it demonstrates correlating OTEL entities with kubernetes, using t
 
 ## Running the example
 
- 1. Update the `NEW_RELIC_API_KEY` value in [configmap.yaml](./opentelemetry-collector/configmap.yml) to your New Relic license key.
+ 1. Update the `NEW_RELIC_API_KEY` value in [config.yaml](./k8s/config.yml) to your New Relic license key.
+
     ```yaml
     # ...omitted for brevity
      otlp:
-        endpoint: https://otlp.nr-data.net:4318
+        endpoint: https://otlp.nr-data.net
         headers:
-          api-key: #NEW_RELIC_API_KEY
+          api-key: <NEW_RELIC_API_KEY>
           insecure: true
         # New Relic API key to authenticate the export requests.
         # docs: https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key
     ```
-2. Update the `NEW_RELIC_API_KEY` value in [daemonset.yaml](./opentelemetry-collector/daemonset.yml) to your New Relic license key.
-    ```yaml
+2. Update the `NEW_RELIC_API_KEY` value in [values.yaml](.values.yml) to your New Relic license key.
 
     ```yaml
      # ...omitted for brevity
-         otlp:
-            endpoint: https://otlp.nr-data.net:4318
-            headers:
-            api-key: #NEW_RELIC_API_KEY
+        licenseKey: "<NEW_RELIC_LICENSE_KEY>"
         # New Relic API key to authenticate the export requests.
         # 
      ```
@@ -39,16 +36,27 @@ Additionally, it demonstrates correlating OTEL entities with kubernetes, using t
 
  3. Install and Configure Microservices Application:  
 
-    cd opentelemetry-app
-    kubectl create namespace otel-demo
-    kubectl apply -n otel-demo -f .
+    kubectl create namespace opentelemetry-demo
+    kubectl apply -n opentelemetry-demo -f k8s/
 
- 4. Install and Configure Open Telemetry Collector:  
+ 4. Install and Configure nr-k8s-otel-collector:  
 
-    This will collect traces from application and captures at the collector port.
+    https://docs.newrelic.com/docs/kubernetes-pixie/kubernetes-integration/installation/k8s-otel/#install
+    To get OpenTelemetry up and running in your cluster, follow these steps:
 
-    cd opentelemetry-collector
-     kubectl apply -n otel-demo -f .
+   * Download the [Helm chart values file](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector/values.yaml#L20-L24) adapt it to meet your specific requirements.
+
+      * Cluster name and <InlinePopover type="licenseKey"/> are mandatory.
+
+      * Check the entire list of [configuration parameters](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector#values).
+
+   * Install the [Helm chart](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) together with the values file.
+
+      ```shell
+      helm repo add newrelic https://helm-charts.newrelic.com
+      helm upgrade nr-k8s-otel-collector newrelic/nr-k8s-otel-collector -f values.yaml -n newrelic --create-namespace --install
+      ```    
+   
 
 
     
