@@ -68,7 +68,7 @@ data:
       otlphttp:
         endpoint: "https://otlp.nr-data.net"
         headers:
-          api-key: "d0ae0c111dc8da46a1305d168ef4d692FFFFNRAL"
+          api-key: "<<NEW_RELIC_API_KEY>>"
 
     service:
       pipelines:
