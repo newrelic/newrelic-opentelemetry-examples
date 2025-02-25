@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  namespace: opentelemetry-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-collector
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      containers:
+      - name: otel-collector
+        image: otel/opentelemetry-collector-contrib:0.98.0
+        command:
+          - "/otelcol-contrib"
+        args:
+          - "--config=/etc/otel/otel-collector-config.yaml"
+        volumeMounts:
+        - name: collector-config
+          mountPath: /etc/otel/otel-collector-config.yaml
+          subPath: otel-collector-config.yaml # Using subPath to map single file
+      volumes:
+      - name: collector-config
+        configMap:
+          name: otel-collector-config
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adservice
+  namespace: opentelemetry-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adservice
+  template:
+    metadata:
+      labels:
+        app: adservice
+    spec:
+      containers:
+      - name: adservice
+        image: otel/demo:1.10.0-adservice # Use the specific image or the latest available version
+        ports:
+        - containerPort: 8080
+        env:
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://otel-collector:4318"
+        - name: OTEL_SERVICE_NAME
+          value: "adservice"
+        - name: AD_SERVICE_PORT
+          value: "8080"
+        - name: OTEL_CLUSTER_NAME
+          value: "opentelemetry-demo"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: opentelemetry-demo
+spec:
+  ports:
+  - port: 4317
+    name: otlp-grpc
+  - port: 4318
+    name: otlp-http
+  selector:
+    app: otel-collector
