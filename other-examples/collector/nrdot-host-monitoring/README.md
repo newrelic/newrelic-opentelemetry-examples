@@ -2,7 +2,7 @@
 
 This example demonstrates monitoring hosts with the [NRDOT collector](https://docs.newrelic.com/docs/opentelemetry/nrdot/nrdot-intro/), using the [host metrics receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver) and sending the data to New Relic via OTLP.
 
-Functionally this example is similar to the [host monitoring example]() but using the pre-packaged configuration of the NRDOT collector.
+Functionally this example is similar to the [host monitoring example](../host-monitoring/README.md) but using the pre-packaged configuration of the NRDOT collector.
 
 
 ## Requirements
