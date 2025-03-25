@@ -4,7 +4,9 @@ receivers:
   otlp:
     protocols:
       grpc:
+        endpoint: otel-collector:4317
       http:
+        endpoint: otel-collector:4318
   fluentforward:
     endpoint: 0.0.0.0:8006
 processors:
@@ -13,28 +15,27 @@ processors:
   cumulativetodelta:
   transform:
     trace_statements:
-      - context: span
-        statements:
-        - truncate_all(attributes, 4095)
-        - truncate_all(resource.attributes, 4095)
+      - truncate_all(span.attributes, 4095)
+      - truncate_all(resource.attributes, 4095)
     log_statements:
-      - context: log
-        statements:
-        - truncate_all(attributes, 4095)
-        - truncate_all(resource.attributes, 4095)
+      - truncate_all(log.attributes, 4095)
+      - truncate_all(resource.attributes, 4095)
+    metric_statements:
+      - truncate_all(datapoint.attributes, 4095)
+      - truncate_all(resource.attributes, 4095)
 exporters:
   debug:
-    verbosity: $LOG_EXPORTER_LOG_VERBOSITY
+    verbosity: ${LOG_EXPORTER_LOG_VERBOSITY}
   otlphttp:
     endpoint: https://otlp.nr-data.net
     headers:
-      api-key: $NEW_RELIC_API_KEY
+      api-key: ${NEW_RELIC_API_KEY}
 service:
   extensions: [health_check]
   pipelines:
     metrics:
       receivers: [otlp]
-      processors: [cumulativetodelta, batch]
+      processors: [cumulativetodelta, transform, batch]
       exporters: [debug, otlphttp]
     traces:
       receivers: [otlp]
