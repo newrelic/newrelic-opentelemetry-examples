@@ -51,7 +51,7 @@ Additionally, it demonstrates correlating APM entities with hosts, using the Ope
 To review your host data in New Relic, navigate to "New Relic -> All Entities -> Hosts" and click on the instance with name corresponding to the collector pod name to view the instance summary. Use [NRQL](https://docs.newrelic.com/docs/query-your-data/explore-query-data/get-started/introduction-querying-new-relic-data/) to perform ad-hoc analysis.
 
 ```
-FROM Metric SELECT uniques(metricName) WHERE otel.library.name like 'otelcol/hostmetricsreceiver/%'
+FROM Metric SELECT uniques(metricName) WHERE otel.library.name like '%/receiver/hostmetricsreceiver%'
 ```
 
 See [get started with querying](https://docs.newrelic.com/docs/query-your-data/explore-query-data/get-started/introduction-querying-new-relic-data/) for additional details on querying data in New Relic.
