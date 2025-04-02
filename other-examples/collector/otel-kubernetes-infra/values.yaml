@@ -1,0 +1,164 @@
+# Default values for nr-k8s-otel-collector.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+kube-state-metrics:
+  # kube-state-metrics.enabled -- Install the [`kube-state-metrics` chart](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-state-metrics) from the stable helm charts repository.
+  # This is mandatory if `infrastructure.enabled` is set to `true` and the user does not provide its own instance of KSM version >=1.8 and <=2.0. Note, kube-state-metrics v2+ disables labels/annotations
+  # metrics by default. You can enable the target labels/annotations metrics to be monitored by using the metricLabelsAllowlist/metricAnnotationsAllowList options described [here](https://github.com/prometheus-community/helm-charts/blob/159cd8e4fb89b8b107dcc100287504bb91bf30e0/charts/kube-state-metrics/values.yaml#L274) in
+  # your Kubernetes clusters.
+  enabled: true
+  # -- Disable prometheus from auto-discovering KSM and potentially scraping duplicated data
+  prometheusScrape: false
+
+image:
+  # -- OTel collector image to be deployed. You can use your own collector as long it accomplish the following requirements mentioned below.
+  repository: newrelic/nr-otel-collector
+  # -- The pull policy is defaulted to IfNotPresent, which skips pulling an image if it already exists. If pullPolicy is defined without a specific value, it is also set to Always.
+  pullPolicy: IfNotPresent
+  # --  Overrides the image tag whose default is the chart appVersion.
+  tag: "0.8.3"
+
+# -- Name of the Kubernetes cluster monitored. Mandatory. Can be configured also with `global.cluster`
+cluster: "opentelemetry-demo"
+# -- This set this license key to use. Can be configured also with `global.licenseKey`
+licenseKey: "<NEW_RELIC_LICENSE_KEY>"
+# -- In case you don't want to have the license key in you values, this allows you to point to a user created secret to get the key from there. Can be configured also with `global.customSecretName`
+customSecretName: ""
+# -- In case you don't want to have the license key in you values, this allows you to point to which secret key is the license key located. Can be configured also with `global.customSecretLicenseKey`
+customSecretLicenseKey: ""
+
+# -- Additional labels for chart pods
+podLabels: {}
+# -- Additional labels for chart objects
+labels: {}
+
+# -- Sets pod's priorityClassName. Can be configured also with `global.priorityClassName`
+priorityClassName: ""
+
+# -- Sets pod's dnsConfig. Can be configured also with `global.dnsConfig`
+dnsConfig: {}
+
+# -- If deploying to a GKE autopilot cluster, set to true
+# @default -- `false`
+gkeAutopilot: false
+
+daemonset:
+  # -- Sets daemonset pod node selector. Overrides `nodeSelector` and `global.nodeSelector`
+  nodeSelector: {}
+  # -- Sets daemonset pod tolerations. Overrides `tolerations` and `global.tolerations`
+  tolerations: []
+  # -- Sets daemonset pod affinities. Overrides `affinity` and `global.affinity`
+  affinity: {}
+  # -- Annotations to be added to the daemonset.
+  podAnnotations: {}
+  # -- Sets security context (at pod level) for the daemonset. Overrides `podSecurityContext` and `global.podSecurityContext`
+  podSecurityContext: {}
+  # -- Sets security context (at container level) for the daemonset. Overrides `containerSecurityContext` and `global.containerSecurityContext`
+  containerSecurityContext:
+    privileged: true
+  # -- Sets resources for the daemonset.
+  resources: {}
+  # -- Sets additional environment variables for the daemonset.
+  envs: []
+  # -- Sets additional environment variable sources for the daemonset.
+  envsFrom: []
+  # -- Settings for daemonset configmap
+  # @default -- See `values.yaml`
+  configMap:
+    # -- OpenTelemetry config for the daemonset. If set, overrides default config and disables configuration parameters for the daemonset.
+    config: {}
+
+deployment:
+  # -- Sets deployment pod node selector. Overrides `nodeSelector` and `global.nodeSelector`
+  nodeSelector: {}
+  # -- Sets deployment pod tolerations. Overrides `tolerations` and `global.tolerations`
+  tolerations: []
+  # -- Sets deployment pod affinities. Overrides `affinity` and `global.affinity`
+  affinity: {}
+  # -- Annotations to be added to the deployment.
+  podAnnotations: {}
+  # -- Sets security context (at pod level) for the deployment. Overrides `podSecurityContext` and `global.podSecurityContext`
+  podSecurityContext: {}
+  # -- Sets security context (at container level) for the deployment. Overrides `containerSecurityContext` and `global.containerSecurityContext`
+  containerSecurityContext: {}
+  # -- Sets resources for the deployment.
+  resources: {}
+  # -- Sets additional environment variables for the deployment.
+  envs: []
+  # -- Sets additional environment variable sources for the deployment.
+  envsFrom: []
+  # -- Settings for deployment configmap
+  # @default -- See `values.yaml`
+  configMap:
+    # -- OpenTelemetry config for the deployment. If set, overrides default config and disables configuration parameters for the deployment.
+    config: {}
+
+# -- Sets all pods' node selector. Can be configured also with `global.nodeSelector`
+nodeSelector: {}
+# -- Sets all pods' tolerations to node taints. Can be configured also with `global.tolerations`
+tolerations: []
+# -- Sets all pods' affinities. Can be configured also with `global.affinity`
+affinity: {}
+# -- Sets all security contexts (at pod level). Can be configured also with `global.securityContext.pod`
+podSecurityContext: {}
+# -- Sets all security context (at container level). Can be configured also with `global.securityContext.container`
+containerSecurityContext: {}
+
+rbac:
+  # -- Specifies whether RBAC resources should be created
+  create: true
+
+# -- Settings controlling ServiceAccount creation
+# @default -- See `values.yaml`
+serviceAccount:
+  # serviceAccount.create -- (bool) Specifies whether a ServiceAccount should be created
+  # @default -- `true`
+  create:
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+  # Specify any annotations to add to the ServiceAccount
+  annotations:
+
+# -- (bool) Sets the debug logs to this integration or all integrations if it is set globally. Can be configured also with `global.verboseLog`
+# @default -- `false`
+verboseLog:
+
+# -- (bool) Send the metrics to the staging backend. Requires a valid staging license key. Can be configured also with `global.nrStaging`
+# @default -- `false`
+nrStaging:
+
+receivers:
+  prometheus:
+    # -- (bool) Specifies whether the `prometheus` receiver is enabled
+    # @default -- `true`
+    enabled: true
+    # -- Sets the scrape interval for the `prometheus` receiver
+    # @default -- `1m`
+    scrapeInterval: 1m
+  k8sEvents:
+    # -- (bool) Specifies whether the `k8s_events` receiver is enabled
+    # @default -- `true`
+    enabled: true
+  hostmetrics:
+    # -- (bool) Specifies whether the `hostmetrics` receiver is enabled
+    # @default -- `true`
+    enabled: true
+    # -- Sets the scrape interval for the `hostmetrics` receiver
+    # @default -- `1m`
+    scrapeInterval: 1m
+  kubeletstats:
+    # -- (bool) Specifies whether the `kubeletstats` receiver is enabled
+    # @default -- `true`
+    enabled: true
+    # -- Sets the scrape interval for the `kubeletstats` receiver
+    # @default -- `1m`
+    scrapeInterval: 1m
+  filelog:
+    # -- (bool) Specifies whether the `filelog` receiver is enabled
+    # @default -- `true`
+    enabled: true
+
+# -- (bool) Send only the [metrics required](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector/docs/metrics-lowDataMode.md) to light up the NR kubernetes UI
+# @default -- `true`
+lowDataMode:
