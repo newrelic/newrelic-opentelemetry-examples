@@ -1,0 +1,10 @@
+services:
+  collector:
+    image: otel/opentelemetry-collector-contrib:0.142.0
+    container_name: collector-internal-telemetry
+    command: ["--config=/etc/otelcol/config.yaml"]
+    volumes:
+      - ./config.yaml:/etc/otelcol/config.yaml:ro
+    env_file:
+      - .env
+    restart: unless-stopped
