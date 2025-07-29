@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: collector
+  namespace: k8s-container-relationships
+  labels:
+    app.kubernetes.io/name: collector
+spec:
+  selector:
+    matchLabels:
+      name: collector
+  template:
+    metadata:
+      labels:
+        name: collector
+    spec:
+      containers:
+        - name: collector-container-relationship
+          image: otel/opentelemetry-collector-contrib:0.142.0
+          args:
+            - --config=/config/config.yaml
+          env:
+            # New Relic OTLP endpoint
+            - name: NEW_RELIC_OTLP_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: collector-internal-telemetry-secret
+                  key: NEW_RELIC_OTLP_ENDPOINT
+            # The New Relic API key used to authenticate export requests.
+            # Defined in secrets.yaml
+            - name: NEW_RELIC_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: collector-internal-telemetry-secret
+                  key: NEW_RELIC_API_KEY
+            # defines the collector's entity name in New Relic
+            - name: SERVICE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: collector-internal-telemetry-secret
+                  key: COLLECTOR_SERVICE_NAME
+            - name: CLUSTER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: collector-internal-telemetry-secret
+                  key: CLUSTER_NAME
+            # k8s.namespace.name from Downward API
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            # k8s.pod.name from Downward API
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            # k8s.container.name - must match the container's name above
+            - name: CONTAINER_NAME
+              value: collector-container-relationship
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          configMap:
+            name: collector-config
