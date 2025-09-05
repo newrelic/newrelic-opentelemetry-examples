@@ -30,8 +30,8 @@ flowchart LR
 
 ## Requirements
 
-- Your infrastructure must be instrumented which means container and/or host entities show up in NR. We recommend using the [nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) helm chart.
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. This example was tested on [AWS EKS](https://aws.amazon.com/eks/) with Amazon Linux nodes. The steps for achieving a container relationship should be universal for all k8s clusters - they also work on local clusters like `kind` or `minikube`.
+- Your infrastructure must be instrumented with one of our OTel infrastructure agents. We recommend using the [nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) helm chart for containers and [nrdot-collector-host](https://github.com/newrelic/nrdot-collector-releases/blob/main/distributions/nrdot-collector-host/README.md) for hosts, see instructions below. Please note that we're actively working on `nr-k8s-otel-collector` emitting host entities compatible with relationship synthesis which will eliminate the need for `nrdot-collector-host` but until that is done, there will be some overlap in the host telemetry these solutions scrape. If you are only interested in container relationships, you can follow the instructions below to skip installing it.
 - The host relationship is synthesized based on the `host.id` attribute matching up on the host and collector telemetry. The determination of this attribute heavily depends on your environment and is driven by the `resourcedetectionprocessor` which does not support local clusters out-of-the-box. You might be able to make it work by tweaking the processor configuration, but we won't cover this here as there are too many variables involved.
 - [A New Relic account](https://one.newrelic.com/)
 - [A New Relic license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)
@@ -55,7 +55,7 @@ We'll use [otelcol-contrib](https://github.com/open-telemetry/opentelemetry-coll
 
 ## Running the example
 
-1. Instrument your infrastructure, e.g. install [nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector)
+1. Instrument your containers with [nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector).
     ```shell
       # Cluster name is hard coded as the downward API does not expose it
       license_key='INSERT_API_KEY'
@@ -63,7 +63,7 @@ We'll use [otelcol-contrib](https://github.com/open-telemetry/opentelemetry-coll
       helm repo add newrelic https://helm-charts.newrelic.com
       helm upgrade 'nr-k8s-otel-collector-release' newrelic/nr-k8s-otel-collector \
       --install \
-      --create-namespace --namespace 'nr-k8s-otel-collector' \
+      --create-namespace --namespace 'newrelic' \
       --dependency-update \
       --set "cluster=${cluster_name}" \
       --set "licenseKey=${license_key}"
@@ -71,17 +71,17 @@ We'll use [otelcol-contrib](https://github.com/open-telemetry/opentelemetry-coll
 1. Update the values in [secrets.yaml](./k8s/secrets.yaml) based on the comments and your setup.
     * Note, be careful to avoid inadvertent secret sharing when modifying `secrets.yaml`. To ignore changes to this file from git, run `git update-index --skip-worktree k8s/secrets.yaml`.
 
-1. Run the application with the following command.
+1. Deploy the collector (see `collector.yaml` - we're using [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) as an example) and `nrdot-collector-host` (for host instrumentation) with the following command. If you wish to skip installing `nrdot-collector-host`, you can just delete or comment out the file `k8s/nrdot-host.yaml`
 
     ```shell
     kubectl apply -f k8s/
     ```
    
-   * When finished, cleanup resources with the following command. This is also useful to reset if modifying configuration.
+1. When finished, cleanup resources with the following command. This is also useful to reset if modifying configuration.
 
    ```shell
    kubectl delete -f k8s/
-   helm uninstall 'nr-k8s-otel-collector-release' --namespace 'nr-k8s-otel-collector'
+   helm uninstall 'nr-k8s-otel-collector-release' --namespace 'newrelic'
    ```
 
 ## Viewing your data
