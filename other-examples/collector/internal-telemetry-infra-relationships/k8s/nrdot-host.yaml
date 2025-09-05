@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nrdot-host
+  namespace: internal-telemetry-infra-relationship
+  labels:
+    app.kubernetes.io/name: nrdot-host
+spec:
+  selector:
+    matchLabels:
+      name: nrdot-host
+  template:
+    metadata:
+      labels:
+        name: nrdot-host
+    spec:
+      containers:
+        - name: nrdot-host
+          image: newrelic/nrdot-collector-host:1.3.0
+          args:
+            - --config=/etc/nrdot-collector-host/config.yaml
+            - "--config=yaml:receivers::hostmetrics::root_path: /hostfs"
+            # remove once nrdot-collector-host does this by default
+            - "--config=yaml:processors::resourcedetection/cloud::ec2::resource_attributes::host.name::enabled: true"
+          env:
+            # The New Relic API key used to authenticate export requests.
+            # Defined in secrets.yaml
+            - name: NEW_RELIC_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  # reusing the internal telemtry key to ensure host telemetry is colocated in the same account
+                  name: collector-internal-telemetry-secret
+                  key: NEW_RELIC_API_KEY
+                        # New Relic OTLP endpoint
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: collector-internal-telemetry-secret
+                  key: NEW_RELIC_OTLP_ENDPOINT
+          volumeMounts:
+            - name: hostfs
+              mountPath: /hostfs
+              readOnly: true
+      volumes:
+        - name: hostfs
+          hostPath:
+            path: /
+            type: Directory
