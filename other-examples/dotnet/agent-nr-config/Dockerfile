@@ -39,7 +39,7 @@ ENV OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf"
 # This env variable adds your New Relic license key to the OTLP headers.
 # You should override this when running the container so that a valid license key is used.
 # The instructions in the README for this application shows how to override this value when starting the container.
-ENV OTEL_EXPORTER_OTLP_HEADERS="api-key=${NEW_RELIC_LICENSE_KEY}"
+ENV OTEL_EXPORTER_OTLP_HEADERS="api-key=380d7b11e56fa29a3aa0113884483474FFFFNRAL"
 # This env variable controls the name New Relic will use for your application
 ENV OTEL_SERVICE_NAME="agent-nr-config"
 # The env variables below can be used if byte-code instrumentation is desired. See

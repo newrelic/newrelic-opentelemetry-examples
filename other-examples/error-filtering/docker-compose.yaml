@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # Error generator application
+  error-generator:
+    build: ./error-generator
+    container_name: error-generator
+    environment:
+      # OTLP endpoint (collector)
+      - OTEL_EXPORTER_OTLP_ENDPOINT=collector:4317
+
+      # Error generation configuration (loaded from .env)
+      - ERROR_RATE=${ERROR_RATE:-0.3}
+      - REQUEST_INTERVAL_MS=${REQUEST_INTERVAL_MS:-2000}
+      - ENABLE_TIMEOUT_ERRORS=${ENABLE_TIMEOUT_ERRORS:-true}
+      - ENABLE_VALIDATION_ERRORS=${ENABLE_VALIDATION_ERRORS:-true}
+      - ENABLE_DATABASE_ERRORS=${ENABLE_DATABASE_ERRORS:-true}
+      - ENABLE_NETWORK_ERRORS=${ENABLE_NETWORK_ERRORS:-true}
+      - ENABLE_AUTH_ERRORS=${ENABLE_AUTH_ERRORS:-true}
+    depends_on:
+      - collector
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - error-filtering
+
+  # OpenTelemetry Collector with filtering
+  collector:
+    image: otel/opentelemetry-collector-contrib:0.98.0
+    container_name: otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-config.yaml:/etc/otel-collector-config.yaml
+    environment:
+      # New Relic configuration (loaded from .env)
+      - NEW_RELIC_API_KEY=${NEW_RELIC_API_KEY}
+      - NEW_RELIC_OTLP_ENDPOINT=${NEW_RELIC_OTLP_ENDPOINT:-https://otlp.nr-data.net}
+
+      # Filter configuration (loaded from .env)
+      - FILTER_VALIDATION_ERRORS=${FILTER_VALIDATION_ERRORS:-true}
+      - FILTER_AUTH_ERRORS=${FILTER_AUTH_ERRORS:-false}
+      - FILTER_WARN_LOGS=${FILTER_WARN_LOGS:-true}
+      - SAMPLE_ERROR_METRICS=${SAMPLE_ERROR_METRICS:-false}
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "8888:8888"   # Prometheus metrics about the collector itself
+      - "13133:13133" # Health check
+    networks:
+      - error-filtering
+
+networks:
+  error-filtering:
+    driver: bridge
