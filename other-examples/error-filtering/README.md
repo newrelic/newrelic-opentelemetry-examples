@@ -282,7 +282,6 @@ open http://localhost:55679/debug/tracez
 ### Detailed Guides
 
 - **[VIEWING_LIVE_DATA.md](./VIEWING_LIVE_DATA.md)** - Comprehensive guide with 7 methods to view live data
-- **[TELEMETRY_EXAMPLES.md](./TELEMETRY_EXAMPLES.md)** - Example JSON structures of traces, logs, and metrics
 
 ## Troubleshooting
 

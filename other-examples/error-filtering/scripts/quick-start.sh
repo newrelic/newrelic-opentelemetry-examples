@@ -155,14 +155,12 @@ case $choice in
     echo ""
     echo "Documentation files:"
     echo "  - README.md                 - Getting started guide"
-    echo "  - TELEMETRY_EXAMPLES.md     - Example telemetry data"
     echo "  - VIEWING_LIVE_DATA.md      - How to view live data"
     echo ""
-    read -p "Which file to view? (1-3): " doc_choice
+    read -p "Which file to view? (1-2): " doc_choice
     case $doc_choice in
       1) less README.md ;;
-      2) less TELEMETRY_EXAMPLES.md ;;
-      3) less VIEWING_LIVE_DATA.md ;;
+      2) less VIEWING_LIVE_DATA.md ;;
       *) echo "Invalid choice" ;;
     esac
     ;;

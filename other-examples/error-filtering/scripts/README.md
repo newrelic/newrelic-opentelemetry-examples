@@ -296,5 +296,4 @@ docker compose logs collector
 ## See Also
 
 - **[VIEWING_LIVE_DATA.md](../VIEWING_LIVE_DATA.md)** - Detailed guide with manual methods
-- **[TELEMETRY_EXAMPLES.md](../TELEMETRY_EXAMPLES.md)** - Example telemetry data structures
 - **[README.md](../README.md)** - Main example documentation
