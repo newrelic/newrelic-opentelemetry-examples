@@ -3,12 +3,12 @@ import org.springframework.boot.gradle.plugin.SpringBootPlugin
 plugins {
   id 'java'
   id 'com.diffplug.spotless' version '8.1.0'
-  id 'org.springframework.boot' version '3.3.4'
+  id 'org.springframework.boot' version '4.0.1'
 }
 
 java {
   toolchain {
-    languageVersion = JavaLanguageVersion.of(17)
+    languageVersion = JavaLanguageVersion.of(21)
   }
 }
 
@@ -59,7 +59,7 @@ bootRun {
 
   mainClass.set 'com.example.demo.Application'
 
-  def agentPath = project.buildDir.toString() + "/agent/opentelemetry-javaagent.jar"
+  def agentPath = layout.buildDirectory.dir('agent').get().asFile.toString() + "/opentelemetry-javaagent.jar"
   jvmArgs = [
     // Set the opentelemetry-java-instrumentation agent as the javaagent
     "-javaagent:${agentPath}"
