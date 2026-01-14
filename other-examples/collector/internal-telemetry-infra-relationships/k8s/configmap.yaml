@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: collector-config
+  namespace: internal-telemetry-infra-relationship
+data:
+  config.yaml: |
+    receivers:
+      otlp/internal:
+        protocols:
+          # listens on localhost:4318 by default, so the collector's internal telemetry otlpexporters can write to this without further configuration
+          http:
+
+    processors:
+      batch:
+      memory_limiter:
+        check_interval: 1s
+        limit_percentage: 75
+        spike_limit_percentage: 15
+        
+      # adds host.id as resource attribute
+      # Note: if host entities are monitored (and thus their entity synthesis driven) by a collector C, this processor should mirror C's configuration
+      resourcedetection/internal:
+        # only one detector should technically be necessary, but this list covers the big three cloud providers and their managed Kubernetes services
+        # env detector allows providing the host.id via env var, i.e. OTEL_RESOURCE_ATTRIBUTES=host.id=<host_id> for more static setups and manual testing/debugging
+        detectors: [env, eks, ec2, aks, azure, gcp]
+        timeout: 2s
+
+    exporters:
+      otlphttp/internal:
+        endpoint: "${env:NEW_RELIC_OTLP_ENDPOINT}"
+        headers:
+          api-key: "${env:NEW_RELIC_LICENSE_KEY}"
+
+    service:
+      pipelines:
+        ####
+        #  insert your normal pipelines
+        ####
+        logs/internal:
+          receivers:
+            - otlp/internal
+          processors:
+            - memory_limiter
+            - resourcedetection/internal
+            - batch
+          exporters:
+            - otlphttp/internal
+        metrics/internal:
+          receivers:
+            - otlp/internal
+          processors:
+            - memory_limiter
+            - resourcedetection/internal
+            - batch
+          exporters:
+            - otlphttp/internal
+        traces/internal:
+          receivers:
+            - otlp/internal
+          processors:
+            - memory_limiter
+            - resourcedetection/internal
+            - batch
+          exporters:
+            - otlphttp/internal
+      
+      telemetry:
+        resource:
+          service.name: "${env:SERVICE_NAME}"
+        metrics:
+          level: detailed
+          readers:
+            - periodic:
+                exporter:
+                  otlp:
+                    protocol: http/protobuf
+                    endpoint: http://localhost:4318
+        logs:
+          level: INFO
+          disable_stacktrace: true
+          disable_caller: true
+          processors:
+            - batch:
+                exporter:
+                  otlp:
+                    protocol: http/protobuf
+                    endpoint: http://localhost:4318
+        traces:
+          processors:
+            - batch:
+                exporter:
+                  otlp:
+                    protocol: http/protobuf
+                    endpoint: http://localhost:4318
