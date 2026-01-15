@@ -46,7 +46,7 @@ exporters:
   otlphttp:
     endpoint: ${NEW_RELIC_OTLP_ENDPOINT}
     headers:
-      api-key: 380d7b11e56fa29a3aa0113884483474FFFFNRAL
+      api-key: ${NEW_RELIC_API_KEY}
 
 service:
   pipelines:

@@ -27,7 +27,7 @@ services:
     environment:
       LOG_EXPORTER_LOG_VERBOSITY: "detailed"
       NEW_RELIC_OTLP_ENDPOINT: ${NEW_RELIC_OTLP_ENDPOINT}
-      NEW_RELIC_API_KEY: '380d7b11e56fa29a3aa0113884483474FFFFNRAL'
+      NEW_RELIC_API_KEY: '${NEW_RELIC_API_KEY}'
     ports:
       - '4317:4317' # OTLP gRPC receiver
       - '4318:4318' # OTLP HTTP receiver
