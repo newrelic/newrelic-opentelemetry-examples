@@ -4,8 +4,8 @@ source 'https://rubygems.org'
 
 ruby '3.2.2'
 
-gem 'sinatra', '~> 3.0.6'
-gem 'thin', '~> 1.8.2'
+gem 'sinatra', '~> 4.2.1'
+gem 'thin', '~> 2.0.1'
 
 gem 'opentelemetry-sdk', '~> 1.2.1'
 gem 'opentelemetry-exporter-otlp', '~> 0.25.0'

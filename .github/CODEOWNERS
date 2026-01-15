@@ -3,9 +3,7 @@
 * @newrelic/opentelemetry-community
 
 getting-started-guides/dotnet/      @alanwest
-getting-started-guides/java/        @jack-berg
 getting-started-guides/ruby/        @kaylareopelle
 
 other-examples/collector/   @jcountsNR
 other-examples/dotnet/      @alanwest
-other-examples/java/        @jack-berg
