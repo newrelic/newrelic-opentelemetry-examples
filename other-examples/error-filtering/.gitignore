@@ -1,0 +1,13 @@
+# Environment variables with secrets
+.env
+
+# Go build artifacts
+error-generator/error-generator
+error-generator/go.sum
+
+# Docker
+.dockerignore
+
+#generated directories
+telemetry-samples/*
+comparison/*
