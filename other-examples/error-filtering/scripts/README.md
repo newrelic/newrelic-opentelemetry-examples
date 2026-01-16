@@ -11,12 +11,6 @@ This directory contains helper scripts to view and analyze telemetry data flowin
 # Live statistics dashboard
 ./monitor-stats.sh
 
-# View errors only
-./view-errors.sh [error-type]
-
-# View what's being filtered
-./view-filtered.sh [history]
-
 # Capture samples to files
 ./capture-samples.sh [duration-seconds]
 
@@ -38,11 +32,8 @@ Provides a user-friendly menu to access all viewing methods. Best for first-time
 
 **Features:**
 - Live statistics dashboard
-- View collector output
-- Filter by error type
 - Capture samples
 - Compare filtering
-- Open zpages web UI
 
 ---
 
@@ -70,50 +61,6 @@ Shows live filtering statistics updated every 5 seconds:
   Sent:      105 spans (to New Relic)
   Filter %:  30.0% filtered out
 ```
-
----
-
-### view-errors.sh
-**View error telemetry in real-time**
-
-Shows only error-related traces, logs, and metrics. Optionally filter by specific error type.
-
-**Usage:**
-```bash
-# View all errors
-./view-errors.sh
-
-# View specific error type
-./view-errors.sh validation
-./view-errors.sh auth
-./view-errors.sh database
-./view-errors.sh timeout
-./view-errors.sh network
-```
-
-**Example:**
-```bash
-./view-errors.sh database
-# Shows only database error telemetry
-```
-
----
-
-### view-filtered.sh
-**Show what's being filtered out**
-
-Displays telemetry that arrives at the collector but is filtered out before being sent to New Relic.
-
-**Usage:**
-```bash
-# Live filtering (watch in real-time)
-./view-filtered.sh
-
-# Historical (from existing logs)
-./view-filtered.sh history
-```
-
-**Note:** Filtered items don't appear in debug output (they're dropped before export), so this script shows items that match filter criteria before they're dropped.
 
 ---
 
@@ -185,115 +132,3 @@ TRACES (Spans):
   With filtering:    95 spans
   Filtered out:      55 spans (36.7%)
 ```
-
----
-
-## Prerequisites
-
-All scripts require:
-- Docker and Docker Compose
-- Services running (`docker compose up`)
-- bash shell
-- curl (for stats scripts)
-
-Some scripts also use:
-- `bc` (for percentage calculations)
-- `jq` (for JSON formatting - optional)
-- `grep`, `sort`, `uniq` (standard Unix tools)
-
-## Tips
-
-### First Time Users
-1. Start with `./quick-start.sh` - it guides you through all options
-2. Try the statistics dashboard to see high-level filtering stats
-3. Then explore specific views (errors, specific error types)
-
-### Understanding Filtering
-1. Run `./compare-filtering.sh 30` to see the impact of filtering
-2. The comparison shows exactly what gets filtered out
-3. Adjust `.env` settings and compare again
-
-### Debugging Issues
-1. Use `./monitor-stats.sh` to see if data is flowing
-2. If no data appears, check health status in the dashboard
-3. Use `./capture-samples.sh` to save data for detailed analysis
-
-### Analyzing Patterns
-1. Capture samples with `./capture-samples.sh 60`
-2. Examine individual files in `telemetry-samples/`
-3. Look for patterns in error types and frequencies
-
-## Common Workflows
-
-### Quick Health Check
-```bash
-./quick-start.sh
-# Select option 1 (statistics dashboard)
-# Check that spans/logs/metrics are being received
-```
-
-### Debug Filtering
-```bash
-# See what's being filtered in real-time
-./view-errors.sh validation
-
-# Or capture to files for detailed analysis
-./capture-samples.sh 30
-grep "validation" telemetry-samples/traces-sample.txt
-```
-
-### Measure Filter Impact
-```bash
-# Compare before and after filtering
-./compare-filtering.sh 30
-
-# Review the summary
-cat comparison/comparison-summary.txt
-```
-
-### Monitor Production
-```bash
-# Watch stats continuously
-./monitor-stats.sh
-
-# In another terminal, watch for critical errors only
-./view-errors.sh database
-```
-
-## Troubleshooting
-
-### "Command not found"
-Make sure scripts are executable:
-```bash
-chmod +x scripts/*.sh
-```
-
-### "Connection refused" errors
-Services aren't running. Start them:
-```bash
-docker compose up -d
-# Wait 10 seconds
-./monitor-stats.sh
-```
-
-### "bc: command not found"
-Install bc for percentage calculations:
-```bash
-# macOS
-brew install bc
-
-# Ubuntu/Debian
-apt-get install bc
-```
-
-### No output from scripts
-Check if collector is running:
-```bash
-docker compose ps
-docker compose logs collector
-```
-
-## See Also
-
-- **[VIEWING_LIVE_DATA.md](../VIEWING_LIVE_DATA.md)** - Detailed guide with manual methods
-- **[README.md](../README.md)** - Main example documentation

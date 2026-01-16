@@ -26,7 +26,7 @@ CAPTURE_PID=$!
 
 # Wait for specified duration
 for i in $(seq $DURATION -1 1); do
-  echo -ne "Capturing... ${i} seconds remaining\r"
+  echo -ne "Capturing... ${i} seconds remaining   \r"
   sleep 1
 done
 echo ""
@@ -54,9 +54,6 @@ METRIC_COUNT=$(grep -c "Metric #" "${OUTPUT_DIR}/metrics-sample.txt")
 # Extract error types
 grep -E "error\.type" "${OUTPUT_DIR}/collector-output.log" | sort | uniq -c > "${OUTPUT_DIR}/error-types-summary.txt"
 
-# Extract filter stats
-curl -s http://localhost:8888/metrics | grep filter > "${OUTPUT_DIR}/filter-stats.txt"
-
 echo ""
 echo "📊 Summary"
 echo "---------------------------------------------------"
@@ -70,11 +67,4 @@ echo "  ${OUTPUT_DIR}/traces-sample.txt          - Sample traces"
 echo "  ${OUTPUT_DIR}/logs-sample.txt            - Sample logs"
 echo "  ${OUTPUT_DIR}/metrics-sample.txt         - Sample metrics"
 echo "  ${OUTPUT_DIR}/error-types-summary.txt    - Error types breakdown"
-echo "  ${OUTPUT_DIR}/filter-stats.txt           - Filtering statistics"
-echo ""
-echo "💡 Tips:"
-echo "  - View traces: less ${OUTPUT_DIR}/traces-sample.txt"
-echo "  - View logs: less ${OUTPUT_DIR}/logs-sample.txt"
-echo "  - View errors: cat ${OUTPUT_DIR}/error-types-summary.txt"
-echo "  - View stats: cat ${OUTPUT_DIR}/filter-stats.txt"
 echo ""

@@ -13,11 +13,14 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	otellog "go.opentelemetry.io/otel/log"
+	"go.opentelemetry.io/otel/log/global"
+	sdklog "go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/sdk/metric"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -28,10 +31,11 @@ import (
 )
 
 var (
-	tracer        trace.Tracer
-	meter         metric.Meter
-	logger        *zap.Logger
-	errorCounter  metric.Int64Counter
+	tracer         trace.Tracer
+	meter          metric.Meter
+	logger         *zap.Logger
+	otlpLogger     otellog.Logger
+	errorCounter   metric.Int64Counter
 	requestCounter metric.Int64Counter
 
 	// Configuration from environment variables
@@ -188,6 +192,24 @@ func initOTel(ctx context.Context) func() {
 		log.Fatalf("failed to create request counter: %v", err)
 	}
 
+	// Initialize log provider
+	logExporter, err := otlploggrpc.New(ctx,
+		otlploggrpc.WithEndpoint(getOTLPEndpoint()),
+		otlploggrpc.WithInsecure(),
+	)
+	if err != nil {
+		log.Fatalf("failed to create log exporter: %v", err)
+	}
+
+	lp := sdklog.NewLoggerProvider(
+		sdklog.WithProcessor(sdklog.NewBatchProcessor(logExporter)),
+		sdklog.WithResource(res),
+	)
+	global.SetLoggerProvider(lp)
+
+	// Get OTLP logger
+	otlpLogger = lp.Logger("error-generator")
+
 	// Initialize logger with JSON output
 	config := zap.NewProductionConfig()
 	config.EncoderConfig.TimeKey = "timestamp"
@@ -201,6 +223,7 @@ func initOTel(ctx context.Context) func() {
 	return func() {
 		_ = tp.Shutdown(ctx)
 		_ = mp.Shutdown(ctx)
+		_ = lp.Shutdown(ctx)
 		_ = logger.Sync()
 	}
 }
@@ -271,7 +294,7 @@ func handleError(ctx context.Context, span trace.Span, errType *ErrorType, reque
 	)
 	span.SetStatus(codes.Error, errType.Message)
 
-	// Log the error
+	// Log the error to stdout (zap)
 	logger.Log(errType.Severity, errType.Message,
 		zap.String("error.type", errType.Name),
 		zap.Int("http.status_code", errType.HTTPStatus),
@@ -279,6 +302,27 @@ func handleError(ctx context.Context, span trace.Span, errType *ErrorType, reque
 		zap.String("trace.id", span.SpanContext().TraceID().String()),
 		zap.String("span.id", span.SpanContext().SpanID().String()),
 	)
+
+	// Send log via OTLP
+	var severity otellog.Severity
+	if errType.Severity == zapcore.ErrorLevel {
+		severity = otellog.SeverityError
+	} else {
+		severity = otellog.SeverityWarn
+	}
+
+	logRecord := otellog.Record{}
+	logRecord.SetTimestamp(time.Now())
+	logRecord.SetBody(otellog.StringValue(errType.Message))
+	logRecord.SetSeverity(severity)
+	logRecord.AddAttributes(
+		otellog.String("error.type", errType.Name),
+		otellog.Int("http.status_code", errType.HTTPStatus),
+		otellog.Int("request.number", requestNum),
+		otellog.String("trace.id", span.SpanContext().TraceID().String()),
+		otellog.String("span.id", span.SpanContext().SpanID().String()),
+	)
+	otlpLogger.Emit(ctx, logRecord)
 
 	// Increment error counter
 	errorCounter.Add(ctx, 1,
@@ -296,12 +340,26 @@ func handleSuccess(ctx context.Context, span trace.Span, requestNum int) {
 	)
 	span.SetStatus(codes.Ok, "success")
 
+	// Log to stdout (zap)
 	logger.Info("Request processed successfully",
 		zap.Int("request.number", requestNum),
 		zap.Int("http.status_code", 200),
 		zap.String("trace.id", span.SpanContext().TraceID().String()),
 		zap.String("span.id", span.SpanContext().SpanID().String()),
 	)
+
+	// Send log via OTLP
+	logRecord := otellog.Record{}
+	logRecord.SetTimestamp(time.Now())
+	logRecord.SetBody(otellog.StringValue("Request processed successfully"))
+	logRecord.SetSeverity(otellog.SeverityInfo)
+	logRecord.AddAttributes(
+		otellog.Int("request.number", requestNum),
+		otellog.Int("http.status_code", 200),
+		otellog.String("trace.id", span.SpanContext().TraceID().String()),
+		otellog.String("span.id", span.SpanContext().SpanID().String()),
+	)
+	otlpLogger.Emit(ctx, logRecord)
 }
 
 func startAutoGenerator(ctx context.Context) {

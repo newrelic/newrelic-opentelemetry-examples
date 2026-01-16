@@ -7,10 +7,6 @@ echo "==================================================="
 echo "   OpenTelemetry Collector - Live Statistics"
 echo "==================================================="
 echo ""
-echo "Note: This collector TRANSFORMS errors (changes"
-echo "status from Error to Ok) rather than dropping them."
-echo "All telemetry is sent to New Relic."
-echo ""
 echo "Press Ctrl+C to stop"
 echo ""
 sleep 3
@@ -31,7 +27,6 @@ while true; do
 
   echo "  Received:  ${SPANS_RECEIVED:-0} spans"
   echo "  Sent:      ${SPANS_SENT:-0} spans (to New Relic)"
-  echo "  Note:      Expected errors transformed (status: Error → Ok)"
   echo ""
 
   echo "📝 LOGS"
@@ -41,7 +36,6 @@ while true; do
 
   echo "  Received:  ${LOGS_RECEIVED:-0} log records"
   echo "  Sent:      ${LOGS_SENT:-0} log records (to New Relic)"
-  echo "  Note:      WARN logs downgraded to INFO severity"
   echo ""
 
   echo "📈 METRICS"
@@ -51,7 +45,6 @@ while true; do
 
   echo "  Received:  ${METRICS_RECEIVED:-0} data points"
   echo "  Sent:      ${METRICS_SENT:-0} data points (to New Relic)"
-  echo "  Note:      Expected errors marked with error.expected=true"
   echo ""
 
   echo "🔧 COLLECTOR HEALTH"
@@ -69,11 +62,6 @@ while true; do
   fi
   echo ""
 
-  echo "---------------------------------------------------"
-  echo "Transformation Strategy:"
-  echo "  • Validation & auth errors: status changed to Ok"
-  echo "  • WARN logs: severity changed to INFO"
-  echo "  • All data sent, but marked as 'expected'"
   echo "---------------------------------------------------"
   echo "Refreshing in 5 seconds..."
 

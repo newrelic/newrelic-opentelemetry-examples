@@ -29,7 +29,6 @@ processors:
       - context: span
         conditions:
           - attributes["error.type"] == "validation"
-          - IsMatch(env("FILTER_VALIDATION_ERRORS"), "true")
           - status.code == STATUS_CODE_ERROR
         statements:
           - set(status.code, STATUS_CODE_OK)
@@ -41,7 +40,6 @@ processors:
       - context: span
         conditions:
           - attributes["error.type"] == "auth"
-          - IsMatch(env("FILTER_AUTH_ERRORS"), "true")
           - status.code == STATUS_CODE_ERROR
         statements:
           - set(status.code, STATUS_CODE_OK)
@@ -71,11 +69,10 @@ processors:
   transform/logs:
     error_mode: ignore
     log_statements:
-      # Downgrade WARN logs to INFO if configured
+      # Downgrade WARN logs to INFO
       - context: log
         conditions:
           - severity_text == "WARN"
-          - IsMatch(env("FILTER_WARN_LOGS"), "true")
         statements:
           - set(severity_number, SEVERITY_NUMBER_INFO)
           - set(severity_text, "INFO")
@@ -85,7 +82,6 @@ processors:
       - context: log
         conditions:
           - attributes["error.type"] == "validation"
-          - IsMatch(env("FILTER_VALIDATION_ERRORS"), "true")
         statements:
           - set(attributes["error.expected"], true)
           - set(severity_number, SEVERITY_NUMBER_INFO)
@@ -95,7 +91,6 @@ processors:
       - context: log
         conditions:
           - attributes["error.type"] == "auth"
-          - IsMatch(env("FILTER_AUTH_ERRORS"), "true")
         statements:
           - set(attributes["error.expected"], true)
           - set(severity_number, SEVERITY_NUMBER_INFO)
@@ -127,7 +122,6 @@ processors:
       - context: datapoint
         conditions:
           - attributes["error.type"] == "validation"
-          - IsMatch(env("FILTER_VALIDATION_ERRORS"), "true")
         statements:
           - set(attributes["error.expected"], true)
 
@@ -135,7 +129,6 @@ processors:
       - context: datapoint
         conditions:
           - attributes["error.type"] == "auth"
-          - IsMatch(env("FILTER_AUTH_ERRORS"), "true")
         statements:
           - set(attributes["error.expected"], true)
 
@@ -165,7 +158,7 @@ exporters:
 
   # Debug exporter for local testing
   debug:
-    verbosity: basic
+    verbosity: detailed
     sampling_initial: 5
     sampling_thereafter: 200
 

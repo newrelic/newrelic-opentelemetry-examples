@@ -1,0 +1,86 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+
+  # Memory limiter to prevent OOM
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+
+  # ============================================================
+  # RESOURCE DETECTION
+  # Add host and cloud metadata
+  # ============================================================
+  resourcedetection:
+    detectors: [env, system, docker]
+    timeout: 5s
+
+exporters:
+  # Export to New Relic via OTLP
+  otlphttp:
+    endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT}
+    headers:
+      api-key: ${env:NEW_RELIC_API_KEY}
+    compression: gzip
+
+  # Debug exporter for local testing
+  debug:
+    verbosity: detailed
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+  pprof:
+    endpoint: 0.0.0.0:1777
+
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+service:
+  extensions: [health_check, pprof, zpages]
+
+  pipelines:
+    # Trace pipeline WITHOUT transformation
+    traces:
+      receivers: [otlp]
+      processors:
+        - memory_limiter
+        - resourcedetection
+        - batch
+      exporters: [otlphttp, debug]
+
+    # Log pipeline WITHOUT transformation
+    logs:
+      receivers: [otlp]
+      processors:
+        - memory_limiter
+        - resourcedetection
+        - batch
+      exporters: [otlphttp, debug]
+
+    # Metric pipeline WITHOUT transformation
+    metrics:
+      receivers: [otlp]
+      processors:
+        - memory_limiter
+        - resourcedetection
+        - batch
+      exporters: [otlphttp, debug]
+
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      address: 0.0.0.0:8888

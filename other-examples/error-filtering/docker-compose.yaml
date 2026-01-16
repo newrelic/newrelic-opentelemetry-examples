@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Error generator application
   error-generator:
@@ -31,7 +29,7 @@ services:
 
   # OpenTelemetry Collector with filtering
   collector:
-    image: otel/opentelemetry-collector-contrib:0.98.0
+    image: otel/opentelemetry-collector-contrib:0.115.1
     container_name: otel-collector
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
@@ -40,11 +38,6 @@ services:
       # New Relic configuration (loaded from .env)
       - NEW_RELIC_API_KEY=${NEW_RELIC_API_KEY}
       - NEW_RELIC_OTLP_ENDPOINT=${NEW_RELIC_OTLP_ENDPOINT:-https://otlp.nr-data.net}
-
-      # Filter configuration (loaded from .env)
-      - FILTER_VALIDATION_ERRORS=${FILTER_VALIDATION_ERRORS:-true}
-      - FILTER_AUTH_ERRORS=${FILTER_AUTH_ERRORS:-false}
-      - FILTER_WARN_LOGS=${FILTER_WARN_LOGS:-true}
       - SAMPLE_ERROR_METRICS=${SAMPLE_ERROR_METRICS:-false}
     ports:
       - "4317:4317"   # OTLP gRPC receiver

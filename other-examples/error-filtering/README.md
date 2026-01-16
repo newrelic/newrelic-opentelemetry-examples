@@ -10,7 +10,6 @@ This example demonstrates several common error filtering patterns:
 
 - **Filter noisy errors**: Remove validation errors (400) and auth errors (401) that clutter dashboards
 - **Filter by severity**: Only send ERROR-level logs, filtering out WARN logs
-- **Redact sensitive data**: Remove tokens, passwords, emails, etc. from error messages
 - **Add metadata**: Tag filtered telemetry for tracking what was processed
 
 ## Requirements
@@ -66,7 +65,7 @@ All configuration is managed through environment variables in [.env](./.env).
 
 Control what errors are generated:
 
-```bash
+```
 # Error rate (0.0 to 1.0)
 ERROR_RATE=0.3
 
@@ -79,21 +78,6 @@ ENABLE_VALIDATION_ERRORS=true       # 400 Bad Request
 ENABLE_DATABASE_ERRORS=true         # 500 Internal Server Error
 ENABLE_NETWORK_ERRORS=true          # 503 Service Unavailable
 ENABLE_AUTH_ERRORS=true             # 401 Unauthorized
-```
-
-### Filter Configuration
-
-Control what errors are filtered out:
-
-```bash
-# Filter validation errors (400 Bad Request)
-FILTER_VALIDATION_ERRORS=true
-
-# Filter authentication errors (401 Unauthorized)
-FILTER_AUTH_ERRORS=false
-
-# Filter WARN-level logs (only send ERROR and above)
-FILTER_WARN_LOGS=true
 ```
 
 ## Error Types
@@ -128,7 +112,7 @@ Filters error spans based on error type, span status code, and http response sta
       - context: span
         conditions:
           # Remove validation error spans
-          - 'attributes["error.type"] == "validation" and IsMatch(env("FILTER_VALIDATION_ERRORS"), "true")'
+          - 'attributes["error.type"] == "validation"
           - 'span.status.code == "Error"'
           - 'attributes["http.response.status_code"] == 504'
         statements:
@@ -145,8 +129,8 @@ Filters logs based on severity and error type:
     log_statements:
       - context: log
         conditions:
-          - 'severity_text == "WARN" and IsMatch(env("FILTER_WARN_LOGS"), "true")'
-          - 'attributes["error.type"] == "validation" and IsMatch(env("FILTER_VALIDATION_ERRORS"), "true")'
+          - 'severity_text == "WARN"'
+          - 'attributes["error.type"] == "validation"'
         statements:
           - ...
 ```
@@ -161,59 +145,9 @@ Filters error metrics by error type:
     metric_statements:
       - context: metric
         conditions:
-          - 'name == "errors.total" and attributes["error.type"] == "validation" and IsMatch(env("FILTER_VALIDATION_ERRORS"), "true")'
+          - 'name == "errors.total" and attributes["error.type"] == "validation"'
         statements:
           - ...
-```
-
-### 4. Data Redaction
-
-Removes sensitive information from error messages:
-
-```yaml
-transform/traces:
-  trace_statements:
-    - context: span
-      statements:
-        # Redact tokens and passwords
-        - replace_pattern(status.message, "token=[A-Za-z0-9]+", "token=REDACTED")
-        - replace_pattern(status.message, "password=[^ ]+", "password=REDACTED")
-```
-
-## Viewing Filtered Data
-
-After running the example, you can query your data in New Relic:
-
-### View Error Traces
-
-```sql
-FROM Span
-SELECT count(*)
-WHERE service.name = 'error-generator'
-  AND error = true
-FACET error.type
-SINCE 10 minutes ago
-```
-
-### View Error Logs
-
-```sql
-FROM Log
-SELECT count(*)
-WHERE service.name = 'error-generator'
-  AND severity = 'ERROR'
-FACET attributes.error.type
-SINCE 10 minutes ago
-```
-
-### View Error Metrics
-
-```sql
-FROM Metric
-SELECT sum(errors.total)
-WHERE service.name = 'error-generator'
-FACET error.type
-SINCE 10 minutes ago
 ```
 
 ### Compare Filtered vs Unfiltered
@@ -224,84 +158,6 @@ To see the impact of filtering, run the example twice:
 2. Then with filters enabled (`FILTER_*=true`)
 
 Compare the data volume and types in New Relic to see what was filtered out.
-
-## Viewing Live Telemetry Data
-
-Want to see the telemetry data flowing through the collector in real-time? We provide several helper scripts and detailed guides:
-
-### Interactive Quick Start
-
-```bash
-./scripts/quick-start.sh
-```
-
-Provides an interactive menu with options to:
-- View live statistics dashboard
-- See all collector output
-- View only errors
-- Capture samples to files
-- Compare filtered vs unfiltered data
-- Open zpages web UI
-
-### Individual Scripts
-
-```bash
-# Monitor real-time statistics (spans, logs, metrics filtered)
-./scripts/monitor-stats.sh
-
-# View all errors in real-time
-./scripts/view-errors.sh
-
-# View specific error type
-./scripts/view-errors.sh validation
-./scripts/view-errors.sh database
-
-# Capture 30 seconds of telemetry to files
-./scripts/capture-samples.sh 30
-
-# Compare filtered vs unfiltered (runs 30s each)
-./scripts/compare-filtering.sh 30
-```
-
-### Manual Methods
-
-```bash
-# Watch all collector logs
-docker compose logs -f collector
-
-# Check collector health
-curl http://localhost:13133
-
-# View collector metrics (including filter stats)
-curl http://localhost:8888/metrics | grep filter
-
-# Access zpages web UI
-open http://localhost:55679/debug/tracez
-```
-
-### Detailed Guides
-
-- **[VIEWING_LIVE_DATA.md](./VIEWING_LIVE_DATA.md)** - Comprehensive guide with 7 methods to view live data
-
-## Troubleshooting
-
-### No data appearing in New Relic
-
-1. Check your API key is set correctly in `.env`
-2. Check collector logs: `docker compose logs collector`
-3. Verify the collector health: `curl http://localhost:13133`
-
-### All errors are being filtered
-
-1. Check your filter settings in `.env`
-2. Verify filters are configured correctly in `otel-config.yaml`
-3. View collector debug output: Set `debug` exporter `verbosity: detailed` in `otel-config.yaml`
-
-### Error generator not producing errors
-
-1. Check error generator logs: `docker compose logs error-generator`
-2. Verify `ERROR_RATE` is greater than 0
-3. Ensure at least one `ENABLE_*_ERRORS` is set to `true`
 
 ## Additional Resources
 
