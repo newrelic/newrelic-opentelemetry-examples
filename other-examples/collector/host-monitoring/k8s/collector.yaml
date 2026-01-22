@@ -9,72 +9,131 @@ metadata:
     app.kubernetes.io/name: collector-config
 data:
   collector-config: |
+    exporters:
+      debug:
+        verbosity: detailed
+      otlphttp/newrelic:
+        endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT:-https://otlp.nr-data.net}
+        headers:
+          api-key: ${env:NEW_RELIC_LICENSE_KEY}
+    extensions:
+      health_check: null
+    processors:
+      attributes/exclude_system_paging:
+        actions:
+          - action: delete
+            key: type
+        include:
+          match_type: strict
+          metric_names:
+            - system.paging.operations
+      batch: null
+      cumulativetodelta: null
+      # remove system.cpu metrics for states
+      filter/exclude_cpu_utilization:
+        metrics:
+          datapoint:
+            - metric.name == "system.cpu.utilization" and attributes["state"] == "interrupt"
+            - metric.name == "system.cpu.utilization" and attributes["state"] == "nice"
+            - metric.name == "system.cpu.utilization" and attributes["state"] == "softirq"
+      filter/exclude_filesystem_inodes_usage:
+        metrics:
+          datapoint:
+            - metric.name == "system.filesystem.inodes.usage" and attributes["type"] == "squashfs"
+            - metric.name == "system.filesystem.inodes.usage" and attributes["state"] == "reserved"
+      filter/exclude_filesystem_usage:
+        metrics:
+          datapoint:
+            - metric.name == "system.filesystem.usage" and attributes["type"] == "squashfs"
+            - metric.name == "system.filesystem.usage" and attributes["state"] == "reserved"
+      filter/exclude_filesystem_utilization:
+        metrics:
+          datapoint:
+            - metric.name == "system.filesystem.utilization" and attributes["type"] == "squashfs"
+      filter/exclude_memory_usage:
+        metrics:
+          datapoint:
+            - metric.name == "system.memory.usage" and attributes["state"] == "slab_unreclaimable"
+            - metric.name == "system.memory.usage" and attributes["state"] == "inactive"
+      filter/exclude_memory_utilization:
+        metrics:
+          datapoint:
+            - metric.name == "system.memory.utilization" and attributes["state"] == "slab_unreclaimable"
+            - metric.name == "system.memory.utilization" and attributes["state"] == "inactive"
+            - metric.name == "system.memory.utilization" and attributes["state"] == "cached"
+            - metric.name == "system.memory.utilization" and attributes["state"] == "buffered"
+            - metric.name == "system.memory.utilization" and attributes["state"] == "slab_reclaimable"
+      filter/exclude_network:
+        metrics:
+          datapoint:
+            - IsMatch(metric.name, "^system.network.*") == true and attributes["device"] == "lo"
+      filter/exclude_system_disk:
+        metrics:
+          datapoint:
+            - metric.name == "system.disk.operations" and IsMatch(attributes["device"], "^loop.*") == true
+            - metric.name == "system.disk.merged" and IsMatch(attributes["device"], "^loop.*") == true
+            - metric.name == "system.disk.io" and IsMatch(attributes["device"], "^loop.*") == true
+            - metric.name == "system.disk.io_time" and IsMatch(attributes["device"], "^loop.*") == true
+            - metric.name == "system.disk.operation_time" and IsMatch(attributes["device"], "^loop.*") == true
+      filter/exclude_system_paging:
+        metrics:
+          datapoint:
+            - metric.name == "system.paging.usage" and attributes["state"] == "cached"
+            - metric.name == "system.paging.operations" and attributes["type"] == "cached"
+      # used to prevent out of memory situations on the collector
+      memory_limiter:
+        check_interval: 1s
+        limit_mib: ${env:NEW_RELIC_MEMORY_LIMIT_MIB:-100}
+      # group system.cpu metrics by cpu
+      metricstransform:
+        transforms:
+          - action: update
+            include: system.cpu.utilization
+            operations:
+              - action: aggregate_labels
+                aggregation_type: mean
+                label_set: [ state ]
+          - action: update
+            include: system.paging.operations
+            operations:
+              - action: aggregate_labels
+                aggregation_type: sum
+                label_set: [ direction ]
+      resourcedetection:
+        detectors: ["system"]
+        system:
+          hostname_sources: ["os"]
+          resource_attributes:
+            host.id:
+              enabled: true
+      resourcedetection/cloud:
+        detectors: ["gcp", "ec2", "azure"]
+        override: true
+        timeout: 2s
+      # Gives OTEL_RESOURCE_ATTRIBUTES precedence over other sources.
+      # host.id is set from env whenever the collector is orchestrated by NR Agents.
+      resourcedetection/env:
+        detectors: ["env"]
+        override: true
+        timeout: 2s
+      transform:
+        log_statements:
+          - context: log
+            statements:
+              - truncate_all(log.attributes, 4095)
+              - truncate_all(resource.attributes, 4095)
+        trace_statements:
+          - context: span
+            statements:
+              - truncate_all(span.attributes, 4095)
+              - truncate_all(resource.attributes, 4095)
+      transform/host:
+        metric_statements:
+          - context: metric
+            statements:
+              - set(metric.description, "")
+              - set(metric.unit, "")
     receivers:
-      # Keep configuration in sync with: https://github.com/newrelic/nrdot-collector-releases/blob/main/distributions/nrdot-collector-host/config.yaml
-      otlp:
-        protocols:
-          grpc:
-          http:
-            # By default, the otlp receiver is configured to listen on localhost at port 4318, we need to change this to listen on the pod IP.
-            endpoint: ${env:MY_POD_IP}:4318
-      
-      hostmetrics:
-        root_path: /hostfs
-        # Default collection interval is 60s. Lower if you need finer granularity.
-        collection_interval: 60s
-        scrapers:
-          cpu:
-            metrics:
-              system.cpu.time:
-                enabled: false
-              system.cpu.utilization:
-                enabled: true
-          load:
-          memory:
-            metrics:
-              system.memory.utilization:
-                enabled: true
-          paging:
-            metrics:
-              system.paging.utilization:
-                enabled: false
-              system.paging.faults:
-                enabled: false
-          filesystem:
-            metrics:
-              system.filesystem.utilization:
-                enabled: true
-            # Reading /containers/services causes error running in docker.
-            # Delete for production deployments.
-            exclude_mount_points:
-              mount_points: ["/containers/services"]
-              match_type: strict
-          disk:
-            metrics:
-              system.disk.merged:
-                enabled: false
-              system.disk.pending_operations:
-                enabled: false
-              system.disk.weighted_io_time:
-                enabled: false
-          network:
-            metrics:
-              system.network.connections:
-                enabled: false
-          # Uncomment to enable process metrics, which can be noisy but valuable.
-          # processes:
-          # process:
-          #  metrics:
-          #    process.cpu.utilization:
-          #      enabled: true
-          #    process.cpu.time:
-          #      enabled: false
-          # Mute various errors reading process metrics running locally in docker.
-          # Delete for production deployments.
-          #   mute_process_exe_error: true
-          #   mute_process_user_error: true
-          #   mute_process_io_error: true
-    
       filelog:
         include:
           - /var/log/alternatives.log
@@ -85,147 +144,67 @@ data:
           - /var/log/messages
           - /var/log/secure
           - /var/log/yum.log
-
-    processors:    
-      # group system.cpu metrics by cpu
-      metricstransform:
-        transforms:
-          - include: system.cpu.utilization
-            action: update
-            operations:
-              - action: aggregate_labels
-                label_set: [ state ]
-                aggregation_type: mean
-          - include: system.paging.operations
-            action: update
-            operations:
-              - action: aggregate_labels
-                label_set: [ direction ]
-                aggregation_type: sum
-
-      # remove system.cpu metrics for states
-      filter/exclude_cpu_utilization:
-        metrics:
-          datapoint:
-            - 'metric.name == "system.cpu.utilization" and attributes["state"] == "interrupt"'
-            - 'metric.name == "system.cpu.utilization" and attributes["state"] == "nice"'
-            - 'metric.name == "system.cpu.utilization" and attributes["state"] == "softirq"'
-      filter/exclude_memory_utilization:
-        metrics:
-          datapoint:
-            - 'metric.name == "system.memory.utilization" and attributes["state"] == "slab_unreclaimable"'
-            - 'metric.name == "system.memory.utilization" and attributes["state"] == "inactive"'
-            - 'metric.name == "system.memory.utilization" and attributes["state"] == "cached"'
-            - 'metric.name == "system.memory.utilization" and attributes["state"] == "buffered"'
-            - 'metric.name == "system.memory.utilization" and attributes["state"] == "slab_reclaimable"'
-      filter/exclude_memory_usage:
-        metrics:
-          datapoint:
-            - 'metric.name == "system.memory.usage" and attributes["state"] == "slab_unreclaimable"'
-            - 'metric.name == "system.memory.usage" and attributes["state"] == "inactive"'
-      filter/exclude_filesystem_utilization:
-        metrics:
-          datapoint:
-            - 'metric.name == "system.filesystem.utilization" and attributes["type"] == "squashfs"'
-      filter/exclude_filesystem_usage:
-        metrics:
-          datapoint:
-            - 'metric.name == "system.filesystem.usage" and attributes["type"] == "squashfs"'
-            - 'metric.name == "system.filesystem.usage" and attributes["state"] == "reserved"'
-      filter/exclude_filesystem_inodes_usage:
-        metrics:
-          datapoint:
-            - 'metric.name == "system.filesystem.inodes.usage" and attributes["type"] == "squashfs"'
-            - 'metric.name == "system.filesystem.inodes.usage" and attributes["state"] == "reserved"'
-      filter/exclude_system_disk:
-        metrics:
-          datapoint:
-            - 'metric.name == "system.disk.operations" and IsMatch(attributes["device"], "^loop.*") == true'
-            - 'metric.name == "system.disk.merged" and IsMatch(attributes["device"], "^loop.*") == true'
-            - 'metric.name == "system.disk.io" and IsMatch(attributes["device"], "^loop.*") == true'
-            - 'metric.name == "system.disk.io_time" and IsMatch(attributes["device"], "^loop.*") == true'
-            - 'metric.name == "system.disk.operation_time" and IsMatch(attributes["device"], "^loop.*") == true'
-      filter/exclude_system_paging:
-        metrics:
-          datapoint:
-            - 'metric.name == "system.paging.usage" and attributes["state"] == "cached"'
-            - 'metric.name == "system.paging.operations" and attributes["type"] == "cached"'
-      filter/exclude_network:
-        metrics:
-          datapoint:
-            - 'IsMatch(metric.name, "^system.network.*") == true and attributes["device"] == "lo"'
-      attributes/exclude_system_paging:
-        include:
-          match_type: strict
-          metric_names:
-            - system.paging.operations
-        actions:
-          - key: type
-            action: delete
-    
-      cumulativetodelta:
-    
-      transform/host:
-        metric_statements:
-          - context: metric
-            statements:
-              - set(description, "")
-              - set(unit, "")
-    
-      transform:
-        trace_statements:
-          - context: span
-            statements:
-              - truncate_all(attributes, 4095)
-              - truncate_all(resource.attributes, 4095)
-        log_statements:
-          - context: log
-            statements:
-              - truncate_all(attributes, 4095)
-              - truncate_all(resource.attributes, 4095)
-    
-      # used to prevent out of memory situations on the collector
-      memory_limiter:
-        check_interval: 1s
-        limit_mib: ${env:NEW_RELIC_MEMORY_LIMIT_MIB:-100}
-    
-      batch:
-    
-      resourcedetection:
-        detectors: ["system"]
-        system:
-          hostname_sources: ["os"]
-          resource_attributes:
-            host.id:
-              enabled: true
-    
-      resourcedetection/cloud:
-        detectors: ["gcp", "ec2", "azure"]
-        timeout: 2s
-        ec2:
-          resource_attributes:
-            host.name:
-              enabled: false
-    
-      # Gives OTEL_RESOURCE_ATTRIBUTES precedence over other sources.
-      # host.id is set from env whenever the collector is orchestrated by NR Agents.
-      resourcedetection/env:
-        detectors: ["env"]
-        timeout: 2s
-        override: true
-    
-    exporters:
-      debug:
-        verbosity: detailed
-      otlphttp/newrelic:
-        endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT:-https://otlp.nr-data.net}
-        headers:
-          api-key: ${env:NEW_RELIC_API_KEY}
-    
+      hostmetrics:
+        # Default collection interval is 60s. Lower if you need finer granularity.
+        collection_interval: 60s
+        scrapers:
+          cpu:
+            metrics:
+              system.cpu.time:
+                enabled: false
+              system.cpu.utilization:
+                enabled: true
+          disk:
+            metrics:
+              system.disk.merged:
+                enabled: false
+              system.disk.pending_operations:
+                enabled: false
+              system.disk.weighted_io_time:
+                enabled: false
+          filesystem:
+            metrics:
+              system.filesystem.utilization:
+                enabled: true
+          load: null
+          memory:
+            metrics:
+              system.memory.utilization:
+                enabled: true
+          network:
+            metrics:
+              system.network.connections:
+                enabled: false
+          paging:
+            metrics:
+              system.paging.faults:
+                enabled: false
+              system.paging.utilization:
+                enabled: false
+      # Keep configuration in sync with: https://github.com/newrelic/nrdot-collector-releases/blob/main/distributions/nrdot-collector-host/config.yaml
+      otlp:
+        protocols:
+          grpc: null
+          http:
+            # By default, the otlp receiver is configured to listen on localhost at port 4318, we need to change this to listen on the pod IP.
+            endpoint: ${env:MY_POD_IP}:4318
     service:
+      extensions: [health_check]
       pipelines:
+        logs:
+          exporters: [otlphttp/newrelic]
+          processors: [memory_limiter, transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
+          receivers: [otlp]
+        logs/host:
+          exporters: [otlphttp/newrelic]
+          processors: [memory_limiter, transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
+          receivers: [filelog]
+        metrics:
+          exporters: [otlphttp/newrelic]
+          processors: [memory_limiter, transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
+          receivers: [otlp]
         metrics/host:
-          receivers: [hostmetrics]
+          exporters: [otlphttp/newrelic]
           processors:
             - memory_limiter
             - metricstransform
@@ -244,23 +223,23 @@ data:
             - resourcedetection/env
             - cumulativetodelta
             - batch
-          exporters: [otlphttp/newrelic]
-        logs/host:
-          receivers: [filelog]
-          processors: [transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
-          exporters: [otlphttp/newrelic]
+          receivers: [hostmetrics]
         traces:
-          receivers: [otlp]
-          processors: [transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
           exporters: [otlphttp/newrelic]
-        metrics:
-          receivers: [otlp]
-          processors: [transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
-          exporters: [otlphttp/newrelic]
-        logs:
-          receivers: [otlp]
-          processors: [transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
-          exporters: [otlphttp/newrelic]
+          processors: [memory_limiter, transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
+          receivers: [otlp]      # Uncomment to enable process metrics, which can be noisy but valuable.
+          # processes:
+          # process:
+          #  metrics:
+          #    process.cpu.utilization:
+          #      enabled: true
+          #    process.cpu.time:
+          #      enabled: false
+          # Mute various errors reading process metrics running locally in docker.
+          # Delete for production deployments.
+          #   mute_process_exe_error: true
+          #   mute_process_user_error: true
+          #   mute_process_io_error: true
 ---
 apiVersion: apps/v1
 kind: DaemonSet

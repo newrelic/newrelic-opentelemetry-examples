@@ -12,15 +12,16 @@ Additionally, it demonstrates correlating APM entities with hosts, using the Ope
 
 ## Running the example
 
-1. Update the `NEW_RELIC_API_KEY` value in [secrets.yaml](./k8s/secrets.yaml) to your New Relic license key.
+1. Update the `NEW_RELIC_LICENSE_KEY` value in [secrets.yaml](./k8s/secrets.yaml) to your New Relic license key.
+
     ```yaml
     # ...omitted for brevity
     stringData:
-      # New Relic API key to authenticate the export requests.
+      # New Relic license key to authenticate the export requests.
       # docs: https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key
-      NEW_RELIC_API_KEY: <INSERT_API_KEY>
+      NEW_RELIC_LICENSE_KEY: <INSERT_LICENSE_KEY>
     ```
-   
+
     * Note, be careful to avoid inadvertent secret sharing when modifying `secrets.yaml`. To ignore changes to this file from git, run `git update-index --skip-worktree k8s/secrets.yaml`.
 
     * If your account is based in the EU, update the `NEW_RELIC_OTLP_ENDPOINT` value in [collector.yaml](./k8s/collector.yaml) the endpoint to: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
@@ -34,23 +35,23 @@ Additionally, it demonstrates correlating APM entities with hosts, using the Ope
        value: https://otlp.eu01.nr-data.net
     ```
 
-3. Run the application with the following command.
+2. Run the application with the following command.
 
     ```shell
     kubectl apply -f k8s/
     ```
-   
-   * When finished, cleanup resources with the following command. This is also useful to reset if modifying configuration.
 
-   ```shell
-   kubectl delete -f k8s/
-   ```
+    * When finished, cleanup resources with the following command. This is also useful to reset if modifying configuration.
+
+    ```shell
+    kubectl delete -f k8s/
+    ```
 
 ## Viewing your data
 
 To review your host data in New Relic, navigate to "New Relic -> All Entities -> Hosts" and click on the instance with name corresponding to the collector pod name to view the instance summary. Use [NRQL](https://docs.newrelic.com/docs/query-your-data/explore-query-data/get-started/introduction-querying-new-relic-data/) to perform ad-hoc analysis.
 
-```
+```sql
 FROM Metric SELECT uniques(metricName) WHERE otel.library.name like '%/receiver/hostmetricsreceiver%'
 ```
 
