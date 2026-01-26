@@ -17,7 +17,7 @@ if ! docker compose ps | grep -q "running"; then
   echo "Starting services..."
   docker compose up -d
   echo "Waiting for services to be ready..."
-  sleep 10
+  sleep 5
 fi
 
 echo "✅ Services are running!"
@@ -44,9 +44,9 @@ echo ""
 cat << 'EOF'
 What would you like to view?
 
-  1) 📊 Live statistics dashboard (recommended for first time)
-  2) 📸 Capture samples to files (for analysis)
-  3) 🔀 Compare filtered vs unfiltered (takes 60s)
+  1) Live statistics dashboard
+  2) Capture samples to files
+  3) Compare filtered vs unfiltered
 
   0) Exit
 

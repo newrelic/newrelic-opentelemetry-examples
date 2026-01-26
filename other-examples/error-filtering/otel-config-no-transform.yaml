@@ -8,21 +8,6 @@ receivers:
 
 processors:
   batch:
-    timeout: 10s
-    send_batch_size: 1024
-
-  # Memory limiter to prevent OOM
-  memory_limiter:
-    check_interval: 1s
-    limit_mib: 512
-
-  # ============================================================
-  # RESOURCE DETECTION
-  # Add host and cloud metadata
-  # ============================================================
-  resourcedetection:
-    detectors: [env, system, docker]
-    timeout: 5s
 
 exporters:
   # Export to New Relic via OTLP
@@ -56,8 +41,6 @@ service:
     traces:
       receivers: [otlp]
       processors:
-        - memory_limiter
-        - resourcedetection
         - batch
       exporters: [otlphttp, debug]
 
@@ -65,8 +48,6 @@ service:
     logs:
       receivers: [otlp]
       processors:
-        - memory_limiter
-        - resourcedetection
         - batch
       exporters: [otlphttp, debug]
 
@@ -74,8 +55,6 @@ service:
     metrics:
       receivers: [otlp]
       processors:
-        - memory_limiter
-        - resourcedetection
         - batch
       exporters: [otlphttp, debug]
 
