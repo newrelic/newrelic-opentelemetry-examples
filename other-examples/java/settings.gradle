@@ -1,6 +1,6 @@
 pluginManagement {
   plugins {
-    id 'com.diffplug.spotless' version '8.1.0'
+    id 'com.diffplug.spotless' version '8.2.0'
     id 'org.springframework.boot' version '3.3.4'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
   }
