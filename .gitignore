@@ -16,3 +16,8 @@ getting-started-guides/rust/target
 # Python
 venv
 __pycache__
+
+# Environment files with sensitive data
+.env
+*.env
+**/.env
