@@ -68,6 +68,7 @@ data:
       telemetry:
         resource:
           service.name: "${env:SERVICE_NAME}"
+          newrelic.service.type: otel_collector
         metrics:
           level: detailed
           readers:
