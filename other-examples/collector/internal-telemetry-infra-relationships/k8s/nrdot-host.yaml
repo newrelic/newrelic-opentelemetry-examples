@@ -16,9 +16,9 @@ spec:
     spec:
       containers:
         - name: nrdot-host
-          image: newrelic/nrdot-collector-host:1.11.0
+          image: newrelic/nrdot-collector:1.11.0
           args:
-            - --config=/etc/nrdot-collector-host/config.yaml
+            - --config=/etc/nrdot-collector/config.yaml
             - "--config=yaml:receivers::hostmetrics::root_path: /hostfs"
           env:
             # The New Relic API key used to authenticate export requests.
