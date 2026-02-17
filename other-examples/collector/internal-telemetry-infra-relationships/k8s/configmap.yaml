@@ -86,10 +86,3 @@ data:
                   otlp:
                     protocol: http/protobuf
                     endpoint: http://localhost:4318
-        traces:
-          processors:
-            - batch:
-                exporter:
-                  otlp:
-                    protocol: http/protobuf
-                    endpoint: http://localhost:4318
