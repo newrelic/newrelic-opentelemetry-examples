@@ -63,6 +63,7 @@ We'll use [otelcol-contrib](https://github.com/open-telemetry/opentelemetry-coll
       helm repo add newrelic https://helm-charts.newrelic.com
       helm upgrade 'nr-k8s-otel-collector-release' newrelic/nr-k8s-otel-collector \
       --install \
+      --version '0.9.8' \
       --create-namespace --namespace 'newrelic' \
       --dependency-update \
       --set "cluster=${cluster_name}" \
@@ -71,7 +72,7 @@ We'll use [otelcol-contrib](https://github.com/open-telemetry/opentelemetry-coll
 1. Update the values in [secrets.yaml](./k8s/secrets.yaml) based on the comments and your setup.
     * Note, be careful to avoid inadvertent secret sharing when modifying `secrets.yaml`. To ignore changes to this file from git, run `git update-index --skip-worktree k8s/secrets.yaml`.
 
-1. Deploy the collector (see `collector.yaml` - we're using [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) as an example) and `nrdot-collector-host` (for host instrumentation) with the following command. If you wish to skip installing `nrdot-collector-host`, you can just delete or comment out the file `k8s/nrdot-host.yaml`
+1. Deploy the collector, see `collector.yaml` - we're using [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) as an example.
 
     ```shell
     kubectl apply -f k8s/
