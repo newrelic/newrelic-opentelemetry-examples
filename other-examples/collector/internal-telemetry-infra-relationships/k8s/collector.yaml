@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: collector-infra-relationships
-          image: otel/opentelemetry-collector-contrib:0.130.1
+          image: otel/opentelemetry-collector-contrib:0.142.0
           args:
             - --config=/config/config.yaml
             # add k8s metadata as resource attributes
