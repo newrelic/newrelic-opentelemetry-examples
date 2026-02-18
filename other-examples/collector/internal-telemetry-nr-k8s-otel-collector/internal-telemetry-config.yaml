@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-internal-telemetry-config
+  namespace: internal-telemetry-nr-k8s-otel-collector
+data:
+  config.yaml: |
+    ##### Example configuration for internal telemetry
+    # This configuration is intended to be used in conjunction with a configuration of components and pipelines. The
+    # collector supports config merging on startup.
+    # Source: https://github.com/newrelic/nrdot-collector-releases/blob/ed3bd71116742391c40209039e999ebea6ba80f9/examples/internal-telemetry-config.yaml
+    ##### Requirements
+    # - nrdot-collector (any distro) >= 1.3.0 or collector core version >= v1.35.0 / v0.129.0
+    ##### Configuration via environment variables
+    # For official documentation, see: https://opentelemetry.io/docs/collector/internal-telemetry/
+    ## Required
+    # - INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY
+    ## Optional
+    # - INTERNAL_TELEMETRY_SERVICE_NAME: defaults to 'otel-collector'; determines entity name in New Relic
+    # - INTERNAL_TELEMETRY_OTLP_ENDPOINT: defaults to 'https://otlp.nr-data.net'; see https://docs.newrelic.com/docs/opentelemetry/best-practices/opentelemetry-otlp/ and https://docs.newrelic.com/docs/opentelemetry/best-practices/opentelemetry-otlp-troubleshooting/
+    # - INTERNAL_TELEMETRY_METRICS_LEVEL: defaults to 'detailed'; other values are 'normal', 'basic', 'none'
+    # - INTERNAL_TELEMETRY_LOG_LEVEL: defaults to INFO; other values are DEBUG, WARN, ERROR
+    # - INTERNAL_TELEMETRY_TRACE_LEVEL: defaults to 'none' (traces disabled); other value is 'basic'
+    # - INTERNAL_TELEMETRY_TRACE_SAMPLE_RATIO: defaults to 0.01, i.e. 1% sampling; has no effect if TRACE_LEVEL is 'none'
+    service:
+      telemetry:
+        metrics:
+          level: "${env:INTERNAL_TELEMETRY_METRICS_LEVEL:-detailed}"
+          readers:
+            - periodic:
+                exporter:
+                  otlp:
+                    protocol: http/protobuf
+                    endpoint: "${env:INTERNAL_TELEMETRY_OTLP_ENDPOINT:-https://otlp.nr-data.net}"
+                    headers:
+                      - name: api-key
+                        value: "${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}"
+        logs:
+          level: "${env:INTERNAL_TELEMETRY_LOG_LEVEL:-INFO}"
+          # default sampling config for reference to simplify overwrites even if not exposed via env var, e.g. --config=yaml:service::telemetry::logs::sampling::enabled::false
+          sampling:
+            enabled: true
+            # The interval in seconds that the logger applies to each sampling.
+            tick: 10s
+            # The number of messages logged at the start of each sampling::tick
+            initial: 10
+            # Sets the sampling policy for subsequent messages after sampling::initial messages are logged. When sampling::thereafter is set to N, every Nth message is logged and all others are dropped. If N is zero, the logger drops all messages after sampling::initial messages are logged.
+            thereafter: 100
+          processors:
+            - batch:
+                exporter:
+                  otlp:
+                    protocol: http/protobuf
+                    endpoint: "${env:INTERNAL_TELEMETRY_OTLP_ENDPOINT:-https://otlp.nr-data.net}"
+                    headers:
+                      - name: api-key
+                        value: "${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}"
+        traces:
+          # traces are disabled by default due to experimental status and lack of default sampling rate that works across use cases
+          level: "${env:INTERNAL_TELEMETRY_TRACE_LEVEL:-none}"
+          sampler:
+            parent_based:
+              root:
+                trace_id_ratio_based:
+                  ratio: ${env:INTERNAL_TELEMETRY_TRACE_SAMPLE_RATIO:-0.01}
+          processors:
+            - batch:
+                exporter:
+                  otlp:
+                    protocol: http/protobuf
+                    endpoint: "${env:INTERNAL_TELEMETRY_OTLP_ENDPOINT:-https://otlp.nr-data.net}"
+                    headers:
+                      - name: api-key
+                        value: "${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}"
+        resource:
+          newrelic.collector_telemetry.version: 0.4.0
+          newrelic.service.type: otel_collector
+          service.name: "${env:INTERNAL_TELEMETRY_SERVICE_NAME:-otel-collector}"
