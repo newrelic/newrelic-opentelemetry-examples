@@ -1,8 +1,8 @@
 # Internal Telemetry for nr-k8s-otel-collector Helm Chart
 
-This example demonstrates how to enable comprehensive internal telemetry for the OpenTelemetry collectors deployed via the [newrelic/nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) helm chart. This configuration enables detailed monitoring of the collectors themselves, including metrics, logs, and optionally traces.
+This example demonstrates how to enable comprehensive internal telemetry for the OpenTelemetry collectors deployed via the [newrelic/nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) helm chart using our erecommended configuration](https://github.com/newrelic/nrdot-collector-releases/blob/ed3bd71116742391c40209039e999ebea6ba80f9/examples/internal-telemetry-config.yaml). This configuration enables detailed monitoring of the collectors themselves, including metrics, logs, and optionally traces. It also decorates the telemetry with necessary attributes to drive container-to-service relationships.
 
-The nr-k8s-otel-collector chart includes a built-in option for internal telemetry, but it doesn't cover all available features. This example shows how to use the full [internal telemetry configuration](https://github.com/newrelic/nrdot-collector-releases/blob/main/examples/internal-telemetry-config.yaml) for more comprehensive observability.
+Please note that this example overrides [some of the existing internal telemetry configuration](https://github.com/newrelic/helm-charts/blob/96436bef4e6311bf4e1a71031ff536cc7d42625f/charts/nr-k8s-otel-collector/templates/deployment-configmap.yaml#L791-L814). We are working towards embedding the configuration from this example directly in the helm chart to make enabling collector observability easier.
 
 ## Requirements
 
