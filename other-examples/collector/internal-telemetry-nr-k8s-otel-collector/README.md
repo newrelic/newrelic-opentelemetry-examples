@@ -22,6 +22,7 @@ The nr-k8s-otel-collector chart includes a built-in option for internal telemetr
 2. Edit `k8s/secrets.yaml` and update the following values:
     * `NEW_RELIC_LICENSE_KEY`: Your New Relic license key
     * `NEW_RELIC_OTLP_ENDPOINT`: If your account is based in the EU, change to `https://otlp.eu01.nr-data.net`
+    * `CLUSTER_NAME`: Your cluster name (should match the value passed to `--set cluster=` in the helm install command)
 
 3. Add the New Relic helm repository:
 

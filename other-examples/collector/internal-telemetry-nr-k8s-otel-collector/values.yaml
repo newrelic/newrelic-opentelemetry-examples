@@ -32,6 +32,22 @@ deployment:
         secretKeyRef:
           name: nr-otel-internal-telemetry-secret
           key: NEW_RELIC_LICENSE_KEY
+    # K8s resource attributes for internal telemetry
+    - name: CLUSTER_NAME
+      valueFrom:
+        secretKeyRef:
+          name: nr-otel-internal-telemetry-secret
+          key: CLUSTER_NAME
+    - name: NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: CONTAINER_NAME
+      value: "otel-collector-deployment"
 
 # Configuration for the daemonset collector (node-level metrics)
 daemonset:
@@ -64,6 +80,19 @@ daemonset:
         secretKeyRef:
           name: nr-otel-internal-telemetry-secret
           key: NEW_RELIC_LICENSE_KEY
+    # K8s resource attributes for internal telemetry
+    - name: CLUSTER_NAME
+      valueFrom:
+        secretKeyRef:
+          name: nr-otel-internal-telemetry-secret
+          key: CLUSTER_NAME
+    - name: NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    # POD_NAME is already defined by the chart for daemonset
+    - name: CONTAINER_NAME
+      value: "otel-collector-daemonset"
 
 # Optional: Customize internal telemetry levels
 # Uncomment and add these to extraEnvs in both deployment and daemonset sections above:

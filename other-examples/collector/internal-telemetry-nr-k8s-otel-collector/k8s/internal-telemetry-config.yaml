@@ -76,3 +76,7 @@ data:
           newrelic.collector_telemetry.version: 0.4.0
           newrelic.service.type: otel_collector
           service.name: "${env:INTERNAL_TELEMETRY_SERVICE_NAME:-otel-collector}"
+          k8s.cluster.name: "${env:CLUSTER_NAME}"
+          k8s.namespace.name: "${env:NAMESPACE}"
+          k8s.pod.name: "${env:POD_NAME}"
+          k8s.container.name: "${env:CONTAINER_NAME}"
