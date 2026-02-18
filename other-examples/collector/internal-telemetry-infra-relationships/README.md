@@ -31,17 +31,17 @@ flowchart LR
 ## Requirements
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. This example was tested on [AWS EKS](https://aws.amazon.com/eks/) with Amazon Linux nodes. The steps for achieving a container relationship should be universal for all k8s clusters - they also work on local clusters like `kind` or `minikube`.
-- Your infrastructure must be instrumented with one of our OTel infrastructure agents. We recommend using the [nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) helm chart for containers and [nrdot-collector-host](https://github.com/newrelic/nrdot-collector-releases/blob/main/distributions/nrdot-collector-host/README.md) for hosts, see instructions below. Please note that we're actively working on `nr-k8s-otel-collector` emitting host entities compatible with relationship synthesis which will eliminate the need for `nrdot-collector-host` but until that is done, there will be some overlap in the host telemetry these solutions scrape. If you are only interested in container relationships, you can follow the instructions below to skip installing it.
+- Your infrastructure must be instrumented with one of our OTel infrastructure agents. We recommend using the [nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) helm chart which provides both container and host monitoring. 
 - The host relationship is synthesized based on the `host.id` attribute matching up on the host and collector telemetry. The determination of this attribute heavily depends on your environment and is driven by the `resourcedetectionprocessor` which does not support local clusters out-of-the-box. You might be able to make it work by tweaking the processor configuration, but we won't cover this here as there are too many variables involved.
 - [A New Relic account](https://one.newrelic.com/)
 - [A New Relic license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)
 
 ### Collector
-We'll use [otelcol-contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) for the example but if you are using your own collector, here is the what and why regarding components:
-- [otlpreceiver](https://github.com/open-telemetry/opentelemetry-collector/blob/main/receiver/otlpreceiver/README.md) to provide a hook for the internal telemetry to get funnelled into a pipeline defined in the collector itself.
-- [resourcedetectionprocessor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/resourcedetectionprocessor) to add `host.id` to internal telemetry.
-- [otlphttpexporter](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/otlphttpexporter) to send telemetry to New Relic.
-- (optional) [memorylimiterprocessor](https://github.com/open-telemetry/opentelemetry-collector/tree/main/processor/memorylimiterprocessor) and [batchprocessor](https://github.com/open-telemetry/opentelemetry-collector/tree/v0.142.0/processor/batchprocessor) for best practices.
+We'll use [otelcol-contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/v0.142.0/distributions/otelcol-contrib) for the example but if you are using your own collector, here is the what and why regarding components:
+- [otlpreceiver](https://github.com/open-telemetry/opentelemetry-collector/blob/v0.142.0/receiver/otlpreceiver/README.md) to provide a hook for the internal telemetry to get funnelled into a pipeline defined in the collector itself.
+- [resourcedetectionprocessor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/v0.142.0/processor/resourcedetectionprocessor) to add `host.id` to internal telemetry.
+- [otlphttpexporter](https://github.com/open-telemetry/opentelemetry-collector/tree/v0.142.0/exporter/otlphttpexporter) to send telemetry to New Relic.
+- (optional) [memorylimiterprocessor](https://github.com/open-telemetry/opentelemetry-collector/tree/v0.142.0/processor/memorylimiterprocessor) and [batchprocessor](https://github.com/open-telemetry/opentelemetry-collector/tree/v0.142.0/processor/batchprocessor) for best practices.
 
 ### Appendix
 - Collector entity definition: [EXT-SERVICE](https://github.com/newrelic/entity-definitions/blob/main/entity-types/ext-service/definition.yml#L72-L94)
@@ -73,7 +73,7 @@ We'll use [otelcol-contrib](https://github.com/open-telemetry/opentelemetry-coll
     * Make sure that the cluster name matches the value above and, if you have multiple accounts, that the license key reports to the same account.
     * Note, be careful to avoid inadvertent secret sharing when modifying `secrets.yaml`. To ignore changes to this file from git, run `git update-index --skip-worktree k8s/secrets.yaml`.
 
-1. Deploy the collector, see `collector.yaml` - we're using [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) as an example.
+1. Deploy the collector, see `collector.yaml` - we're using [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/v0.142.0/distributions/otelcol-contrib) as an example.
 
     ```shell
     kubectl apply -f k8s/
