@@ -19,9 +19,9 @@ deployment:
     - --config=file:/etc/otel-internal-telemetry/config.yaml
 
   # Environment variables for internal telemetry configuration
-  extraEnvs:
+  envs:
     - name: INTERNAL_TELEMETRY_SERVICE_NAME
-      value: "nr-k8s-otel-collector-deployment"
+      value: "kbauer-feb18-nr-k8s-otel-collector-deployment"
     - name: INTERNAL_TELEMETRY_OTLP_ENDPOINT
       valueFrom:
         secretKeyRef:
@@ -51,9 +51,9 @@ daemonset:
     - --config=file:/etc/otel-internal-telemetry/config.yaml
 
   # Environment variables for internal telemetry configuration
-  extraEnvs:
+  envs:
     - name: INTERNAL_TELEMETRY_SERVICE_NAME
-      value: "nr-k8s-otel-collector-daemonset"
+      value: "kbauer-feb18-nr-k8s-otel-collector-daemonset"
     - name: INTERNAL_TELEMETRY_OTLP_ENDPOINT
       valueFrom:
         secretKeyRef:
