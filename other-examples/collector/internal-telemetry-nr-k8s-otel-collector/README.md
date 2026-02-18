@@ -16,12 +16,11 @@ The nr-k8s-otel-collector chart includes a built-in option for internal telemetr
 1. Copy the template file and update with your values:
 
     ```shell
-    cp secrets.yaml.template secrets.yaml
+    cp k8s/secrets.yaml.template k8s/secrets.yaml
     ```
 
-2. Edit `secrets.yaml` and update the following values:
+2. Edit `k8s/secrets.yaml` and update the following values:
     * `NEW_RELIC_LICENSE_KEY`: Your New Relic license key
-    * `CLUSTER_NAME`: Your cluster name
     * `NEW_RELIC_OTLP_ENDPOINT`: If your account is based in the EU, change to `https://otlp.eu01.nr-data.net`
 
 3. Add the New Relic helm repository:
@@ -35,16 +34,17 @@ The nr-k8s-otel-collector chart includes a built-in option for internal telemetr
 
     ```shell
     kubectl create namespace internal-telemetry-nr-k8s-otel-collector
-    kubectl apply -f secrets.yaml
-    kubectl apply -f internal-telemetry-config.yaml
+    kubectl apply -f k8s/
     ```
 
-5. Install the helm chart with the custom values:
+5. Install the helm chart with the custom values (replace `<YOUR_LICENSE_KEY>` and `<YOUR_CLUSTER_NAME>` with your actual values):
 
     ```shell
     helm install nr-k8s-otel-collector newrelic/nr-k8s-otel-collector \
       --namespace internal-telemetry-nr-k8s-otel-collector \
-      -f values.yaml
+      -f values.yaml \
+      --set licenseKey=<YOUR_LICENSE_KEY> \
+      --set cluster=<YOUR_CLUSTER_NAME>
     ```
 
     * When finished, cleanup all resources by deleting the namespace:
