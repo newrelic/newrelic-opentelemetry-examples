@@ -70,6 +70,7 @@ We'll use [otelcol-contrib](https://github.com/open-telemetry/opentelemetry-coll
       --set "licenseKey=${license_key}"
     ```
 1. Update the values in [secrets.yaml](./k8s/secrets.yaml) based on the comments and your setup.
+    * Make sure that the cluster name matches the value above and, if you have multiple accounts, that the license key reports to the same account.
     * Note, be careful to avoid inadvertent secret sharing when modifying `secrets.yaml`. To ignore changes to this file from git, run `git update-index --skip-worktree k8s/secrets.yaml`.
 
 1. Deploy the collector, see `collector.yaml` - we're using [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-contrib) as an example.
