@@ -41,7 +41,7 @@ We'll use [otelcol-contrib](https://github.com/open-telemetry/opentelemetry-coll
 - [otlpreceiver](https://github.com/open-telemetry/opentelemetry-collector/blob/main/receiver/otlpreceiver/README.md) to provide a hook for the internal telemetry to get funnelled into a pipeline defined in the collector itself.
 - [resourcedetectionprocessor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/resourcedetectionprocessor) to add `host.id` to internal telemetry.
 - [otlphttpexporter](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/otlphttpexporter) to send telemetry to New Relic.
-- (optional) [memorylimiterprocessor](https://github.com/open-telemetry/opentelemetry-collector/tree/main/processor/memorylimiterprocessor) and [batchprocessor](https://github.com/open-telemetry/opentelemetry-collector/tree/v0.102.0/processor/batchprocessor) for best practices.
+- (optional) [memorylimiterprocessor](https://github.com/open-telemetry/opentelemetry-collector/tree/main/processor/memorylimiterprocessor) and [batchprocessor](https://github.com/open-telemetry/opentelemetry-collector/tree/v0.142.0/processor/batchprocessor) for best practices.
 
 ### Appendix
 - Collector entity definition: [EXT-SERVICE](https://github.com/newrelic/entity-definitions/blob/main/entity-types/ext-service/definition.yml#L72-L94)
