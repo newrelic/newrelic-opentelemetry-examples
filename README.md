@@ -173,7 +173,7 @@ security goals.
 
 If you believe you have found a security vulnerability in this project or any of
 New Relic's products or websites, we welcome and greatly appreciate you
-reporting it to New Relic through [HackerOne](https://hackerone.com/newrelic).
+reporting it to New Relic through our [coordinated disclosure program](https://github.com/newrelic/newrelic-opentelemetry-examples/security/policy#coordinated-disclosure-program).
 
 If you would like to contribute to this project,
 review [these guidelines](./CONTRIBUTING.md).
