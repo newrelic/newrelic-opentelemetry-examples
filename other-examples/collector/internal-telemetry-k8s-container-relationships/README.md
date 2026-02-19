@@ -1,10 +1,10 @@
 # Monitoring the OpenTelemetry Collector with Container Relationships
 
-The OpenTelemetry Collector can be configured to emit its [internal telemetry](https://opentelemetry.io/docs/collector/internal-telemetry/). This enables you to observe and monitor the health of your collectors. This example demonstrates how to configure the collector's internal telemetry and send it to New Relic to light up New Relic's collector observability experience. The example also demonstrates how to create a relationship between the collector and its Kubernetes container in New Relic.
+The [internal-telemetry example](../internal-telemetry/README.md) showcases how to configure the OpenTelemetry Collector to emit its [internal telemetry](https://opentelemetry.io/docs/collector/internal-telemetry/) to New Relic. This example expands on that with k8s infrastructure monitoring, i.e. instrument the underlying containers and create relationships between the collector and its container. This enables New Relic to display container metrics directly in the collector observability experience.
 
 ## Requirements
 
-- You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. This example was tested on [AWS EKS](https://aws.amazon.com/eks/) with Amazon Linux nodes. The steps for achieving a container relationship should be universal for all k8s clusters - they also work on local clusters like `kind` or `minikube`.
+- You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster.
 - Your infrastructure must be instrumented with one of our OTel infrastructure agents. We recommend using the [nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) helm chart which provides container monitoring.
 - [A New Relic account](https://one.newrelic.com/)
 - [A New Relic license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)
@@ -13,7 +13,7 @@ The OpenTelemetry Collector can be configured to emit its [internal telemetry](h
 
 We'll use [otelcol-contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/v0.142.0/distributions/otelcol-contrib) for the example.
 
-The internal telemetry is configured to send directly to New Relic's OTLP endpoint without going through the collector's own pipeline.
+The internal telemetry is configured to be sent directly to New Relic's OTLP endpoint without going through the collector's own pipeline, so it should work for any collector use case.
 
 ### Appendix
 
@@ -28,8 +28,8 @@ The internal telemetry is configured to send directly to New Relic's OTLP endpoi
 1. Instrument your containers with [nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector).
     ```shell
       # Cluster name is hard coded as the downward API does not expose it
-      license_key='INSERT_API_KEY'
       cluster_name='INSERT_CLUSTER_NAME'
+      license_key='INSERT_API_KEY'
       helm repo add newrelic https://helm-charts.newrelic.com
       helm upgrade 'nr-k8s-otel-collector-release' newrelic/nr-k8s-otel-collector \
       --install \
@@ -46,7 +46,7 @@ The internal telemetry is configured to send directly to New Relic's OTLP endpoi
     ```
     * Make sure that the cluster name matches the value above and, if you have multiple accounts, that the license key reports to the same account.
 
-1. Deploy the collector, see `collector.yaml` - we're using [contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/v0.142.0/distributions/otelcol-contrib) as an example.
+1. Deploy the collector
 
     ```shell
     kubectl apply -f k8s/
@@ -65,8 +65,8 @@ The internal telemetry is configured to send directly to New Relic's OTLP endpoi
 
 The infrastructure relationships are used to light up our APM UI. Navigate to "New Relic -> All Entities -> Services - OpenTelemetry" and click on the service with name corresponding to value provided in `secrets.yaml` for `COLLECTOR_SERVICE_NAME`. The 'Summary' page shows metrics related to the infrastructure entities related to your collector at the bottom of the page.
 
-### From the CLI
-You can also query the relationships through NerdGraph using the [newrelic CLI](https://github.com/newrelic/newrelic-cli/blob/main/docs/GETTING_STARTED.md#environment-setup). Note that the api key in this case is NOT an ingest key (as used above), but instead a user key.
+### From the CLI (troubleshooting)
+You can also query the relationships through NerdGraph using the [newrelic CLI](https://github.com/newrelic/newrelic-cli/blob/main/docs/GETTING_STARTED.md#environment-setup). Note that the [API key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/) in this case is NOT an ingest key (as used above), but instead a user key.
 
 The following script should work if your service name is sufficiently unique as the first part determines the entity guid based on the service name.
 If you have the correct entity guid, you can skip the first part and just query the relationships directly.
