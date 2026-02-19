@@ -29,23 +29,6 @@ processors:
           - set(attributes["error.expected"], true)
 
   # ============================================================
-  # LOG TRANSFORMATION
-  # Transform logs by severity level and error type
-  # Downgrade severity so they don't trigger alerts
-  # ============================================================
-  transform/logs:
-    error_mode: ignore
-    log_statements:
-      # Mark validation error logs as expected
-      - context: log
-        conditions:
-          - attributes["error.type"] == "validation"
-        statements:
-          - set(attributes["error.expected"], true)
-          - set(severity_number, SEVERITY_NUMBER_INFO)
-          - set(severity_text, "INFO")
-
-  # ============================================================
   # METRIC TRANSFORMATION
   # Transform error metrics so expected errors don't inflate error counts
   # ============================================================
@@ -92,14 +75,6 @@ service:
       receivers: [otlp]
       processors:
         - transform/traces
-        - batch
-      exporters: [otlphttp, debug]
-
-    # Log pipeline with transformation
-    logs:
-      receivers: [otlp]
-      processors:
-        - transform/logs
         - batch
       exporters: [otlphttp, debug]
 

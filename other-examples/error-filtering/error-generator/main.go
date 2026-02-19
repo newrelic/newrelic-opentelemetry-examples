@@ -2,23 +2,23 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
+	"errors"
 	"log"
 	"math/rand"
+	"net"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
 	"time"
 
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
-	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-	otellog "go.opentelemetry.io/otel/log"
-	"go.opentelemetry.io/otel/log/global"
-	sdklog "go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
@@ -34,58 +34,26 @@ var (
 	tracer         trace.Tracer
 	meter          metric.Meter
 	logger         *zap.Logger
-	otlpLogger     otellog.Logger
 	errorCounter   metric.Int64Counter
 	requestCounter metric.Int64Counter
 
 	// Configuration from environment variables
-	errorRate         float64
-	enableTimeoutErr  bool
-	enableValidationErr bool
-	enableDatabaseErr bool
-	enableNetworkErr  bool
-	enableAuthErr     bool
-	requestInterval   time.Duration
+	autoGenerateEnabled bool
+	requestInterval     time.Duration
 )
 
-type ErrorType struct {
-	Name       string
-	HTTPStatus int
-	Severity   zapcore.Level
-	Message    string
+type ErrorResponse struct {
+	Error   string `json:"error"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	TraceID string `json:"trace_id,omitempty"`
 }
 
-var errorTypes = map[string]ErrorType{
-	"timeout": {
-		Name:       "timeout",
-		HTTPStatus: 504,
-		Severity:   zapcore.ErrorLevel,
-		Message:    "Request timeout: upstream service did not respond",
-	},
-	"validation": {
-		Name:       "validation",
-		HTTPStatus: 400,
-		Severity:   zapcore.WarnLevel,
-		Message:    "Validation error: invalid input parameters",
-	},
-	"database": {
-		Name:       "database",
-		HTTPStatus: 500,
-		Severity:   zapcore.ErrorLevel,
-		Message:    "Database error: connection pool exhausted",
-	},
-	"network": {
-		Name:       "network",
-		HTTPStatus: 503,
-		Severity:   zapcore.ErrorLevel,
-		Message:    "Network error: unable to reach downstream service",
-	},
-	"auth": {
-		Name:       "auth",
-		HTTPStatus: 401,
-		Severity:   zapcore.WarnLevel,
-		Message:    "Authentication error: invalid or expired token",
-	},
+type SuccessResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+	Data    any    `json:"data,omitempty"`
+	TraceID string `json:"trace_id,omitempty"`
 }
 
 func init() {
@@ -94,29 +62,16 @@ func init() {
 }
 
 func loadConfig() {
-	// Error rate (0.0 to 1.0)
-	if val := os.Getenv("ERROR_RATE"); val != "" {
-		if rate, err := strconv.ParseFloat(val, 64); err == nil {
-			errorRate = rate
-		}
-	} else {
-		errorRate = 0.3 // Default 30% error rate
-	}
+	// Auto-generate traffic (optional background traffic generator)
+	autoGenerateEnabled = getEnvBool("AUTO_GENERATE_TRAFFIC", false)
 
-	// Enable/disable specific error types
-	enableTimeoutErr = getEnvBool("ENABLE_TIMEOUT_ERRORS", true)
-	enableValidationErr = getEnvBool("ENABLE_VALIDATION_ERRORS", true)
-	enableDatabaseErr = getEnvBool("ENABLE_DATABASE_ERRORS", true)
-	enableNetworkErr = getEnvBool("ENABLE_NETWORK_ERRORS", true)
-	enableAuthErr = getEnvBool("ENABLE_AUTH_ERRORS", true)
-
-	// Request interval
+	// Request interval for auto-generator
 	if val := os.Getenv("REQUEST_INTERVAL_MS"); val != "" {
 		if ms, err := strconv.Atoi(val); err == nil {
 			requestInterval = time.Duration(ms) * time.Millisecond
 		}
 	} else {
-		requestInterval = 2000 * time.Millisecond // Default 2 seconds
+		requestInterval = 5000 * time.Millisecond // Default 5 seconds
 	}
 }
 
@@ -129,7 +84,59 @@ func getEnvBool(key string, defaultVal bool) bool {
 	return defaultVal
 }
 
-func initOTel(ctx context.Context) func() {
+func main() {
+	if err := run(); err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func run() (err error) {
+	// Handle SIGINT (CTRL+C) gracefully
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	// Initialize OpenTelemetry
+	otelShutdown, err := initOTel(ctx)
+	if err != nil {
+		return
+	}
+	defer func() {
+		err = errors.Join(err, otelShutdown(context.Background()))
+	}()
+
+	// Start HTTP server
+	srv := &http.Server{
+		Addr:         ":8080",
+		BaseContext:  func(_ net.Listener) context.Context { return ctx },
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		Handler:      newHTTPHandler(),
+	}
+
+	// Start background traffic generator if enabled
+	if autoGenerateEnabled {
+		go startAutoGenerator(ctx)
+	}
+
+	srvErr := make(chan error, 1)
+	go func() {
+		logger.Info("HTTP server started", zap.String("addr", srv.Addr))
+		srvErr <- srv.ListenAndServe()
+	}()
+
+	// Wait for interruption
+	select {
+	case err = <-srvErr:
+		return
+	case <-ctx.Done():
+		stop()
+	}
+
+	err = srv.Shutdown(context.Background())
+	return
+}
+
+func initOTel(ctx context.Context) (func(context.Context) error, error) {
 	res, err := resource.New(ctx,
 		resource.WithAttributes(
 			semconv.ServiceName("error-generator"),
@@ -137,7 +144,7 @@ func initOTel(ctx context.Context) func() {
 		),
 	)
 	if err != nil {
-		log.Fatalf("failed to create resource: %v", err)
+		return nil, err
 	}
 
 	// Initialize trace provider
@@ -146,7 +153,7 @@ func initOTel(ctx context.Context) func() {
 		otlptracegrpc.WithInsecure(),
 	)
 	if err != nil {
-		log.Fatalf("failed to create trace exporter: %v", err)
+		return nil, err
 	}
 
 	tp := sdktrace.NewTracerProvider(
@@ -164,7 +171,7 @@ func initOTel(ctx context.Context) func() {
 		otlpmetricgrpc.WithInsecure(),
 	)
 	if err != nil {
-		log.Fatalf("failed to create metric exporter: %v", err)
+		return nil, err
 	}
 
 	mp := sdkmetric.NewMeterProvider(
@@ -181,7 +188,7 @@ func initOTel(ctx context.Context) func() {
 		metric.WithDescription("Total number of errors by type"),
 	)
 	if err != nil {
-		log.Fatalf("failed to create error counter: %v", err)
+		return nil, err
 	}
 
 	requestCounter, err = meter.Int64Counter(
@@ -189,43 +196,27 @@ func initOTel(ctx context.Context) func() {
 		metric.WithDescription("Total number of requests"),
 	)
 	if err != nil {
-		log.Fatalf("failed to create request counter: %v", err)
+		return nil, err
 	}
 
-	// Initialize log provider
-	logExporter, err := otlploggrpc.New(ctx,
-		otlploggrpc.WithEndpoint(getOTLPEndpoint()),
-		otlploggrpc.WithInsecure(),
-	)
-	if err != nil {
-		log.Fatalf("failed to create log exporter: %v", err)
-	}
-
-	lp := sdklog.NewLoggerProvider(
-		sdklog.WithProcessor(sdklog.NewBatchProcessor(logExporter)),
-		sdklog.WithResource(res),
-	)
-	global.SetLoggerProvider(lp)
-
-	// Get OTLP logger
-	otlpLogger = lp.Logger("error-generator")
-
-	// Initialize logger with JSON output
+	// Initialize logger
 	config := zap.NewProductionConfig()
 	config.EncoderConfig.TimeKey = "timestamp"
 	config.EncoderConfig.MessageKey = "message"
 	config.EncoderConfig.LevelKey = "severity"
 	logger, err = config.Build()
 	if err != nil {
-		log.Fatalf("failed to create logger: %v", err)
+		return nil, err
 	}
 
-	return func() {
-		_ = tp.Shutdown(ctx)
-		_ = mp.Shutdown(ctx)
-		_ = lp.Shutdown(ctx)
-		_ = logger.Sync()
-	}
+	return func(ctx context.Context) error {
+		err := errors.Join(
+			tp.Shutdown(ctx),
+			mp.Shutdown(ctx),
+			logger.Sync(),
+		)
+		return err
+	}, nil
 }
 
 func getOTLPEndpoint() string {
@@ -235,178 +226,366 @@ func getOTLPEndpoint() string {
 	return "collector:4317"
 }
 
-func selectRandomError() *ErrorType {
-	enabledErrors := []ErrorType{}
+func newHTTPHandler() http.Handler {
+	mux := http.NewServeMux()
 
-	if enableTimeoutErr {
-		enabledErrors = append(enabledErrors, errorTypes["timeout"])
-	}
-	if enableValidationErr {
-		enabledErrors = append(enabledErrors, errorTypes["validation"])
-	}
-	if enableDatabaseErr {
-		enabledErrors = append(enabledErrors, errorTypes["database"])
-	}
-	if enableNetworkErr {
-		enabledErrors = append(enabledErrors, errorTypes["network"])
-	}
-	if enableAuthErr {
-		enabledErrors = append(enabledErrors, errorTypes["auth"])
+	// Register endpoint handlers with route tags
+	handleFunc := func(pattern string, handler http.HandlerFunc) {
+		instrumentedHandler := otelhttp.WithRouteTag(pattern, handler)
+		mux.Handle(pattern, instrumentedHandler)
 	}
 
-	if len(enabledErrors) == 0 {
-		return nil
-	}
+	// Register all endpoints
+	handleFunc("/", indexHandler)
+	handleFunc("/health", healthHandler)
+	handleFunc("/success", successHandler)
+	handleFunc("/validation-error", validationErrorHandler)
+	handleFunc("/auth-error", authErrorHandler)
+	handleFunc("/server-error", serverErrorHandler)
+	handleFunc("/timeout", timeoutHandler)
+	handleFunc("/network-error", networkErrorHandler)
+	handleFunc("/random", randomHandler)
 
-	return &enabledErrors[rand.Intn(len(enabledErrors))]
+	// Add HTTP instrumentation for the whole server
+	handler := otelhttp.NewHandler(mux, "/")
+	return handler
 }
 
-func simulateRequest(ctx context.Context, requestNum int) {
-	ctx, span := tracer.Start(ctx, "handle_request")
-	defer span.End()
+// indexHandler returns information about available endpoints
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	span := trace.SpanFromContext(ctx)
+	traceID := span.SpanContext().TraceID().String()
 
-	span.SetAttributes(
-		attribute.Int("request.number", requestNum),
-	)
-
-	requestCounter.Add(ctx, 1)
-
-	// Determine if this request should error
-	shouldError := rand.Float64() < errorRate
-
-	if shouldError {
-		errType := selectRandomError()
-		if errType != nil {
-			handleError(ctx, span, errType, requestNum)
-		} else {
-			handleSuccess(ctx, span, requestNum)
-		}
-	} else {
-		handleSuccess(ctx, span, requestNum)
-	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]any{
+		"service": "error-generator",
+		"version": "1.0.0",
+		"trace_id": traceID,
+		"endpoints": map[string]string{
+			"/":                 "This information",
+			"/health":           "Health check endpoint",
+			"/success":          "Always returns 200 OK",
+			"/validation-error": "Returns 400 Bad Request",
+			"/auth-error":       "Returns 401 Unauthorized",
+			"/server-error":     "Returns 500 Internal Server Error",
+			"/timeout":          "Returns 504 Gateway Timeout",
+			"/network-error":    "Returns 503 Service Unavailable",
+			"/random":           "Randomly returns one of the above responses",
+		},
+	})
 }
 
-func handleError(ctx context.Context, span trace.Span, errType *ErrorType, requestNum int) {
-	span.SetAttributes(
-		attribute.String("error.type", errType.Name),
-		attribute.Int("http.status_code", errType.HTTPStatus),
-		attribute.Bool("error", true),
-	)
-	span.SetStatus(codes.Error, errType.Message)
-
-	// Log the error to stdout (zap)
-	logger.Log(errType.Severity, errType.Message,
-		zap.String("error.type", errType.Name),
-		zap.Int("http.status_code", errType.HTTPStatus),
-		zap.Int("request.number", requestNum),
-		zap.String("trace.id", span.SpanContext().TraceID().String()),
-		zap.String("span.id", span.SpanContext().SpanID().String()),
-	)
-
-	// Send log via OTLP
-	var severity otellog.Severity
-	if errType.Severity == zapcore.ErrorLevel {
-		severity = otellog.SeverityError
-	} else {
-		severity = otellog.SeverityWarn
-	}
-
-	logRecord := otellog.Record{}
-	logRecord.SetTimestamp(time.Now())
-	logRecord.SetBody(otellog.StringValue(errType.Message))
-	logRecord.SetSeverity(severity)
-	logRecord.AddAttributes(
-		otellog.String("error.type", errType.Name),
-		otellog.Int("http.status_code", errType.HTTPStatus),
-		otellog.Int("request.number", requestNum),
-		otellog.String("trace.id", span.SpanContext().TraceID().String()),
-		otellog.String("span.id", span.SpanContext().SpanID().String()),
-	)
-	otlpLogger.Emit(ctx, logRecord)
-
-	// Increment error counter
-	errorCounter.Add(ctx, 1,
-		metric.WithAttributes(
-			attribute.String("error.type", errType.Name),
-			attribute.Int("http.status_code", errType.HTTPStatus),
-		),
-	)
+// healthHandler returns 200 OK
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OK"))
 }
 
-func handleSuccess(ctx context.Context, span trace.Span, requestNum int) {
-	span.SetAttributes(
+// successHandler always returns 200 OK
+func successHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	span := trace.SpanFromContext(ctx)
+	traceID := span.SpanContext().TraceID().String()
+
+	requestCounter.Add(ctx, 1, metric.WithAttributes(
+		attribute.String("http.method", r.Method),
+		attribute.String("http.route", "/success"),
 		attribute.Int("http.status_code", 200),
+	))
+
+	span.SetAttributes(
+		attribute.String("handler.type", "success"),
 		attribute.Bool("error", false),
 	)
-	span.SetStatus(codes.Ok, "success")
+	span.SetStatus(codes.Ok, "Request processed successfully")
 
-	// Log to stdout (zap)
 	logger.Info("Request processed successfully",
-		zap.Int("request.number", requestNum),
-		zap.Int("http.status_code", 200),
-		zap.String("trace.id", span.SpanContext().TraceID().String()),
-		zap.String("span.id", span.SpanContext().SpanID().String()),
+		zap.String("route", "/success"),
+		zap.String("trace_id", traceID),
 	)
 
-	// Send log via OTLP
-	logRecord := otellog.Record{}
-	logRecord.SetTimestamp(time.Now())
-	logRecord.SetBody(otellog.StringValue("Request processed successfully"))
-	logRecord.SetSeverity(otellog.SeverityInfo)
-	logRecord.AddAttributes(
-		otellog.Int("request.number", requestNum),
-		otellog.Int("http.status_code", 200),
-		otellog.String("trace.id", span.SpanContext().TraceID().String()),
-		otellog.String("span.id", span.SpanContext().SpanID().String()),
-	)
-	otlpLogger.Emit(ctx, logRecord)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(SuccessResponse{
+		Status:  "success",
+		Message: "Request processed successfully",
+		TraceID: traceID,
+		Data:    map[string]any{"timestamp": time.Now().Unix()},
+	})
 }
 
-func startAutoGenerator(ctx context.Context) {
-	logger.Info("Starting auto-generator",
-		zap.Float64("error_rate", errorRate),
-		zap.Duration("request_interval", requestInterval),
-		zap.Bool("timeout_errors", enableTimeoutErr),
-		zap.Bool("validation_errors", enableValidationErr),
-		zap.Bool("database_errors", enableDatabaseErr),
-		zap.Bool("network_errors", enableNetworkErr),
-		zap.Bool("auth_errors", enableAuthErr),
+// validationErrorHandler returns 400 Bad Request
+func validationErrorHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	span := trace.SpanFromContext(ctx)
+	traceID := span.SpanContext().TraceID().String()
+
+	errorCounter.Add(ctx, 1, metric.WithAttributes(
+		attribute.String("error.type", "validation"),
+		attribute.Int("http.status_code", 400),
+	))
+
+	requestCounter.Add(ctx, 1, metric.WithAttributes(
+		attribute.String("http.method", r.Method),
+		attribute.String("http.route", "/validation-error"),
+		attribute.Int("http.status_code", 400),
+	))
+
+	span.SetAttributes(
+		attribute.String("error.type", "validation"),
+		attribute.String("handler.type", "error"),
+		attribute.Bool("error", true),
+	)
+	span.SetStatus(codes.Error, "Validation error: invalid input parameters")
+
+	logger.Log(zapcore.WarnLevel, "Validation error: invalid input parameters",
+		zap.String("error.type", "validation"),
+		zap.Int("http.status_code", 400),
+		zap.String("trace_id", traceID),
 	)
 
-	requestNum := 0
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusBadRequest)
+	json.NewEncoder(w).Encode(ErrorResponse{
+		Error:   "validation_error",
+		Code:    400,
+		Message: "Invalid input parameters",
+		TraceID: traceID,
+	})
+}
+
+// authErrorHandler returns 401 Unauthorized
+func authErrorHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	span := trace.SpanFromContext(ctx)
+	traceID := span.SpanContext().TraceID().String()
+
+	errorCounter.Add(ctx, 1, metric.WithAttributes(
+		attribute.String("error.type", "auth"),
+		attribute.Int("http.status_code", 401),
+	))
+
+	requestCounter.Add(ctx, 1, metric.WithAttributes(
+		attribute.String("http.method", r.Method),
+		attribute.String("http.route", "/auth-error"),
+		attribute.Int("http.status_code", 401),
+	))
+
+	span.SetAttributes(
+		attribute.String("error.type", "auth"),
+		attribute.String("handler.type", "error"),
+		attribute.Bool("error", true),
+	)
+	span.SetStatus(codes.Error, "Authentication error: invalid or expired token")
+
+	logger.Log(zapcore.WarnLevel, "Authentication error: invalid or expired token",
+		zap.String("error.type", "auth"),
+		zap.Int("http.status_code", 401),
+		zap.String("trace_id", traceID),
+	)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusUnauthorized)
+	json.NewEncoder(w).Encode(ErrorResponse{
+		Error:   "authentication_error",
+		Code:    401,
+		Message: "Invalid or expired authentication token",
+		TraceID: traceID,
+	})
+}
+
+// serverErrorHandler returns 500 Internal Server Error with nested span
+func serverErrorHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	span := trace.SpanFromContext(ctx)
+	traceID := span.SpanContext().TraceID().String()
+
+	// Create a child span to simulate database operation
+	dbCtx, dbSpan := tracer.Start(ctx, "database.query")
+	dbSpan.SetAttributes(
+		attribute.String("db.system", "postgresql"),
+		attribute.String("db.operation", "SELECT"),
+		attribute.String("db.statement", "SELECT * FROM users WHERE id = $1"),
+	)
+	time.Sleep(50 * time.Millisecond) // Simulate query time
+	dbSpan.SetStatus(codes.Error, "Connection pool exhausted")
+	dbSpan.End()
+
+	errorCounter.Add(dbCtx, 1, metric.WithAttributes(
+		attribute.String("error.type", "database"),
+		attribute.Int("http.status_code", 500),
+	))
+
+	requestCounter.Add(dbCtx, 1, metric.WithAttributes(
+		attribute.String("http.method", r.Method),
+		attribute.String("http.route", "/server-error"),
+		attribute.Int("http.status_code", 500),
+	))
+
+	span.SetAttributes(
+		attribute.String("error.type", "database"),
+		attribute.String("handler.type", "error"),
+		attribute.Bool("error", true),
+	)
+	span.SetStatus(codes.Error, "Database error: connection pool exhausted")
+
+	logger.Error("Database error: connection pool exhausted",
+		zap.String("error.type", "database"),
+		zap.Int("http.status_code", 500),
+		zap.String("trace_id", traceID),
+	)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusInternalServerError)
+	json.NewEncoder(w).Encode(ErrorResponse{
+		Error:   "internal_server_error",
+		Code:    500,
+		Message: "Database connection pool exhausted",
+		TraceID: traceID,
+	})
+}
+
+// timeoutHandler simulates a timeout and returns 504
+func timeoutHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	span := trace.SpanFromContext(ctx)
+	traceID := span.SpanContext().TraceID().String()
+
+	// Simulate upstream call that times out
+	upstreamCtx, upstreamSpan := tracer.Start(ctx, "upstream.service.call")
+	upstreamSpan.SetAttributes(
+		attribute.String("peer.service", "upstream-api"),
+		attribute.String("http.url", "https://upstream-api.example.com/data"),
+		attribute.String("http.method", "GET"),
+	)
+	time.Sleep(150 * time.Millisecond) // Simulate long wait
+	upstreamSpan.SetStatus(codes.Error, "Request timeout")
+	upstreamSpan.End()
+
+	errorCounter.Add(upstreamCtx, 1, metric.WithAttributes(
+		attribute.String("error.type", "timeout"),
+		attribute.Int("http.status_code", 504),
+	))
+
+	requestCounter.Add(upstreamCtx, 1, metric.WithAttributes(
+		attribute.String("http.method", r.Method),
+		attribute.String("http.route", "/timeout"),
+		attribute.Int("http.status_code", 504),
+	))
+
+	span.SetAttributes(
+		attribute.String("error.type", "timeout"),
+		attribute.String("handler.type", "error"),
+		attribute.Bool("error", true),
+	)
+	span.SetStatus(codes.Error, "Gateway timeout: upstream service did not respond")
+
+	logger.Error("Gateway timeout: upstream service did not respond",
+		zap.String("error.type", "timeout"),
+		zap.Int("http.status_code", 504),
+		zap.String("trace_id", traceID),
+	)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusGatewayTimeout)
+	json.NewEncoder(w).Encode(ErrorResponse{
+		Error:   "gateway_timeout",
+		Code:    504,
+		Message: "Upstream service did not respond in time",
+		TraceID: traceID,
+	})
+}
+
+// networkErrorHandler returns 503 Service Unavailable
+func networkErrorHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	span := trace.SpanFromContext(ctx)
+	traceID := span.SpanContext().TraceID().String()
+
+	errorCounter.Add(ctx, 1, metric.WithAttributes(
+		attribute.String("error.type", "network"),
+		attribute.Int("http.status_code", 503),
+	))
+
+	requestCounter.Add(ctx, 1, metric.WithAttributes(
+		attribute.String("http.method", r.Method),
+		attribute.String("http.route", "/network-error"),
+		attribute.Int("http.status_code", 503),
+	))
+
+	span.SetAttributes(
+		attribute.String("error.type", "network"),
+		attribute.String("handler.type", "error"),
+		attribute.Bool("error", true),
+	)
+	span.SetStatus(codes.Error, "Network error: unable to reach downstream service")
+
+	logger.Error("Network error: unable to reach downstream service",
+		zap.String("error.type", "network"),
+		zap.Int("http.status_code", 503),
+		zap.String("trace_id", traceID),
+	)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusServiceUnavailable)
+	json.NewEncoder(w).Encode(ErrorResponse{
+		Error:   "service_unavailable",
+		Code:    503,
+		Message: "Unable to reach downstream service",
+		TraceID: traceID,
+	})
+}
+
+// randomHandler randomly generates one of the above responses
+func randomHandler(w http.ResponseWriter, r *http.Request) {
+	handlers := []http.HandlerFunc{
+		successHandler,
+		validationErrorHandler,
+		authErrorHandler,
+		serverErrorHandler,
+		timeoutHandler,
+		networkErrorHandler,
+	}
+
+	// Randomly select a handler
+	handler := handlers[rand.Intn(len(handlers))]
+	handler(w, r)
+}
+
+// startAutoGenerator generates background traffic
+func startAutoGenerator(ctx context.Context) {
+	logger.Info("Auto-generator enabled",
+		zap.Duration("request_interval", requestInterval),
+	)
+
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
 	ticker := time.NewTicker(requestInterval)
 	defer ticker.Stop()
+
+	endpoints := []string{
+		"http://localhost:8080/success",
+		"http://localhost:8080/validation-error",
+		"http://localhost:8080/auth-error",
+		"http://localhost:8080/server-error",
+		"http://localhost:8080/timeout",
+		"http://localhost:8080/network-error",
+	}
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			requestNum++
-			simulateRequest(ctx, requestNum)
+			endpoint := endpoints[rand.Intn(len(endpoints))]
+			go func(url string) {
+				req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
+				_, _ = client.Do(req)
+			}(endpoint)
 		}
 	}
-}
-
-func healthHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "OK")
-}
-
-func main() {
-	ctx := context.Background()
-	shutdown := initOTel(ctx)
-	defer shutdown()
-
-	// Start health check server
-	go func() {
-		http.HandleFunc("/health", healthHandler)
-		log.Println("Health check server listening on :8080")
-		if err := http.ListenAndServe(":8080", nil); err != nil {
-			log.Fatalf("failed to start health server: %v", err)
-		}
-	}()
-
-	// Start auto-generator
-	startAutoGenerator(ctx)
 }

@@ -44,13 +44,6 @@ service:
         - batch
       exporters: [otlphttp, debug]
 
-    # Log pipeline WITHOUT transformation
-    logs:
-      receivers: [otlp]
-      processors:
-        - batch
-      exporters: [otlphttp, debug]
-
     # Metric pipeline WITHOUT transformation
     metrics:
       receivers: [otlp]

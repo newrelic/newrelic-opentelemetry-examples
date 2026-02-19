@@ -1,15 +1,14 @@
 # Error Filtering with OpenTelemetry Collector
 
-This example demonstrates how to transform error telemetry (traces, logs, and metrics) using the OpenTelemetry Collector so that expected/ignorable errors can be prevented from contributing to the error count without fully filtering it out before sending data to New Relic. 
+This example demonstrates how to transform error telemetry (traces and metrics) using the OpenTelemetry Collector so that expected/ignorable errors can be prevented from contributing to the error count and errors inbox without fully filtering it out before sending data to New Relic.
 
-This example includes a configurable error generator that produces various types of errors, and a collector configuration that shows different filtering strategies.
+This example includes an HTTP server with multiple endpoints that demonstrate various error types, and a collector configuration that shows different filtering strategies.
 
 ## Use Cases
 
 This example demonstrates several common error filtering patterns:
 
 - **Filter noisy errors**: Remove validation errors (400) and auth errors (401) that clutter dashboards
-- **Filter by severity**: Only send ERROR-level logs, filtering out WARN logs
 - **Add metadata**: Tag filtered telemetry for tracking what was processed
 
 ## Requirements
@@ -32,24 +31,27 @@ This example demonstrates several common error filtering patterns:
    docker compose up --build
    ```
 
-   You should see output showing:
-   - Error generator starting with configured error rates
-   - Collector receiving and processing telemetry
-   - Filtered telemetry being exported to New Relic
-
-   **Or use the interactive quick start:**
+   The HTTP server will start on port 8080. You can test the endpoints using curl or your browser:
 
    ```bash
-   ./scripts/quick-start.sh
-   ```
+   # View available endpoints
+   curl http://localhost:8080/
 
-   This provides an interactive menu to view live data in various ways.
+   # Test specific error types
+   curl http://localhost:8080/success
+   curl http://localhost:8080/validation-error
+   curl http://localhost:8080/auth-error
+   curl http://localhost:8080/server-error
+   curl http://localhost:8080/timeout
+   curl http://localhost:8080/network-error
+   curl http://localhost:8080/random
+   ```
 
 3. **View your data in New Relic**:
 
    - Navigate to "New Relic -> All Entities -> Services - OpenTelemetry"
    - Find the `error-generator` service
-   - Explore traces, logs, and metrics
+   - Explore traces and metrics
 
 4. **Stop the example**:
 
@@ -61,24 +63,47 @@ This example demonstrates several common error filtering patterns:
 
 All configuration is managed through environment variables in [.env](./.env).
 
-### Error Generation Configuration
+### Error Generator Configuration
 
-Control what errors are generated:
+The error generator is an HTTP server with multiple endpoints. By default, it only responds to external requests:
 
 ```
-# Error rate (0.0 to 1.0)
-ERROR_RATE=0.3
+# Enable automatic background traffic generation (optional)
+# When enabled, the service continuously makes requests to its own endpoints
+# Set to "true" to enable automatic traffic, "false" to require manual requests
+AUTO_GENERATE_TRAFFIC=false
 
-# Interval between requests (milliseconds)
-REQUEST_INTERVAL_MS=2000
-
-# Enable/disable specific error types
-ENABLE_TIMEOUT_ERRORS=true          # 504 Gateway Timeout
-ENABLE_VALIDATION_ERRORS=true       # 400 Bad Request
-ENABLE_DATABASE_ERRORS=true         # 500 Internal Server Error
-ENABLE_NETWORK_ERRORS=true          # 503 Service Unavailable
-ENABLE_AUTH_ERRORS=true             # 401 Unauthorized
+# Interval between auto-generated requests in milliseconds
+# Only applies when AUTO_GENERATE_TRAFFIC=true
+REQUEST_INTERVAL_MS=5000
 ```
+
+**When to use AUTO_GENERATE_TRAFFIC:**
+
+- **`false` (default)** - Manual control mode
+  - Service waits for your requests (via curl or browser)
+  - Best for: learning the endpoints, testing specific error types, controlled demos
+
+- **`true`** - Automatic traffic mode
+  - Service continuously generates its own traffic in the background
+  - Hits random endpoints automatically every `REQUEST_INTERVAL_MS`
+  - Best for: long-running demos, populating dashboards, hands-off testing
+
+### Available Endpoints
+
+The error generator HTTP server exposes the following endpoints:
+
+| Endpoint | Description | HTTP Status |
+|----------|-------------|-------------|
+| `/` | Service information and endpoint list | 200 |
+| `/health` | Health check endpoint | 200 |
+| `/success` | Always returns success | 200 |
+| `/validation-error` | Validation error scenario | 400 |
+| `/auth-error` | Authentication error scenario | 401 |
+| `/server-error` | Internal server error with nested database span | 500 |
+| `/timeout` | Gateway timeout with nested upstream service span | 504 |
+| `/network-error` | Network unavailability scenario | 503 |
+| `/random` | Randomly returns one of the above responses | varies |
 
 ## Error Types
 
@@ -94,14 +119,13 @@ The error generator produces five types of errors:
 
 Each error produces:
 - A **trace span** with error status and attributes
-- A **log record** with appropriate severity and context
 - An **error metric** counter increment
 
 ## Filtering Strategies
 
 The collector configuration ([otel-config.yaml](./otel-config.yaml)) demonstrates several filtering patterns:
 
-### 1. Trace Filtering
+### Trace Filtering
 
 Filters error spans based on error type, span status code, and http response status code for http spans:
 
@@ -119,23 +143,7 @@ Filters error spans based on error type, span status code, and http response sta
           - ...
 ```
 
-### 2. Log Filtering
-
-Filters logs based on severity and error type:
-
-```yaml
-  transform/logs:
-    error_mode: ignore
-    log_statements:
-      - context: log
-        conditions:
-          - 'severity_text == "WARN"'
-          - 'attributes["error.type"] == "validation"'
-        statements:
-          - ...
-```
-
-### 3. Metric Filtering
+### Metric Filtering
 
 Filters error metrics by error type:
 
