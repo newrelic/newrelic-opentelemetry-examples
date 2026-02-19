@@ -1,8 +1,9 @@
-# Monitoring Hosts with OpenTelemetry Collector
+# Monitoring the OpenTelemetry Collector
 
-This example demonstrates configuring the [internal telemetry](https://opentelemetry.io/docs/collector/internal-telemetry/) of an OTel Collector in way that also provides infrastructure relationships between the collector and its host and container.
+The OpenTelemetry Collector can be configured to emit its [internal telemetry](https://opentelemetry.io/docs/collector/internal-telemetry/). This enables you to observe and monitor the health of your collectors. This example demonstrates how to configure the collector's internal telemetry and send it to New Relic to light up New Relic's collector observability experience. The example also demonstrates how to use the collector to instrument the host and container the collector is running on. As a result, relationships are created in New Relic between the collector and its host and container.
 
 ## Architecture
+
 ```mermaid
 flowchart LR
   subgraph Collector
@@ -37,6 +38,7 @@ flowchart LR
 - [A New Relic license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)
 
 ### Collector
+
 We'll use [otelcol-contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/v0.142.0/distributions/otelcol-contrib) for the example but if you are using your own collector, here is the what and why regarding components:
 - [otlpreceiver](https://github.com/open-telemetry/opentelemetry-collector/blob/v0.142.0/receiver/otlpreceiver/README.md) to provide a hook for the internal telemetry to get funnelled into a pipeline defined in the collector itself.
 - [resourcedetectionprocessor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/v0.142.0/processor/resourcedetectionprocessor) to add `host.id` to internal telemetry.
@@ -44,6 +46,7 @@ We'll use [otelcol-contrib](https://github.com/open-telemetry/opentelemetry-coll
 - (optional) [memorylimiterprocessor](https://github.com/open-telemetry/opentelemetry-collector/tree/v0.142.0/processor/memorylimiterprocessor) and [batchprocessor](https://github.com/open-telemetry/opentelemetry-collector/tree/v0.142.0/processor/batchprocessor) for best practices.
 
 ### Appendix
+
 - Collector entity definition: [EXT-SERVICE](https://github.com/newrelic/entity-definitions/blob/main/entity-types/ext-service/definition.yml#L72-L94)
   - requires `service.name` on internal telemetry
 - Collector to container relationship: [INFRA_KUBERNETES_CONTAINER-to-EXT_SERVICE](https://github.com/newrelic/entity-definitions/blob/main/relationships/synthesis/INFRA_KUBERNETES_CONTAINER-to-EXT_SERVICE.yml#L40)
@@ -92,58 +95,5 @@ We'll use [otelcol-contrib](https://github.com/open-telemetry/opentelemetry-coll
 ## Viewing your data
 
 ### In the UI
+
 The infrastructure relationships are used to light up our APM UI. Navigate to "New Relic -> All Entities -> Services - OpenTelemetry" and click on the service with name corresponding to value provided in `secrets.yaml` for `COLLECTOR_SERVICE_NAME`. The 'Summary' page shows metrics related to the infrastructure entities related to your collector at the bottom of the page.
-
-
-### From the CLI
-You can also query the relationships through NerdGraph using the [newrelic CLI](https://github.com/newrelic/newrelic-cli/blob/main/docs/GETTING_STARTED.md#environment-setup). Note that the api key in this case is NOT an ingest key (as used above), but instead a user key.
-
-The following script should work if your service name is sufficiently unique as the first part determines the entity guid based on the service name.
-If you have the correct entity guid, you can skip the first part and just query the relationships directly.
-
-```bash
-#!/bin/bash
-export NEW_RELIC_REGION='US'
-export NEW_RELIC_API_KEY='INSERT_USER_KEY'
-SERVICE_NAME='INSERT_SERVICE_NAME'
-
-ENTITY=$(newrelic nerdgraph query "{
-  actor {
-    entitySearch(queryBuilder: {name: \"${SERVICE_NAME}\"}) {
-      results {
-        entities {
-          guid
-          name
-        }
-      }
-    }
-  }
-}")
-SERVICE_ENTITY_GUID=$(jq -r '.actor.entitySearch.results.entities[0].guid' <<< "$ENTITY")
-
-newrelic nerdgraph query "{
-  actor {
-    entity(guid: \"${SERVICE_ENTITY_GUID}\") {
-      relatedEntities(filter: {relationshipTypes: {include: HOSTS}}) {
-        results {
-          source {
-            entity {
-              name
-              guid
-              domain
-              type
-            }
-          }
-          type
-          target {
-            entity {
-              guid
-              name
-            }
-          }
-        }
-      }
-    }
-  }
-}" 
-```

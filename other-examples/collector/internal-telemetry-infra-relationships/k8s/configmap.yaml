@@ -34,36 +34,18 @@ data:
 
     service:
       pipelines:
-        ####
-        #  insert your normal pipelines
-        ####
         logs/internal:
-          receivers:
-            - otlp/internal
-          processors:
-            - memory_limiter
-            - resourcedetection/internal
-            - batch
-          exporters:
-            - otlphttp/internal
+          receivers: [otlp/internal]
+          processors: [memory_limiter, resourcedetection/internal, batch]
+          exporters: [otlphttp/internal]
         metrics/internal:
-          receivers:
-            - otlp/internal
-          processors:
-            - memory_limiter
-            - resourcedetection/internal
-            - batch
-          exporters:
-            - otlphttp/internal
+          receivers: [otlp/internal]
+          processors: [memory_limiter, resourcedetection/internal, batch]
+          exporters: [otlphttp/internal]
         traces/internal:
-          receivers:
-            - otlp/internal
-          processors:
-            - memory_limiter
-            - resourcedetection/internal
-            - batch
-          exporters:
-            - otlphttp/internal
+          receivers: [otlp/internal]
+          processors: [memory_limiter, resourcedetection/internal, batch]
+          exporters: [otlphttp/internal]
       
       telemetry:
         resource:
