@@ -16,3 +16,5 @@ getting-started-guides/rust/target
 # Python
 venv
 __pycache__
+
+**/secrets.yaml

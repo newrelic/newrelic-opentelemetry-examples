@@ -12,20 +12,12 @@ This simple example demonstrates monitoring [HCP Consul](https://developer.hashi
 
 ## Running the example
 
-1. Update the `NEW_RELIC_API_KEY` values `HCP_ACCESS_TOKEN` values in [secrets.yaml](./k8s/secrets.yaml) to your New Relic license key, and HCP Consule admin access token respectively. See [HCP Consule docs](https://developer.hashicorp.com/hcp/docs/consul/hcp-managed/access#generate-admin-token) for obtaining an access token.
-
-    ```yaml
-    # ...omitted for brevity
-    stringData:
-       # New Relic API key to authenticate the export requests.
-       # docs: https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key
-       NEW_RELIC_API_KEY: <INSERT_API_KEY>
-       # Set your HCP Access Token API Key.
-       # docs: https://developer.hashicorp.com/hcp/docs/consul/hcp-managed/access#generate-admin-token
-       HCP_ACCESS_TOKEN: <INSERT_API_KEY>>
+1. Create your secrets file from the template and update the values:
+    ```shell
+    cp k8s/secrets.yaml.template k8s/secrets.yaml
+    # Edit k8s/secrets.yaml with your New Relic license key and HCP Consul admin access token
     ```
-   
-    * Note, be careful to avoid inadvertent secret sharing when modifying `secrets.yaml`. To ignore changes to this file from git, run `git update-index --skip-worktree k8s/secrets.yaml`.
+    See the [New Relic docs](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key) for how to obtain a New Relic license key and the [HCP Consul docs](https://developer.hashicorp.com/hcp/docs/consul/hcp-managed/access#generate-admin-token) for how to obtain an HCP Consul admin access token.
 
     * If your account is based in the EU, update the `NEW_RELIC_OTLP_ENDPOINT` value in [collector.yaml](./k8s/collector.yaml) the endpoint to: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
 
