@@ -13,6 +13,7 @@ service:
       receivers: [otlp]
       exporters: [debug]
 
+  # Internal telemetry configuration, see https://github.com/newrelic/nrdot-collector-releases/blob/ed3bd71116742391c40209039e999ebea6ba80f9/examples/internal-telemetry-config.yaml for reference
   telemetry:
     metrics:
       level: "${env:INTERNAL_TELEMETRY_METRICS_LEVEL:-detailed}"
