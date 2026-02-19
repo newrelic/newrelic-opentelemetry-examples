@@ -1,0 +1,118 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+
+  # ============================================================
+  # TRACE TRANSFORMATION
+  # Transform specific error types so they are not included in NR's Errors Inbox
+  # while still sending the telemetry to New Relic for visibility
+  # ============================================================
+  transform/traces:
+    error_mode: ignore
+    trace_statements:
+      # Transform validation errors - change status from Error to Unset
+      # This prevents them from contributing to error rate calculations
+      - context: span
+        conditions:
+          - attributes["error.type"] == "validation"
+          - status.code == STATUS_CODE_ERROR
+        statements:
+          - set(status.code, STATUS_CODE_UNSET)
+          - set(status.message, "Expected validation error (transformed)")
+          - set(attributes["error.expected"], true)
+
+  # ============================================================
+  # LOG TRANSFORMATION
+  # Transform logs by severity level and error type
+  # Downgrade severity so they don't trigger alerts
+  # ============================================================
+  transform/logs:
+    error_mode: ignore
+    log_statements:
+      # Mark validation error logs as expected
+      - context: log
+        conditions:
+          - attributes["error.type"] == "validation"
+        statements:
+          - set(attributes["error.expected"], true)
+          - set(severity_number, SEVERITY_NUMBER_INFO)
+          - set(severity_text, "INFO")
+
+  # ============================================================
+  # METRIC TRANSFORMATION
+  # Transform error metrics so expected errors don't inflate error counts
+  # ============================================================
+  transform/metrics:
+    error_mode: ignore
+    metric_statements:
+      # Mark validation error metrics as expected
+      - context: datapoint
+        conditions:
+          - attributes["error.type"] == "validation"
+        statements:
+          - set(attributes["error.expected"], true)
+          - delete_key(attributes, "error.type")
+
+exporters:
+  # Export to New Relic via OTLP
+  otlphttp:
+    endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT}
+    headers:
+      api-key: ${env:NEW_RELIC_API_KEY}
+    compression: gzip
+
+  # Debug exporter for local testing
+  debug:
+    verbosity: detailed
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+  pprof:
+    endpoint: 0.0.0.0:1777
+
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+service:
+  extensions: [health_check, pprof, zpages]
+
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors:
+        - transform/traces
+        - batch
+      exporters: [otlphttp, debug]
+
+    # Log pipeline with transformation
+    logs:
+      receivers: [otlp]
+      processors:
+        - transform/logs
+        - batch
+      exporters: [otlphttp, debug]
+
+    # Metric pipeline with transformation
+    metrics:
+      receivers: [otlp]
+      processors:
+        - transform/metrics
+        - batch
+      exporters: [otlphttp, debug]
+
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      address: 0.0.0.0:8888
