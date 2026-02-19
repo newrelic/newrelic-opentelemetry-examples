@@ -19,12 +19,6 @@ spec:
           image: otel/opentelemetry-collector-contrib:0.142.0
           args:
             - --config=/config/config.yaml
-            # add k8s metadata as resource attributes
-            - '--config=yaml:service::telemetry::resource::k8s.cluster.name: ${env:CLUSTER_NAME}'
-            - '--config=yaml:service::telemetry::resource::k8s.namespace.name: "${env:NAMESPACE}"'
-            - '--config=yaml:service::telemetry::resource::k8s.pod.name: "${env:POD_NAME}"'
-            # Hardcoded container name - needs to match the container's name above
-            - '--config=yaml:service::telemetry::resource::k8s.container.name: collector-infra-relationships'
           env:
             # New Relic OTLP endpoint
             - name: NEW_RELIC_OTLP_ENDPOINT
@@ -60,6 +54,9 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+            # k8s.container.name - must match the container's name above
+            - name: CONTAINER_NAME
+              value: collector-infra-relationships
           volumeMounts:
             - name: config
               mountPath: /config
