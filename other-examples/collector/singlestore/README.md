@@ -12,20 +12,12 @@ This simple example demonstrates monitoring [Singlestore](https://www.singlestor
 
 ## Running the example
 
-1. Update the `NEW_RELIC_API_KEY` values `SINGLESTORE_API_KEY` values in [secrets.yaml](./k8s/secrets.yaml) to your New Relic license key, and singlestore API key respectively. See [Singlestore docs](https://support.singlestore.com/hc/en-us/articles/12396018910228-Creating-Management-API-Key) for obtaining API key / secret.
-
-    ```yaml
-    # ...omitted for brevity
-   stringData:
-      # New Relic API key to authenticate the export requests.
-      # docs: https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key
-      NEW_RELIC_API_KEY: <INSERT_API_KEY>
-      # Set your Singlestore API Key.
-      # docs: https://support.singlestore.com/hc/en-us/articles/12396018910228-Creating-Management-API-Key
-      SINGLESTORE_API_KEY: <INSERT_API_KEY>>
+1. Create your secrets file from the template and update the values:
+    ```shell
+    cp k8s/secrets.yaml.template k8s/secrets.yaml
+    # Edit k8s/secrets.yaml with your New Relic license key and Singlestore API key
     ```
-   
-    * Note, be careful to avoid inadvertent secret sharing when modifying `secrets.yaml`. To ignore changes to this file from git, run `git update-index --skip-worktree k8s/secrets.yaml`.
+    See the [New Relic docs](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key) for how to obtain a New Relic license key and the [Singlestore docs](https://support.singlestore.com/hc/en-us/articles/12396018910228-Creating-Management-API-Key) for how to obtain a Singlestore API key.
 
     * If your account is based in the EU, update the `NEW_RELIC_OTLP_ENDPOINT` value in [collector.yaml](./k8s/collector.yaml) the endpoint to: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
 

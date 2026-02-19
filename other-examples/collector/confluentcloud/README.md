@@ -13,21 +13,12 @@ This simple example demonstrates monitoring Confluent Cloud prometheus metrics w
 
 ## Running the example
 
-1. Update the `NEW_RELIC_API_KEY`, `CONFLUENT_API_KEY`, and `CONFLUENT_API_SECRET` values in [secrets.yaml](./k8s/secrets.yaml) to your New Relic license key, and confluent API key / secret respectively. See [Confluent docs](https://docs.confluent.io/cloud/current/monitoring/metrics-api.html) for obtaining API key / secret.
-
-    ```yaml
-    # ...omitted for brevity
-    stringData:
-      # New Relic API key to authenticate the export requests.
-      # docs: https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key
-      NEW_RELIC_API_KEY: <INSERT_API_KEY>
-      # Set your authentication keys for the Confluent Cloud metrics API.
-      # docs: https://docs.confluent.io/cloud/current/monitoring/metrics-api.html
-      CONFLUENT_API_KEY: <INSERT_CONFLUENT_API_KEY>
-      CONFLUENT_API_SECRET: <INSERT_CONFLUENT_API_SECRET>
+1. Create your secrets file from the template and update the values:
+    ```shell
+    cp k8s/secrets.yaml.template k8s/secrets.yaml
+    # Edit k8s/secrets.yaml with your New Relic license key, Confluent API key, and Confluent API secret
     ```
-   
-    * Note, be careful to avoid inadvertent secret sharing when modifying `secrets.yaml`. To ignore changes to this file from git, run `git update-index --skip-worktree k8s/secrets.yaml`.
+    See the [New Relic docs](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key) for how to obtain a New Relic license key and the [Confluent docs](https://docs.confluent.io/cloud/current/monitoring/metrics-api.html) for how to obtain Confluent API key and secret.
 
     * If your account is based in the EU, update the `NEW_RELIC_OTLP_ENDPOINT` value in [collector.yaml](./k8s/collector.yaml) the endpoint to: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
 
