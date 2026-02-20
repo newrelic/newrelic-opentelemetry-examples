@@ -1,6 +1,6 @@
 # Monitoring the OpenTelemetry Collector with Container Relationships
 
-The [internal-telemetry example](../internal-telemetry/README.md) showcases how to configure the OpenTelemetry Collector to emit its [internal telemetry](https://opentelemetry.io/docs/collector/internal-telemetry/) to New Relic. This example expands on that with k8s infrastructure monitoring, i.e. instrument the underlying containers and create relationships between the collector and its container. This enables New Relic to display container metrics directly in the collector observability experience.
+The [internal-telemetry example](https://github.com/newrelic/newrelic-opentelemetry-examples/tree/main/other-examples/collector/internal-telemetry) showcases how to configure the OpenTelemetry Collector to emit its [internal telemetry](https://opentelemetry.io/docs/collector/internal-telemetry/) to New Relic. This example expands on that with k8s infrastructure monitoring, i.e. instrument the underlying containers and create relationships between the collector and its container. This enables New Relic to display container metrics directly in the collector observability experience.
 
 ## Requirements
 
