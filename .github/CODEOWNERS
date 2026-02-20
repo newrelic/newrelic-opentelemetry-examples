@@ -1,6 +1,6 @@
 # Global codeowners
 
-* @newrelic/opentelemetry-community
+* @newrelic/otelcomm
 
 getting-started-guides/dotnet/      @alanwest
 getting-started-guides/ruby/        @kaylareopelle
