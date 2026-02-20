@@ -4,6 +4,7 @@ services:
     environment:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://collector:4318
       - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=delta
+      - OTEL_METRIC_EXPORT_INTERVAL=5000
       - OTEL_SERVICE_NAME=ignored-errors
     depends_on:
       - collector
