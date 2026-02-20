@@ -1,0 +1,64 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+
+exporters:
+  debug:
+
+service:
+  # Dummy pipeline, collector needs at least one pipeline configured to start.
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      exporters: [debug]
+
+  # Internal telemetry configuration, see https://github.com/newrelic/nrdot-collector-releases/blob/ed3bd71116742391c40209039e999ebea6ba80f9/examples/internal-telemetry-config.yaml for reference
+  telemetry:
+    metrics:
+      level: "${env:INTERNAL_TELEMETRY_METRICS_LEVEL:-detailed}"
+      readers:
+        - periodic:
+            exporter:
+              otlp:
+                protocol: http/protobuf
+                endpoint: "${env:INTERNAL_TELEMETRY_OTLP_ENDPOINT:-https://otlp.nr-data.net}"
+                headers:
+                  - name: api-key
+                    value: "${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}"
+    logs:
+      level: "${env:INTERNAL_TELEMETRY_LOG_LEVEL:-INFO}"
+      sampling:
+        enabled: true
+        tick: 10s
+        initial: 10
+        thereafter: 100
+      processors:
+        - batch:
+            exporter:
+              otlp:
+                protocol: http/protobuf
+                endpoint: "${env:INTERNAL_TELEMETRY_OTLP_ENDPOINT:-https://otlp.nr-data.net}"
+                headers:
+                  - name: api-key
+                    value: "${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}"
+    traces:
+      level: "${env:INTERNAL_TELEMETRY_TRACE_LEVEL:-none}"
+      sampler:
+        parent_based:
+          root:
+            trace_id_ratio_based:
+              ratio: ${env:INTERNAL_TELEMETRY_TRACE_SAMPLE_RATIO:-0.01}
+      processors:
+        - batch:
+            exporter:
+              otlp:
+                protocol: http/protobuf
+                endpoint: "${env:INTERNAL_TELEMETRY_OTLP_ENDPOINT:-https://otlp.nr-data.net}"
+                headers:
+                  - name: api-key
+                    value: "${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}"
+    resource:
+      newrelic.collector_telemetry.version: 0.4.0
+      newrelic.service.type: otel_collector
+      service.name: "${env:INTERNAL_TELEMETRY_SERVICE_NAME:-otel-collector}"

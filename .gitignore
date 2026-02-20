@@ -18,3 +18,4 @@ venv
 __pycache__
 
 **/secrets.yaml
+**/.env
