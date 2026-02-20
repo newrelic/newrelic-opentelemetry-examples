@@ -1,0 +1,36 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+
+  # ============================================================
+  # METRIC TRANSFORMATION
+  # Transform error metrics so expected errors don't inflate error counts
+  # ============================================================
+  transform/metrics:
+    error_mode: ignore
+    metric_statements:
+      - context: datapoint
+        conditions:
+          - resource.attributes["service.name"] == "ignored-errors"
+            and metric.name == "http.server.request.duration"
+            and attributes["http.response.status_code"] == 500
+        statements:
+          - delete_key(attributes, "error.type")
+
+exporters:
+  otlphttp:
+    endpoint: ${NEW_RELIC_OTLP_ENDPOINT}
+    headers:
+      api-key: ${NEW_RELIC_API_KEY}
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [transform/metrics, batch]
+      exporters: [otlphttp]

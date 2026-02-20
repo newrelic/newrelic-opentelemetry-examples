@@ -1,0 +1,20 @@
+services:
+  app:
+    build: .
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://collector:4318
+      - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=delta
+      - OTEL_SERVICE_NAME=ignored-errors
+    depends_on:
+      - collector
+    ports:
+      - "8080:8080"
+
+  collector:
+    image: otel/opentelemetry-collector-contrib:0.146.0
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-config.yaml:/etc/otel-collector-config.yaml
+    environment:
+      - NEW_RELIC_API_KEY=${NEW_RELIC_API_KEY}
+      - NEW_RELIC_OTLP_ENDPOINT=${NEW_RELIC_OTLP_ENDPOINT}
