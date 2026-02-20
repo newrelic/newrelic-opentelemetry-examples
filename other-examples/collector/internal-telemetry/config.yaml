@@ -59,6 +59,8 @@ service:
                   - name: api-key
                     value: "${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}"
     resource:
+      # versioning for troubleshooting, not strictly required 
       newrelic.collector_telemetry.version: 0.4.0
+      # adds entity tag which acts as an opt-in for collector APM UI
       newrelic.service.type: otel_collector
       service.name: "${env:INTERNAL_TELEMETRY_SERVICE_NAME:-otel-collector}"
