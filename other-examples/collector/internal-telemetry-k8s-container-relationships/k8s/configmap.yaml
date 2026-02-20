@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: collector-config
+  namespace: k8s-container-relationships
+data:
+  config.yaml: |
+    receivers:
+      # Dummy receiver to allow the collector to start
+      otlp:
+        protocols:
+          http:
+
+    exporters:
+      # Dummy exporter to complete the pipeline
+      debug:
+
+    service:
+      pipelines:
+        # Dummy pipeline required for collector startup
+        metrics:
+          receivers: [otlp]
+          exporters: [debug]
+
+      telemetry:
+        # based on https://raw.githubusercontent.com/newrelic/nrdot-collector-releases/1.11.0/examples/internal-telemetry-config.yaml
+        resource:
+          service.name: "${env:SERVICE_NAME}"
+          newrelic.service.type: otel_collector
+          k8s.cluster.name: "${env:CLUSTER_NAME}"
+          k8s.namespace.name: "${env:NAMESPACE}"
+          k8s.pod.name: "${env:POD_NAME}"
+          k8s.container.name: "${env:CONTAINER_NAME}"
+        metrics:
+          level: detailed
+          readers:
+            - periodic:
+                exporter:
+                  otlp:
+                    protocol: http/protobuf
+                    endpoint: "${env:NEW_RELIC_OTLP_ENDPOINT}"
+                    headers:
+                      api-key: "${env:NEW_RELIC_LICENSE_KEY}"
+        logs:
+          level: INFO
+          processors:
+            - batch:
+                exporter:
+                  otlp:
+                    protocol: http/protobuf
+                    endpoint: "${env:NEW_RELIC_OTLP_ENDPOINT}"
+                    headers:
+                      api-key: "${env:NEW_RELIC_LICENSE_KEY}"
