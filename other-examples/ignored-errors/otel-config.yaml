@@ -22,6 +22,23 @@ processors:
         statements:
           - delete_key(attributes, "error.type")
 
+  # ============================================================
+  # TRACE TRANSFORMATION
+  # Transform specific error types so they are not included in NR's Errors Inbox
+  # while still sending the telemetry to New Relic for visibility
+  # ============================================================
+  transform/traces:
+    error_mode: ignore
+    trace_statements:
+      - context: span
+        conditions:
+          - resource.attributes["service.name"] == "ignored-errors"
+            and attributes["http.response.status_code"] == 500
+            and span.kind == 2
+        statements:
+          - set(status.code, STATUS_CODE_UNSET)
+          - delete_key(attributes, "error.type")
+
 exporters:
   otlphttp:
     endpoint: ${NEW_RELIC_OTLP_ENDPOINT}
@@ -30,6 +47,10 @@ exporters:
 
 service:
   pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [transform/traces, batch]
+      exporters: [otlphttp]
     metrics:
       receivers: [otlp]
       processors: [transform/metrics, batch]
