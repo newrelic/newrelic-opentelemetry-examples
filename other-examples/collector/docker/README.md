@@ -65,7 +65,7 @@ Optionally, install the [Docker OpenTelemetry quickstart](https://newrelic.com/i
 Optionally, use [NRQL](https://docs.newrelic.com/docs/query-your-data/explore-query-data/get-started/introduction-querying-new-relic-data/) to perform ad-hoc analysis. To list the metrics reported, query for:
 
 ```
-FROM Metric SELECT uniques(metricName) WHERE otel.library.name = 'otelcol/dockerstatsreceiver'
+FROM Metric SELECT uniques(metricName) WHERE otel.library.name = 'github.com/open-telemetry/opentelemetry-collector-contrib/receiver/dockerstatsreceiver'
 ```
 
 See [get started with querying](https://docs.newrelic.com/docs/query-your-data/explore-query-data/get-started/introduction-querying-new-relic-data/) for additional details on querying data in New Relic.
