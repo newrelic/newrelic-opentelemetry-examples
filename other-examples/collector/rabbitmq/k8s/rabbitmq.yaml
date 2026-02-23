@@ -1,0 +1,42 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-service
+  namespace: nr-rabbitmq
+  labels:
+    app: rabbitmq
+spec:
+  ports:
+    - port: 5672
+      name: amqp
+      protocol: TCP
+    - port: 15672
+      name: management
+      protocol: TCP
+  selector:
+    app: rabbitmq
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rabbitmq
+  namespace: nr-rabbitmq
+  labels:
+    app: rabbitmq
+spec:
+  containers:
+    - name: rabbitmq
+      image: rabbitmq:3.12-management-alpine
+      env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: "guest"
+        - name: RABBITMQ_DEFAULT_PASS
+          value: "guest"
+      ports:
+        - containerPort: 5672
+          name: amqp
+          protocol: TCP
+        - containerPort: 15672
+          name: management
+          protocol: TCP
