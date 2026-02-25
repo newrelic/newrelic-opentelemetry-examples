@@ -34,18 +34,14 @@ metadata:
   name: nginx-service
   namespace: nr-nginx
   labels:
-    app: nginx
+    app.kubernetes.io/name: nginx
 spec:
   ports:
     - port: 80
       name: http
       protocol: TCP
-    - port: 8080
-      name: stub-status
-      protocol: TCP
-      targetPort: 80
   selector:
-    app: nginx
+    app.kubernetes.io/name: nginx
 ---
 apiVersion: v1
 kind: Pod
@@ -53,11 +49,19 @@ metadata:
   name: nginx
   namespace: nr-nginx
   labels:
-    app: nginx
+    app.kubernetes.io/name: nginx
 spec:
   containers:
     - name: nginx
       image: nginx:1.25-alpine
+      # For production, consider adding:
+      # resources:
+      #   requests:
+      #     memory: "64Mi"
+      #     cpu: "100m"
+      #   limits:
+      #     memory: "256Mi"
+      #     cpu: "500m"
       ports:
         - containerPort: 80
           name: http

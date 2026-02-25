@@ -5,14 +5,14 @@ metadata:
   name: elasticsearch-service
   namespace: nr-elasticsearch
   labels:
-    app: elasticsearch
+    app.kubernetes.io/name: elasticsearch
 spec:
   ports:
     - port: 9200
       name: http
       protocol: TCP
   selector:
-    app: elasticsearch
+    app.kubernetes.io/name: elasticsearch
 ---
 apiVersion: v1
 kind: Pod
@@ -20,11 +20,19 @@ metadata:
   name: elasticsearch
   namespace: nr-elasticsearch
   labels:
-    app: elasticsearch
+    app.kubernetes.io/name: elasticsearch
 spec:
   containers:
     - name: elasticsearch
       image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+      # For production, consider adding:
+      # resources:
+      #   requests:
+      #     memory: "1Gi"
+      #     cpu: "500m"
+      #   limits:
+      #     memory: "2Gi"
+      #     cpu: "1000m"
       env:
         - name: discovery.type
           value: "single-node"

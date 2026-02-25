@@ -4,6 +4,40 @@ kind: Namespace
 metadata:
   name: nr-rabbitmq
 ---
+# ClusterRole for pod discovery across namespaces
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: otel-collector-k8s-observer
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["replicasets", "deployments", "statefulsets"]
+    verbs: ["get", "list", "watch"]
+---
+# ServiceAccount for the collector
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: otel-collector
+  namespace: nr-rabbitmq
+---
+# ClusterRoleBinding to grant permissions
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: otel-collector-k8s-observer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: otel-collector-k8s-observer
+subjects:
+  - kind: ServiceAccount
+    name: otel-collector
+    namespace: nr-rabbitmq
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -13,76 +47,303 @@ metadata:
     app.kubernetes.io/name: collector-config
 data:
   collector-config: |
+    extensions:
+      # Health check endpoint for liveness/readiness probes
+      health_check:
+        endpoint: 0.0.0.0:13133
+      # Kubernetes observer for automatic pod discovery
+      k8s_observer:
+        auth_type: serviceAccount
+        observe_pods: true
+        observe_nodes: false
+
     receivers:
-      rabbitmq:
-        # Connect to rabbitmq pod management API defined in rabbitmq.yaml using service env vars set by k8s
-        endpoint: http://${RABBITMQ_SERVICE_SERVICE_HOST}:15672
-        username: guest
-        password: guest
-        collection_interval: 10s
+      # Dynamic receiver creation based on discovered RabbitMQ pods
+      receiver_creator/rabbitmq:
+        watch_observers: [k8s_observer]
+        receivers:
+          rabbitmq:
+            # Discover pods with label "app.kubernetes.io/name=rabbitmq"
+            # Adjust this rule to match your RabbitMQ pod labels
+            rule: type == "pod" && labels["app.kubernetes.io/name"] == "rabbitmq"
+            config:
+              # endpoint uses backtick-quoted variable from k8s_observer
+              endpoint: 'http://`endpoint`:15672'
+              username: ${env:RABBITMQ_USERNAME}
+              password: ${env:RABBITMQ_PASSWORD}
+              collection_interval: 30s
+              metrics:
+                # Queue Metrics - Essential for message flow and backlog monitoring
+                rabbitmq.consumer.count:
+                  enabled: true
+                rabbitmq.message.delivered:
+                  enabled: true
+                rabbitmq.message.published:
+                  enabled: true
+                rabbitmq.message.acknowledged:
+                  enabled: true
+                rabbitmq.message.dropped:
+                  enabled: true
+                rabbitmq.message.current:
+                  enabled: true  # Critical for queue backlog (ready + unacknowledged)
+
+                # Node Health Metrics - Critical for server resource monitoring
+                rabbitmq.node.disk_free:
+                  enabled: true
+                rabbitmq.node.disk_free_limit:
+                  enabled: true
+                rabbitmq.node.disk_free_alarm:
+                  enabled: true
+                rabbitmq.node.mem_used:
+                  enabled: true
+                rabbitmq.node.mem_limit:
+                  enabled: true
+                rabbitmq.node.mem_alarm:
+                  enabled: true
+                rabbitmq.node.mem_used_details.rate:
+                  enabled: true
+                rabbitmq.node.fd_used:
+                  enabled: true
+                rabbitmq.node.fd_total:
+                  enabled: true
+                rabbitmq.node.sockets_used:
+                  enabled: true
+                rabbitmq.node.sockets_total:
+                  enabled: true
+                rabbitmq.node.proc_used:
+                  enabled: true
+                rabbitmq.node.proc_total:
+                  enabled: true
+                rabbitmq.node.uptime:
+                  enabled: true
+                rabbitmq.node.run_queue:
+                  enabled: true
+                rabbitmq.node.processors:
+                  enabled: true
+                rabbitmq.node.context_switches_details.rate:
+                  enabled: true
+                rabbitmq.node.gc_num_details.rate:
+                  enabled: true
+                rabbitmq.node.gc_bytes_reclaimed_details.rate:
+                  enabled: true
+
+                # I/O Metrics - Important for disk and network activity
+                rabbitmq.node.io_read_count_details.rate:
+                  enabled: true
+                rabbitmq.node.io_read_bytes_details.rate:
+                  enabled: true
+                rabbitmq.node.io_read_avg_time_details.rate:
+                  enabled: true
+                rabbitmq.node.io_write_count_details.rate:
+                  enabled: true
+                rabbitmq.node.io_write_bytes_details.rate:
+                  enabled: true
+                rabbitmq.node.io_write_avg_time_details.rate:
+                  enabled: true
+                rabbitmq.node.io_sync_count_details.rate:
+                  enabled: true
+                rabbitmq.node.io_sync_avg_time_details.rate:
+                  enabled: true
+                rabbitmq.node.io_seek_count_details.rate:
+                  enabled: true
+                rabbitmq.node.io_seek_avg_time_details.rate:
+                  enabled: true
+                rabbitmq.node.io_reopen_count_details.rate:
+                  enabled: true
+
+                # Mnesia and Store Metrics - Internal database and message storage
+                rabbitmq.node.mnesia_ram_tx_count_details.rate:
+                  enabled: true
+                rabbitmq.node.mnesia_disk_tx_count_details.rate:
+                  enabled: true
+                rabbitmq.node.msg_store_read_count_details.rate:
+                  enabled: true
+                rabbitmq.node.msg_store_write_count_details.rate:
+                  enabled: true
+                rabbitmq.node.queue_index_write_count_details.rate:
+                  enabled: true
+                rabbitmq.node.queue_index_read_count_details.rate:
+                  enabled: true
+
+                # Connection/Channel/Queue Lifecycle Metrics
+                rabbitmq.node.connection_created_details.rate:
+                  enabled: true
+                rabbitmq.node.connection_closed_details.rate:
+                  enabled: true
+                rabbitmq.node.channel_created_details.rate:
+                  enabled: true
+                rabbitmq.node.channel_closed_details.rate:
+                  enabled: true
+                rabbitmq.node.queue_declared_details.rate:
+                  enabled: true
+                rabbitmq.node.queue_created_details.rate:
+                  enabled: true
+                rabbitmq.node.queue_deleted_details.rate:
+                  enabled: true
+              resource_attributes:
+                rabbitmq.server.endpoint: 'http://`endpoint`:15672'
+                rabbitmq.port: '15672'
 
     processors:
+      # Batch processor - Improves performance and reduces network overhead
       batch:
-      # Add identifying resource attributes, which is required for New Relic entity synthesis.
-      # The rabbitmq receiver does not currently include any identifying attributes on the metrics it produces.
-      # We manually assign values to server.address and server.port, since values for ${RABBITMQ_SERVICE_SERVICE_HOST} and ${RABBITMQ_SERVICE_SERVICE_PORT} are unstable.
-      attributes/rabbitmq_metrics:
-        include:
-          match_type: regexp
-          metric_names:
-            # Notice that if with single or without quotes just one backslash is needed 'rabbitmq\..*'
-            - "rabbitmq\\..*"
-        actions:
-          - action: upsert
-            key: server.address
-            value: "rabbitmq"
-          - action: upsert
-            key: server.port
-            value: "5672"
+        send_batch_size: 1024
+        timeout: 30s
+
+      # Add cluster identification - Required for New Relic entity synthesis
+      resource/cluster:
+        attributes:
+          - key: k8s.cluster.name
+            value: ${env:K8S_CLUSTER_NAME}
+            action: upsert
+
+      # Transform processor - Creates display name and deployment name for New Relic UI
+      transform/rabbitmq:
+        metric_statements:
+          - context: resource
+            statements:
+              # Create a hierarchical display name for New Relic entity synthesis
+              - set(attributes["rabbitmq.display.name"], Concat([
+                  "server",
+                  "k8s",
+                  attributes["k8s.cluster.name"],
+                  attributes["k8s.namespace.name"],
+                  "pod",
+                  attributes["k8s.pod.name"],
+                  "rabbitmq",
+                  attributes["rabbitmq.port"]
+                ], ":"))
+              # Use pod name as deployment name for logical grouping
+              - set(attributes["rabbitmq.deployment.name"], attributes["k8s.pod.name"])
 
     exporters:
       otlphttp:
-        endpoint: ${NEW_RELIC_OTLP_ENDPOINT}
+        endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT}
         headers:
-          api-key: ${NEW_RELIC_API_KEY}
+          api-key: ${env:NEW_RELIC_LICENSE_KEY}
+        compression: gzip
 
     service:
+      extensions: [health_check, k8s_observer]
       pipelines:
-        metrics:
-          receivers: [rabbitmq]
-          processors: [attributes/rabbitmq_metrics, batch]
+        metrics/rabbitmq:
+          receivers: [receiver_creator/rabbitmq]
+          processors: [batch, resource/cluster, transform/rabbitmq]
           exporters: [otlphttp]
 ---
-apiVersion: v1
-kind: Pod
+# Deployment for high availability and automatic restarts
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: collector
+  name: otel-collector
   namespace: nr-rabbitmq
   labels:
-    app.kubernetes.io/name: collector
+    app.kubernetes.io/name: otel-collector
+    app.kubernetes.io/component: opentelemetry-collector
 spec:
-  containers:
-    - name: collector
-      image: otel/opentelemetry-collector-contrib:0.98.0
-      env:
-        # The default US endpoint is set here. You can change the endpoint and port based on your requirements if needed.
-        # docs: https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/best-practices/opentelemetry-otlp/#configure-endpoint-port-protocol
-        - name: NEW_RELIC_OTLP_ENDPOINT
-          value: https://otlp.nr-data.net/
-        # The New Relic API key used to authenticate export requests.
-        # Defined in secrets.yaml
-        - name: NEW_RELIC_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: nr-rabbitmq-secret
-              key: NEW_RELIC_API_KEY
-      volumeMounts:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: otel-collector
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: otel-collector
+        app.kubernetes.io/component: opentelemetry-collector
+    spec:
+      serviceAccountName: otel-collector
+      containers:
+        - name: otel-collector
+          image: otel/opentelemetry-collector-contrib:0.146.1
+          # Production-grade resource limits per New Relic recommendations
+          resources:
+            requests:
+              memory: "100Mi"
+              cpu: "100m"
+            limits:
+              memory: "300Mi"
+              cpu: "500m"
+          env:
+            # Cluster name for entity synthesis - REQUIRED
+            # Replace 'my-rabbitmq-cluster' with your actual cluster name
+            - name: K8S_CLUSTER_NAME
+              value: "my-rabbitmq-cluster"
+            # Node name from Kubernetes downward API
+            - name: K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            # New Relic OTLP endpoint - defaults to US region
+            # For EU region, use: https://otlp.eu01.nr-data.net:4318
+            - name: NEW_RELIC_OTLP_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: nr-rabbitmq-secret
+                  key: NEW_RELIC_OTLP_ENDPOINT
+            # New Relic License Key
+            - name: NEW_RELIC_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: nr-rabbitmq-secret
+                  key: NEW_RELIC_LICENSE_KEY
+            # RabbitMQ credentials for management API
+            - name: RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: nr-rabbitmq-secret
+                  key: RABBITMQ_USERNAME
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nr-rabbitmq-secret
+                  key: RABBITMQ_PASSWORD
+          ports:
+            - name: health
+              containerPort: 13133
+              protocol: TCP
+          # Liveness probe - Restart if health check fails
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 13133
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # Readiness probe - Don't send traffic until ready
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 13133
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: collector-config-vol
+              mountPath: /etc/otelcol-contrib
+      volumes:
         - name: collector-config-vol
-          mountPath: /etc/otelcol-contrib
-  volumes:
-    - name: collector-config-vol
-      configMap:
-        name: collector-config
-        items:
-          - key: collector-config
-            path: config.yaml
+          configMap:
+            name: collector-config
+            items:
+              - key: collector-config
+                path: config.yaml
+---
+# Service for health check endpoint
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: nr-rabbitmq
+  labels:
+    app.kubernetes.io/name: otel-collector
+spec:
+  type: ClusterIP
+  ports:
+    - name: health
+      port: 13133
+      targetPort: 13133
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: otel-collector

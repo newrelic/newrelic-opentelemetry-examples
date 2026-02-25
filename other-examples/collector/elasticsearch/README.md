@@ -17,7 +17,7 @@ This simple example demonstrates monitoring Elasticsearch with the [OpenTelemetr
     ```
     See the [New Relic docs](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key) for how to obtain a license key.
 
-    * If your account is based in the EU, update the `NEW_RELIC_OTLP_ENDPOINT` value in [collector.yaml](./k8s/collector.yaml) the endpoint to: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
+    * If your account is based in the EU, update the `NEW_RELIC_OTLP_ENDPOINT` value in [collector.yaml](./k8s/collector.yaml) to the endpoint: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
 
     ```yaml
     # ...omitted for brevity
@@ -54,6 +54,15 @@ See [get started with querying](https://docs.newrelic.com/docs/query-your-data/e
 
 ## Additional notes
 
-This example monitors an Elasticsearch instance defined in [elasticsearch.yaml](./k8s/elasticsearch.yaml), which is not receiving any significant load. To use in production, you'll need to modify the `.receivers.elasticsearch.endpoint` value in [collector.yaml](k8s/collector.yaml) ConfigMap to point to the endpoint of your Elasticsearch instance. Additionally, update the `server.address` and `server.port` resource attributes defined in `attributes/elasticsearch_metrics` to values which reflect the Elasticsearch instance being monitored.
+**This is a demo/development configuration** - This example monitors an Elasticsearch instance defined in [elasticsearch.yaml](./k8s/elasticsearch.yaml) with security disabled and no authentication required. This configuration is suitable for testing only.
 
-The elasticsearch receiver collects cluster and node-level metrics including JVM stats, indexing performance, search latency, and cluster health. For production deployments with authentication enabled, you can configure credentials using the `username` and `password` fields in the receiver configuration.
+The elasticsearch receiver collects cluster and node-level metrics including JVM stats, indexing performance, search latency, and cluster health.
+
+**For production deployments:**
+
+1. Modify the `.receivers.elasticsearch.endpoint` value in [collector.yaml](k8s/collector.yaml) ConfigMap to point to your Elasticsearch instance endpoint
+2. Update the `server.address` and `server.port` resource attributes in `attributes/elasticsearch_metrics` to reflect your Elasticsearch instance
+3. **Enable authentication** - Configure credentials using the `username` and `password` fields in the receiver configuration
+4. **Enable TLS** - Remove `skip_verify: true` and configure proper TLS certificate validation
+5. Consider adding resource limits and health checks to collector and Elasticsearch pods
+6. Ensure Elasticsearch version compatibility with the receiver (tested with Elasticsearch 8.x)
