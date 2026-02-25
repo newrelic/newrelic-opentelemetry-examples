@@ -66,7 +66,7 @@ You can use [NRQL](https://docs.newrelic.com/docs/query-your-data/nrql-new-relic
 **List all NGINX metrics:**
 ```sql
 FROM Metric SELECT uniques(metricName)
-WHERE otel.library.name = 'otelcol/nginxreceiver'
+WHERE otel.library.name = 'github.com/open-telemetry/opentelemetry-collector-contrib/receiver/nginxreceiver'
 LIMIT MAX
 ```
 

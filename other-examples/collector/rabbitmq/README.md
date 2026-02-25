@@ -96,6 +96,14 @@ All RabbitMQ metrics include the `instrumentation.provider = 'opentelemetry'` at
 **List all available metrics:**
 
 ```sql
+FROM Metric SELECT uniques(metricName)
+WHERE otel.library.name = 'github.com/open-telemetry/opentelemetry-collector-contrib/receiver/rabbitmqreceiver'
+LIMIT MAX
+```
+
+**Count metrics by name:**
+
+```sql
 SELECT count(*)
 FROM Metric
 WHERE metricName LIKE 'rabbitmq.%'

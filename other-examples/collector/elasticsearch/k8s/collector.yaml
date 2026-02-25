@@ -19,31 +19,64 @@ data:
         endpoint: http://${ELASTICSEARCH_SERVICE_SERVICE_HOST}:${ELASTICSEARCH_SERVICE_SERVICE_PORT}
         # Skip TLS verification for demo purposes
         skip_verify: true
+        collection_interval: 30s
         metrics:
-          # Enable additional optional metrics
+          # Cluster health and status metrics
+          elasticsearch.cluster.health:
+            enabled: true
+          elasticsearch.cluster.data_nodes:
+            enabled: true
+          elasticsearch.cluster.nodes:
+            enabled: true
+          elasticsearch.cluster.shards:
+            enabled: true
+
+          # Node performance metrics
           elasticsearch.node.cache.memory.usage:
             enabled: true
           elasticsearch.node.fs.disk.available:
             enabled: true
+          elasticsearch.node.fs.disk.total:
+            enabled: true
+          elasticsearch.node.operations.completed:
+            enabled: true
+          elasticsearch.node.operations.time:
+            enabled: true
+          elasticsearch.node.http.connections:
+            enabled: true
+
+          # JVM metrics
+          jvm.memory.heap.used:
+            enabled: true
+          jvm.memory.heap.max:
+            enabled: true
+          jvm.memory.heap.utilization:
+            enabled: true
+          jvm.gc.collections.count:
+            enabled: true
+          jvm.gc.collections.elapsed:
+            enabled: true
+          jvm.threads.count:
+            enabled: true
+
+          # Index metrics
+          elasticsearch.index.operations.completed:
+            enabled: true
+          elasticsearch.index.operations.time:
+            enabled: true
+          elasticsearch.index.documents:
+            enabled: true
 
     processors:
       batch:
-      # Add identifying resource attributes, which is required for New Relic entity synthesis.
-      # The elasticsearch receiver does not currently include any identifying attributes on the metrics it produces.
-      # We manually assign values to server.address and server.port, since values for ${ELASTICSEARCH_SERVICE_SERVICE_HOST} and ${ELASTICSEARCH_SERVICE_SERVICE_PORT} are unstable.
-      attributes/elasticsearch_metrics:
-        include:
-          match_type: regexp
-          metric_names:
-            # Notice that if with single or without quotes just one backslash is needed 'elasticsearch\..*'
-            - "elasticsearch\\..*"
-        actions:
-          - action: upsert
-            key: server.address
-            value: "elasticsearch"
-          - action: upsert
-            key: server.port
-            value: "9200"
+        send_batch_size: 1024
+        timeout: 30s
+
+      resource/cluster_name_override:
+        attributes:
+          - key: elasticsearch.cluster.name
+            value: "elasticsearch-cluster"  # Replace with your cluster name
+            action: upsert
 
     exporters:
       otlphttp:
@@ -55,7 +88,7 @@ data:
       pipelines:
         metrics:
           receivers: [elasticsearch]
-          processors: [attributes/elasticsearch_metrics, batch]
+          processors: [resource/cluster_name_override, batch]
           exporters: [otlphttp]
 ---
 apiVersion: v1
