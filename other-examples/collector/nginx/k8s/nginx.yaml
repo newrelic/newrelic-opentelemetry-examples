@@ -50,6 +50,8 @@ metadata:
   namespace: nr-nginx
   labels:
     app.kubernetes.io/name: nginx
+    app: nginx
+    role: reverse-proxy
 spec:
   containers:
     - name: nginx

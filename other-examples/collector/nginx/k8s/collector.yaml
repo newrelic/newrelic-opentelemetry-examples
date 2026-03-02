@@ -33,6 +33,19 @@ data:
       batch:
         send_batch_size: 1024
         timeout: 30s
+      # Add cluster name as resource attribute
+      resource/cluster:
+        attributes:
+          - key: k8s.cluster.name
+            value: "${env:K8S_CLUSTER_NAME}"
+            action: insert
+      # Transform processor to add nginx-specific attributes
+      transform/nginx:
+        metric_statements:
+          - context: resource
+            statements:
+              - set(attributes["nginx.display.name"], Concat(["nginx", ":", attributes["server.address"], ":", attributes["server.port"]], ""))
+              - set(attributes["nginx.deployment.name"], attributes["server.address"])
       # Add identifying resource attributes, which is required for New Relic entity synthesis.
       # The nginx receiver does not currently include any identifying attributes on the metrics it produces.
       # We manually assign values to server.address and server.port, since values for ${NGINX_SERVICE_SERVICE_HOST} and ${NGINX_SERVICE_SERVICE_PORT} are unstable.
@@ -49,6 +62,13 @@ data:
           - action: upsert
             key: server.port
             value: "80"
+      # Remove metric metadata to reduce cardinality
+      transform/metadata_nullify:
+        metric_statements:
+          - context: metric
+            statements:
+              - set(description, "")
+              - set(unit, "")
 
     exporters:
       otlphttp:
@@ -60,7 +80,7 @@ data:
       pipelines:
         metrics:
           receivers: [nginx]
-          processors: [attributes/nginx_metrics, batch]
+          processors: [batch, resource/cluster, transform/nginx, attributes/nginx_metrics, transform/metadata_nullify]
           exporters: [otlphttp]
 ---
 apiVersion: v1
@@ -94,6 +114,9 @@ spec:
             secretKeyRef:
               name: nr-nginx-secret
               key: NEW_RELIC_API_KEY
+        # Kubernetes cluster name for resource identification
+        - name: K8S_CLUSTER_NAME
+          value: nginx-cluster
       volumeMounts:
         - name: collector-config-vol
           mountPath: /etc/otelcol-contrib

@@ -19,6 +19,14 @@ The OpenTelemetry Collector automatically collects key NGINX performance metrics
     ```
     See the [New Relic docs](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key) for how to obtain a license key.
 
+    * **Optional: Customize cluster name** - The collector is configured with `K8S_CLUSTER_NAME=nginx-cluster`. To change this, update the environment variable in [collector.yaml](./k8s/collector.yaml):
+
+    ```yaml
+    env:
+      - name: K8S_CLUSTER_NAME
+        value: your-custom-cluster-name  # Update this value
+    ```
+
     * If your account is based in the EU, update the `NEW_RELIC_OTLP_ENDPOINT` value in [collector.yaml](./k8s/collector.yaml) to the endpoint: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
 
     ```yaml
@@ -74,6 +82,7 @@ LIMIT MAX
 ```sql
 FROM Metric SELECT rate(sum(nginx.requests), 1 minute)
 WHERE server.address = 'nginx'
+AND k8s.cluster.name = 'nginx-cluster'
 TIMESERIES
 ```
 
@@ -81,6 +90,7 @@ TIMESERIES
 ```sql
 FROM Metric SELECT latest(nginx.connections_current)
 WHERE server.address = 'nginx'
+AND k8s.cluster.name = 'nginx-cluster'
 FACET state
 ```
 
@@ -89,12 +99,15 @@ FACET state
 FROM Metric SELECT *
 WHERE metricName LIKE 'nginx.%'
 AND instrumentation.provider = 'opentelemetry'
+AND k8s.cluster.name = 'nginx-cluster'
 SINCE 10 minutes ago
 ```
 
 See [get started with querying](https://docs.newrelic.com/docs/query-your-data/explore-query-data/get-started/introduction-querying-new-relic-data/) for additional details on querying data in New Relic.
 
-## Metrics collected
+## Metrics and attributes collected
+
+### Metrics
 
 The nginx receiver collects metrics from the NGINX [stub_status module](https://nginx.org/en/docs/http/ngx_http_stub_status_module.html), which provides the following metrics:
 
@@ -111,6 +124,18 @@ The nginx receiver collects metrics from the NGINX [stub_status module](https://
 - **writing** - Connections writing responses to clients
 - **waiting** - Idle keep-alive connections waiting for next request
 
+### Resource attributes
+
+The collector automatically adds the following resource attributes to all metrics:
+
+| Attribute | Description | Example Value |
+|-----------|-------------|---------------|
+| `k8s.cluster.name` | Kubernetes cluster name | `nginx-cluster` |
+| `server.address` | NGINX server address | `nginx` |
+| `server.port` | NGINX server port | `80` |
+| `nginx.display.name` | Formatted display name for the NGINX instance | `nginx:nginx:80` |
+| `nginx.deployment.name` | Deployment identifier | `nginx` |
+
 For complete metrics details, see [NGINX OpenTelemetry metrics reference](https://docs.newrelic.com/docs/opentelemetry/integrations/nginx/nginx-otel-metrics-reference/).
 
 ## Additional notes
@@ -120,12 +145,22 @@ For complete metrics details, see [NGINX OpenTelemetry metrics reference](https:
 **For production deployments:**
 
 1. **Enable stub_status** - Ensure your NGINX instance has the `stub_status` module enabled and accessible (included in open-source NGINX)
-2. Modify the `.receivers.nginx.endpoint` value in [collector.yaml](k8s/collector.yaml) ConfigMap to point to your NGINX stub_status endpoint
-3. Update the `server.address` and `server.port` resource attributes in `attributes/nginx_metrics` to reflect your NGINX instance
-4. **Secure the stub_status endpoint** - Restrict access using IP allowlists or authentication in your NGINX configuration
-5. Consider adding resource limits and health checks to collector and NGINX pods
-6. For more detailed metrics, consider NGINX Plus with the extended status module
-7. For automatic pod discovery in production Kubernetes environments, consider using the Helm-based deployment with `receiver_creator` as documented in [Monitor NGINX on Kubernetes with OpenTelemetry](https://docs.newrelic.com/docs/opentelemetry/integrations/nginx/nginx-otel-kubernetes/)
+
+2. **Update cluster name** - Change the `K8S_CLUSTER_NAME` environment variable in [collector.yaml](k8s/collector.yaml) to match your actual cluster name
+
+3. **Configure pod labels** - This example uses labels `app: nginx` and `role: reverse-proxy` on the NGINX pod. Ensure your production NGINX pods have appropriate labels for identification
+
+4. Modify the `.receivers.nginx.endpoint` value in [collector.yaml](k8s/collector.yaml) ConfigMap to point to your NGINX stub_status endpoint
+
+5. Update the `server.address` and `server.port` resource attributes in `attributes/nginx_metrics` to reflect your NGINX instance
+
+6. **Secure the stub_status endpoint** - Restrict access using IP allowlists or authentication in your NGINX configuration
+
+7. Consider adding resource limits and health checks to collector and NGINX pods
+
+8. For more detailed metrics, consider NGINX Plus with the extended status module
+
+9. **For automatic pod discovery in production Kubernetes environments** - Consider using the Helm-based deployment with `receiver_creator` and `k8s_observer` as documented in [Monitor NGINX on Kubernetes with OpenTelemetry](https://docs.newrelic.com/docs/opentelemetry/integrations/nginx/nginx-otel-kubernetes/). This enables dynamic discovery of NGINX pods across namespaces without manual endpoint configuration.
 
 ## Learn more
 
