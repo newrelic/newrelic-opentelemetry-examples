@@ -61,11 +61,7 @@ See [get started with querying](https://docs.newrelic.com/docs/query-your-data/e
 
 **For production deployments:**
 
-1. **Use dynamic discovery** - For production Kubernetes environments, consider using `receiver_creator` with `k8s_observer` for automatic pod discovery. See the [New Relic Elasticsearch on Kubernetes guide](https://docs.newrelic.com/docs/opentelemetry/integrations/elasticsearch/kubernetes/) for a production-ready configuration with:
-   - Dynamic pod discovery across namespaces
-   - RBAC configuration for cluster-wide monitoring
-   - Resource limits and health checks
-   - Additional processors for cardinality reduction
+1. **Use dynamic discovery** - For production Kubernetes environments, consider using `receiver_creator` with `k8s_observer` for automatic pod discovery with dynamic pod discovery across namespaces, RBAC configuration for cluster-wide monitoring, resource limits and health checks, and additional processors for cardinality reduction
 
 2. **Enable authentication** - Configure credentials using the `username` and `password` fields in the receiver configuration:
    ```yaml
