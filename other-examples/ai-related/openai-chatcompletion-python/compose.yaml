@@ -1,0 +1,29 @@
+services:
+  app:
+    build: .
+    env_file:
+      - .env
+    environment:
+      - OTEL_SERVICE_NAME=ai-chatcompletion-python
+      - OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${NEW_RELIC_OTLP_ENDPOINT}
+      - OTEL_EXPORTER_OTLP_HEADERS=api-key=${NEW_RELIC_LICENSE_KEY}
+      - OTEL_EXPORTER_OTLP_COMPRESSION=gzip
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=delta
+      - OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
+      - OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=span_only
+      - OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CHAT_MODEL=${CHAT_MODEL:-gpt-4o-mini}
+    ports:
+      - "8080:8080"
+  loadgenerator:
+    image: python:3.12-slim
+    command: ["python", "/loadgenerator.py"]
+    volumes:
+      - ./loadgenerator.py:/loadgenerator.py
+    environment:
+      - TARGET_URL=http://app:8080
+    depends_on:
+      - app
