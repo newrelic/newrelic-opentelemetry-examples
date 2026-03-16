@@ -1,0 +1,25 @@
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+pydantic>=2.10.0
+python-dotenv==1.0.1
+
+# AutoGen Core Framework (with built-in OTEL support)
+autogen-core==0.4.2
+autogen-ext==0.4.2
+autogen-agentchat==0.4.2
+
+# OpenTelemetry Core (required by AutoGen Core)
+opentelemetry-api>=1.27.0
+opentelemetry-sdk>=1.27.0
+
+# OpenTelemetry Instrumentation (optional but recommended)
+opentelemetry-instrumentation-fastapi==0.48b0
+opentelemetry-instrumentation-openai==0.52.3
+
+# OTLP Exporters
+opentelemetry-exporter-otlp-proto-grpc==1.27.0
+
+# LLM dependencies
+openai==1.52.0
+tiktoken>=0.5.0
+httpx==0.27.2  # Pin to compatible version with autogen-ext
