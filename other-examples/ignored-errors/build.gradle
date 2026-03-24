@@ -1,0 +1,68 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
+plugins {
+  id 'java'
+  id 'com.diffplug.spotless' version '6.25.0'
+  id 'org.springframework.boot' version '3.3.4'
+}
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(17)
+  }
+}
+
+spotless {
+  java {
+    googleJavaFormat()
+  }
+}
+
+repositories {
+  mavenCentral()
+}
+
+configurations {
+  // Create a new configuration to hold the otel java agent
+  agent
+}
+
+def otelInstrumentationVersion = "2.25.0-alpha";
+
+dependencies {
+  implementation platform(SpringBootPlugin.BOM_COORDINATES)
+  implementation 'org.springframework.boot:spring-boot-starter-web'
+
+  implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationVersion}")
+  implementation("io.opentelemetry:opentelemetry-api")
+
+  // Add OpenTelemetry java agent to the "agent" configuration we previously defined
+  agent(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationVersion}"))
+  agent("io.opentelemetry.javaagent:opentelemetry-javaagent")
+}
+
+tasks.register("copyAgent", Copy) {
+  from(configurations.agent.singleFile)
+  into(layout.buildDirectory.dir('agent'))
+  rename("opentelemetry-javaagent-.*\\.jar", "opentelemetry-javaagent.jar")
+}
+
+bootJar {
+  archiveBaseName.set('ignored-errors')
+  // Before running, copy the agent to a reliable place in the build dir
+  dependsOn("copyAgent")
+}
+
+bootRun {
+  // Before running, copy the agent to a reliable place in the build dir
+  dependsOn("copyAgent")
+
+  mainClass.set 'com.example.demo.Application'
+
+  def agentPath = project.buildDir.toString() + "/agent/opentelemetry-javaagent.jar"
+  jvmArgs = [
+    // Set the opentelemetry-java-instrumentation agent as the javaagent
+    "-javaagent:${agentPath}"
+  ]
+
+}

@@ -1,0 +1,65 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+
+  # ============================================================
+  # METRIC TRANSFORMATION
+  # Transform error metrics so expected errors don't inflate error counts
+  # ============================================================
+  transform/metrics:
+    error_mode: ignore
+    metric_statements:
+      - context: datapoint
+        conditions:
+          - resource.attributes["service.name"] == "ignored-errors"
+            and metric.name == "http.server.request.duration"
+            and attributes["http.response.status_code"] == 500
+        statements:
+          - delete_key(attributes, "error.type")
+
+  # ============================================================
+  # TRACE TRANSFORMATION
+  # Transform specific error types so they are not included in NR's Errors Inbox
+  # while still sending the telemetry to New Relic for visibility
+  # ============================================================
+  transform/traces:
+    error_mode: ignore
+    trace_statements:
+      - context: span
+        conditions:
+          - resource.attributes["service.name"] == "ignored-errors"
+            and attributes["http.response.status_code"] == 500
+            and span.kind == 2
+        statements:
+          - set(status.code, STATUS_CODE_UNSET)
+          - delete_key(attributes, "error.type")
+
+exporters:
+  # Export to New Relic via OTLP
+  otlphttp:
+    endpoint: ${NEW_RELIC_OTLP_ENDPOINT}
+    headers:
+      api-key: ${NEW_RELIC_API_KEY}
+
+  # Debug exporter for local testing. To enable, add `debug` to the
+  # exporters array in any pipeline below (e.g., exporters: [otlphttp, debug])
+  debug:
+    verbosity: detailed
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [transform/traces, batch]
+      exporters: [otlphttp]
+    metrics:
+      receivers: [otlp]
+      processors: [transform/metrics, batch]
+      exporters: [otlphttp]
