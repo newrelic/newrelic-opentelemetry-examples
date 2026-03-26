@@ -9,8 +9,6 @@ This example uses a Java Spring Boot application with OpenTelemetry auto-instrum
 In production applications, not all errors are equal. Some HTTP errors are expected and shouldn't be treated as problems:
 
 - **500 Internal Server Error** - In some architectures, these might be expected for certain operations (e.g., controlled failures in chaos engineering, expected database constraint violations)
-- **Client errors (4xx)** - Often these represent user mistakes rather than application problems
-- **Rate limiting responses (429)** - Expected behavior under load
 
 However, by default, OpenTelemetry instrumentation marks all HTTP error status codes as errors, which:
 - Inflates your error rate metrics
@@ -56,8 +54,6 @@ This example shows how to use the OpenTelemetry Collector's **transform processo
    curl http://localhost:8080/httpStatusCode/200
 
    # Various error status codes (only 500 is filtered):
-   curl http://localhost:8080/httpStatusCode/400  # Bad Request (not filtered)
-   curl http://localhost:8080/httpStatusCode/404  # Not Found (not filtered)
    curl http://localhost:8080/httpStatusCode/500  # Internal Server Error (FILTERED)
    curl http://localhost:8080/httpStatusCode/503  # Service Unavailable (not filtered)
    ```
