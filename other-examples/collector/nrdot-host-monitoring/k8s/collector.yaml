@@ -18,10 +18,10 @@ spec:
     spec:
       containers:
         - name: collector
-          image: newrelic/nrdot-collector-host:1.0.2
+          image: newrelic/nrdot-collector:1.11.0
           args:
-            - --config=/etc/nrdot-collector-host/config.yaml
-            # The root path of the host filesystem. This is required by the hostmetrics receiver and not set by default in the nrdot-collector-host config.
+            - --config=/etc/nrdot-collector/config.yaml
+            # The root path of the host filesystem. This is required by the hostmetrics receiver and not set by default in the nrdot-collector config.
             - "--config=yaml:receivers::hostmetrics::root_path: /hostfs"
             # By default, the otlp receiver is configured to listen on localhost at port 4318, we need to change this to listen on the pod IP.
             - "--config=yaml:receivers::otlp::protocols::http::endpoint: ${env:MY_POD_IP}:4318"
