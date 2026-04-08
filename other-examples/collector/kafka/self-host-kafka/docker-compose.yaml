@@ -24,7 +24,7 @@ x-kafka-broker: &kafka-broker-base
       condition: service_completed_successfully
   volumes:
     - otel-agent:/opt/otel-agent:ro
-    - ./jmx-custom-config.yaml:/etc/kafka/jmx-custom-config.yaml:ro
+    - ./kafka-jmx-complete-config.yaml:/etc/kafka/kafka-jmx-complete-config.yaml:ro
   healthcheck:
     test: ["CMD-SHELL", "KAFKA_OPTS='' /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
     interval: 15s
@@ -74,7 +74,7 @@ services:
       KAFKA_OPTS: >-
         -javaagent:/opt/otel-agent/opentelemetry-javaagent.jar
         -Dotel.jmx.enabled=true
-        -Dotel.jmx.config=/etc/kafka/jmx-custom-config.yaml
+        -Dotel.jmx.config=/etc/kafka/kafka-jmx-complete-config.yaml
         -Dotel.instrumentation.runtime-telemetry.enabled=false
         -Dotel.resource.attributes=broker.id=1,kafka.cluster.name=${KAFKA_CLUSTER_NAME:-kafka-selfhost-cluster}
         -Dotel.exporter.otlp.endpoint=http://otel-collector:4317
@@ -97,7 +97,7 @@ services:
       KAFKA_OPTS: >-
         -javaagent:/opt/otel-agent/opentelemetry-javaagent.jar
         -Dotel.jmx.enabled=true
-        -Dotel.jmx.config=/etc/kafka/jmx-custom-config.yaml
+        -Dotel.jmx.config=/etc/kafka/kafka-jmx-complete-config.yaml
         -Dotel.instrumentation.runtime-telemetry.enabled=false
         -Dotel.resource.attributes=broker.id=2,kafka.cluster.name=${KAFKA_CLUSTER_NAME:-kafka-selfhost-cluster}
         -Dotel.exporter.otlp.endpoint=http://otel-collector:4317

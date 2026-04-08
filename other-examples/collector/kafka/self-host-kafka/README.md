@@ -72,7 +72,7 @@ See [get started with querying](https://docs.newrelic.com/docs/query-your-data/e
 
 ## Additional notes
 
-Each Kafka broker runs with the OpenTelemetry Java Agent attached, which reads Kafka MBeans via JMX and pushes metrics to the collector over OTLP gRPC. The MBean-to-metric mappings are defined in [jmx-custom-config.yaml](./jmx-custom-config.yaml) and match the format expected by the New Relic Kafka entity definition.
+Each Kafka broker runs with the OpenTelemetry Java Agent attached, which reads Kafka MBeans via JMX and pushes metrics to the collector over OTLP gRPC. The MBean-to-metric mappings are defined in [kafka-jmx-complete-config.yaml](./kafka-jmx-complete-config.yaml) and match the format expected by the New Relic Kafka entity definition. A reduced version, [kafka-jmx-minimal-config.yaml](./kafka-jmx-minimal-config.yaml), contains only the core metrics (no additional metrics section) and serves as the source of truth for the New Relic UI integration.
 
 The collector is configured with two metric pipelines in [otel-collector-config.yaml](./otel-collector-config.yaml): `metrics/broker` retains `broker.id` for per-broker views, and `metrics/cluster` removes it for cluster-wide aggregation.
 
