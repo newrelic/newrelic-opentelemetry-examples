@@ -10,7 +10,7 @@ metadata:
 data:
   collector-config: |
     receivers:
-      # Keep configuration in sync with: https://github.com/newrelic/nrdot-collector-releases/blob/main/distributions/nrdot-collector-host/config.yaml
+      # Last synch with nrdot-collector: https://github.com/newrelic/nrdot-collector-releases/blob/1.12.0/distributions/nrdot-collector/config.yaml
       otlp:
         protocols:
           grpc:
@@ -169,19 +169,19 @@ data:
         metric_statements:
           - context: metric
             statements:
-              - set(description, "")
-              - set(unit, "")
+              - set(metric.description, "")
+              - set(metric.unit, "")
     
       transform:
         trace_statements:
           - context: span
             statements:
-              - truncate_all(attributes, 4095)
+              - truncate_all(span.attributes, 4095)
               - truncate_all(resource.attributes, 4095)
         log_statements:
           - context: log
             statements:
-              - truncate_all(attributes, 4095)
+              - truncate_all(log.attributes, 4095)
               - truncate_all(resource.attributes, 4095)
     
       # used to prevent out of memory situations on the collector
@@ -202,10 +202,7 @@ data:
       resourcedetection/cloud:
         detectors: ["gcp", "ec2", "azure"]
         timeout: 2s
-        ec2:
-          resource_attributes:
-            host.name:
-              enabled: false
+        override: true
     
       # Gives OTEL_RESOURCE_ATTRIBUTES precedence over other sources.
       # host.id is set from env whenever the collector is orchestrated by NR Agents.
@@ -217,10 +214,10 @@ data:
     exporters:
       debug:
         verbosity: detailed
-      otlphttp/newrelic:
-        endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT:-https://otlp.nr-data.net}
+      otlphttp:
+        endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT:-https://otlp.nr-data.net}
         headers:
-          api-key: ${env:NEW_RELIC_API_KEY}
+          api-key: ${env:NEW_RELIC_LICENSE_KEY}
     
     service:
       pipelines:
@@ -244,23 +241,23 @@ data:
             - resourcedetection/env
             - cumulativetodelta
             - batch
-          exporters: [otlphttp/newrelic]
+          exporters: [otlphttp]
         logs/host:
           receivers: [filelog]
-          processors: [transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
-          exporters: [otlphttp/newrelic]
+          processors: [memory_limiter, transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
+          exporters: [otlphttp]
         traces:
           receivers: [otlp]
-          processors: [transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
-          exporters: [otlphttp/newrelic]
+          processors: [memory_limiter, transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
+          exporters: [otlphttp]
         metrics:
           receivers: [otlp]
-          processors: [transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
-          exporters: [otlphttp/newrelic]
+          processors: [memory_limiter, transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
+          exporters: [otlphttp]
         logs:
           receivers: [otlp]
-          processors: [transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
-          exporters: [otlphttp/newrelic]
+          processors: [memory_limiter, transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
+          exporters: [otlphttp]
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -280,19 +277,19 @@ spec:
     spec:
       containers:
         - name: collector
-          image: otel/opentelemetry-collector-contrib:0.122.1
+          image: otel/opentelemetry-collector-contrib:0.148.0
           env:
             # The default US endpoint is set here. You can change the endpoint and port based on your requirements if needed.
             # docs: https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/best-practices/opentelemetry-otlp/#configure-endpoint-port-protocol
-            - name: NEW_RELIC_OTLP_ENDPOINT
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: https://otlp.nr-data.net/
-            # The New Relic API key used to authenticate export requests.
+            # The New Relic license key used to authenticate export requests.
             # Defined in secrets.yaml
-            - name: NEW_RELIC_API_KEY
+            - name: NEW_RELIC_LICENSE_KEY
               valueFrom:
                 secretKeyRef:
                   name: nr-host-monitoring-secret
-                  key: NEW_RELIC_API_KEY
+                  key: NEW_RELIC_LICENSE_KEY
             - name: NODE_NAME
               valueFrom:
                 fieldRef:
