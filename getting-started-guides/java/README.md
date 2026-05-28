@@ -6,7 +6,7 @@ It demonstrates how to configure OpenTelemetry Java to send data to New Relic.
 
 ## Requirements
 
-* Java JDK 17+, due to the use of Spring Boot 3; [Java 8+ otherwise](https://github.com/open-telemetry/opentelemetry-java/blob/main/VERSIONING.md#language-version-compatibility)
+* Java JDK 21+, due to the use of Spring Boot 4; [Java 8+ otherwise](https://github.com/open-telemetry/opentelemetry-java/blob/main/VERSIONING.md#language-version-compatibility)
 * [A New Relic account](https://one.newrelic.com/)
 * [A New Relic license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)
 
