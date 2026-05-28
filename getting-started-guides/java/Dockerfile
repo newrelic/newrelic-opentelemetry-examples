@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM eclipse-temurin:17 as build
+FROM eclipse-temurin:21 as build
 
 COPY . /source
 
@@ -8,7 +8,7 @@ WORKDIR /source
 
 RUN ./gradlew bootJar
 
-FROM eclipse-temurin:17 as final
+FROM eclipse-temurin:21 as final
 
 WORKDIR /app
 
