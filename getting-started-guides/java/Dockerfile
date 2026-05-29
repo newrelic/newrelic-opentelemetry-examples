@@ -2,11 +2,13 @@
 
 FROM eclipse-temurin:21 as build
 
+ARG OTEL_AGENT_VERSION=2.28.1-alpha
+
 COPY . /source
 
 WORKDIR /source
 
-RUN ./gradlew bootJar
+RUN ./gradlew bootJar -PotelAgentVersion=${OTEL_AGENT_VERSION}
 
 FROM eclipse-temurin:21 as final
 
