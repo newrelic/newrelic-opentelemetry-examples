@@ -11,7 +11,8 @@ import io.opentelemetry.api.logs.Logger;
  */
 public final class EventEmitter {
 
-  // New Relic maps this attribute to the event type that the event is stored under.
+  // Carried on each event as the PascalCased event name (e.g. "FibonacciComputed"). Forwarded as a
+  // log attribute by the New Relic agent in hybrid mode.
   private static final AttributeKey<String> NEWRELIC_EVENT_TYPE =
       AttributeKey.stringKey("newrelic.event.type");
 
@@ -36,9 +37,10 @@ public final class EventEmitter {
     logger
         .logRecordBuilder()
         .setEventName(eventName)
+        // The New Relic agent only forwards OpenTelemetry log records that have a body, so use the
+        // event name as the body. Without it the record is dropped before reaching New Relic.
+        .setBody(eventName)
         .setAllAttributes(attributes)
-        // Set the New Relic event type from the PascalCased event name (e.g. "fibonacci.computed"
-        // -> "FibonacciComputed").
         .setAttribute(NEWRELIC_EVENT_TYPE, toEventType(eventName))
         .emit();
   }
