@@ -23,28 +23,37 @@ repositories {
 }
 
 configurations {
-  // Create a new configuration to hold the otel java agent
+  // Create a new configuration to hold the New Relic java agent
   agent
 }
 
-def otelInstrumentationVersion = "2.28.1-alpha";
+def newRelicAgentVersion = "9.3.0"
+def openTelemetryVersion = "1.62.0"
 
 dependencies {
   implementation platform(SpringBootPlugin.BOM_COORDINATES)
   implementation 'org.springframework.boot:spring-boot-starter-web'
 
-  implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationVersion}")
+  // OpenTelemetry API + SDK used for the manual instrumentation in this example. In hybrid mode
+  // the New Relic agent instruments the OpenTelemetry SDK to incorporate the spans, metrics, and
+  // logs/events it produces into the monitored APM entity, so no OpenTelemetry Collector or OTLP
+  // endpoint of your own is required. The SDK autoconfigure module is what the agent hooks into,
+  // and the OTLP exporter is required for dimensional metrics to be sent to New Relic.
+  implementation platform("io.opentelemetry:opentelemetry-bom:${openTelemetryVersion}")
   implementation("io.opentelemetry:opentelemetry-api")
+  implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
+  implementation("io.opentelemetry:opentelemetry-exporter-otlp")
 
-  // Add OpenTelemetry java agent to the "agent" configuration we previously defined
-  agent(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationVersion}"))
-  agent("io.opentelemetry.javaagent:opentelemetry-javaagent")
+  // Add the New Relic Java agent to the "agent" configuration we previously defined
+  agent("com.newrelic.agent.java:newrelic-agent:${newRelicAgentVersion}") {
+    transitive = false
+  }
 }
 
 tasks.register("copyAgent", Copy) {
   from(configurations.agent.singleFile)
   into(layout.buildDirectory.dir('agent'))
-  rename("opentelemetry-javaagent-.*\\.jar", "opentelemetry-javaagent.jar")
+  rename("newrelic-agent-.*\\.jar", "newrelic.jar")
 }
 
 bootJar {
@@ -59,10 +68,13 @@ bootRun {
 
   mainClass.set 'com.example.demo.Application'
 
-  def agentPath = layout.buildDirectory.dir('agent').get().asFile.toString() + "/opentelemetry-javaagent.jar"
+  def agentPath = layout.buildDirectory.dir('agent').get().asFile.toString() + "/newrelic.jar"
   jvmArgs = [
-    // Set the opentelemetry-java-instrumentation agent as the javaagent
-    "-javaagent:${agentPath}"
+    // Set the New Relic Java agent as the javaagent
+    "-javaagent:${agentPath}",
+    // Enable OpenTelemetry SDK autoconfiguration so GlobalOpenTelemetry.get() is populated and
+    // the New Relic agent's OpenTelemetry instrumentation engages.
+    "-Dotel.java.global-autoconfigure.enabled=true"
   ]
 
 }

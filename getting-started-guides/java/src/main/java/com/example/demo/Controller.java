@@ -32,6 +32,7 @@ public class Controller {
 
   private final Tracer tracer;
   private final LongCounter fibonacciInvocations;
+  private final EventEmitter eventEmitter;
 
   @Autowired
   Controller(OpenTelemetry openTelemetry) {
@@ -44,6 +45,8 @@ public class Controller {
             .counterBuilder("fibonacci.invocations")
             .setDescription("Measures the number of times the fibonacci method is invoked.")
             .build();
+    // Initialize emitter used to record custom events
+    eventEmitter = EventEmitter.create(openTelemetry, Controller.class.getName());
   }
 
   @GetMapping(value = "/fibonacci")
@@ -81,6 +84,8 @@ public class Controller {
       span.setAttribute(ATTR_RESULT, result);
       // Counter to increment when a valid input is recorded
       fibonacciInvocations.add(1, Attributes.of(ATTR_VALID_N, true));
+      // Emit a custom event representing the computed fibonacci number
+      eventEmitter.emit("fibonacci.computed", Attributes.of(ATTR_N, n, ATTR_RESULT, result));
       // Log the result of a valid input
       LOGGER.info("Compute fibonacci(" + n + ") = " + result);
       return result;
@@ -89,6 +94,8 @@ public class Controller {
       span.recordException(e).setStatus(StatusCode.ERROR, e.getMessage());
       // Counter to increment when an invalid input is recorded
       fibonacciInvocations.add(1, Attributes.of(ATTR_VALID_N, false));
+      // Emit a custom event capturing the invalid input that was rejected
+      eventEmitter.emit("fibonacci.invalid_input", Attributes.of(ATTR_N, n));
       // Log when no output was recorded
       LOGGER.info("Failed to compute fibonacci(" + n + ")");
       throw e;
