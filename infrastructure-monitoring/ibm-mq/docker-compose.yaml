@@ -1,0 +1,87 @@
+# IBM MQ + mq-metric-samples exporter + NRDOT collector -> New Relic.
+# Set NEW_RELIC_LICENSE_KEY in .env, then `docker compose up -d --build`.
+# The exporter is built from source on first run (no published image); it scrapes the
+# queue manager via PCF and serves ibmmq_qmgr_*/queue_*/channel_* on :9157, so you get
+# both IBMMQ_MANAGER and IBMMQ_QUEUE entities.
+
+services:
+  ibmmq:
+    image: ${IBMMQ_IMAGE:-icr.io/ibm-messaging/mq:latest}
+    container_name: ibmmq
+    environment:
+      LICENSE: accept
+      MQ_QMGR_NAME: ${MQ_QMGR_NAME:-QM1}
+      MQ_ADMIN_PASSWORD: ${MQ_ADMIN_PASSWORD:-passw0rd}
+      MQ_APP_PASSWORD: ${MQ_APP_PASSWORD:-passw0rd}
+    # Bound to 127.0.0.1 only — exporter/load reach MQ over the internal network; SSH-tunnel for remote access.
+    ports:
+      - "127.0.0.1:1414:1414"   # MQ listener
+      - "127.0.0.1:9443:9443"   # MQ web console (admin/passw0rd)
+    healthcheck:
+      # IBM MQ's built-in readiness check (the container has no curl).
+      test: ["CMD", "chkmqready"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  # mq-metric-samples (mq_prometheus) exporter — built from source; no published image exists.
+  mq-exporter:
+    build:
+      context: "https://github.com/ibm-messaging/mq-metric-samples.git#v5.7.1"
+    image: ibmmq-mq-prometheus:v5.7.1
+    container_name: ibmmq-exporter
+    depends_on:
+      ibmmq:
+        condition: service_healthy
+    volumes:
+      - ./mq_prometheus.yaml:/opt/config/mq_prometheus.yaml:ro
+    ports:
+      - "127.0.0.1:9157:9157"   # Prometheus metrics (ibmmq_*)
+    restart: on-failure
+
+  # Generates traffic so the queue throughput/depth metrics (mqput/mqget) move.
+  mq-load:
+    image: ${IBMMQ_IMAGE:-icr.io/ibm-messaging/mq:latest}
+    container_name: ibmmq-load
+    depends_on:
+      ibmmq:
+        condition: service_healthy
+    environment:
+      LICENSE: accept
+      MQSERVER: "DEV.APP.SVRCONN/TCP/ibmmq(1414)"
+      MQSAMP_USER_ID: app
+      MQ_APP_PASSWORD: ${MQ_APP_PASSWORD:-passw0rd}
+      MQ_QMGR_NAME: ${MQ_QMGR_NAME:-QM1}
+      MESSAGE_INTERVAL_SECONDS: ${MESSAGE_INTERVAL_SECONDS:-5}
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        while true; do
+          printf '%s\nIBM MQ demo message %s\n' "$$MQ_APP_PASSWORD" "$$(date +%s)" \
+            | /opt/mqm/samp/bin/amqsputc DEV.QUEUE.1 "$$MQ_QMGR_NAME" >/dev/null 2>&1 || true
+          printf '%s\n' "$$MQ_APP_PASSWORD" \
+            | timeout 3 /opt/mqm/samp/bin/amqsgetc DEV.QUEUE.1 "$$MQ_QMGR_NAME" >/dev/null 2>&1 || true
+          sleep "$$MESSAGE_INTERVAL_SECONDS"
+        done
+    restart: on-failure
+
+  nrdot-collector:
+    image: ${OTEL_COLLECTOR_IMAGE:-newrelic/nrdot-collector:latest}
+    container_name: nrdot-collector-ibmmq
+    environment:
+      NEW_RELIC_LICENSE_KEY: ${NEW_RELIC_LICENSE_KEY}
+      NEW_RELIC_OTLP_ENDPOINT: ${NEW_RELIC_OTLP_ENDPOINT:-https://otlp.nr-data.net:4317}
+      # Scrape the exporter over the compose network.
+      IBMMQ_EXPORTER_ENDPOINT: mq-exporter:9157
+      IBMMQ_SCRAPE_INTERVAL: ${IBMMQ_SCRAPE_INTERVAL:-60s}
+      # Optional cluster tag.
+      IBMMQ_CLUSTER_NAME: ${IBMMQ_CLUSTER_NAME:-}
+    volumes:
+      - ./otel-collector-config.yaml:/etc/nrdot-collector/otel-collector-config.yaml:ro
+    command:
+      - "--config=/etc/nrdot-collector/otel-collector-config.yaml"
+    depends_on:
+      mq-exporter:
+        condition: service_started
+    restart: unless-stopped
