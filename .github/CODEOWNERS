@@ -5,5 +5,7 @@
 getting-started-guides/dotnet/      @alanwest
 getting-started-guides/ruby/        @kaylareopelle
 
+infrastructure-monitoting/          @newrelic/ohai
+
 other-examples/collector/   @jcountsNR
 other-examples/dotnet/      @alanwest
