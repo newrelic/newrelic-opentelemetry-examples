@@ -1,0 +1,31 @@
+# mq-metric-samples (mq_prometheus) exporter config. Read at /opt/config/mq_prometheus.yaml.
+# Connects to the queue manager over a client channel (PCF) and serves ibmmq_* on :9157.
+# Defaults match .env (QM1 / admin / passw0rd) — update here too if you change them.
+global:
+  useObjectStatus: true   # publish per-queue and per-channel status metrics
+  usePublications: true
+  pollInterval: 60s
+  rediscoverInterval: 1h
+  logLevel: INFO
+
+connection:
+  queueManager: QM1
+  connName: ibmmq(1414)   # the MQ container, reached over the compose network
+  channel: DEV.ADMIN.SVRCONN
+  user: admin
+  password: passw0rd
+  clientConnection: true
+  replyQueue: SYSTEM.DEFAULT.MODEL.QUEUE
+
+objects:
+  # Monitor application queues; skip internal SYSTEM.*/AMQ.* (the collector filters them too).
+  queues:
+    - "*"
+    - "!SYSTEM.*"
+    - "!AMQ.*"
+  channels:
+    - "*"
+
+prometheus:
+  port: 9157
+  metricsPath: /metrics

@@ -1,0 +1,92 @@
+# IBM MQ -> New Relic (NRDOT / OpenTelemetry Collector).
+# Scrapes the IBM MQ mq_prometheus exporter and ships ibmmq_* metrics via OTLP.
+# Run: nrdot-collector --config otel-collector-config.yaml
+# Env: NEW_RELIC_LICENSE_KEY (required); IBMMQ_EXPORTER_ENDPOINT (default localhost:9157);
+#      IBMMQ_CLUSTER_NAME (optional); NEW_RELIC_OTLP_ENDPOINT (default https://otlp.nr-data.net:4317).
+
+extensions:
+  health_check:
+    endpoint: "0.0.0.0:13133"
+
+receivers:
+  prometheus/ibmmq:
+    config:
+      scrape_configs:
+        - job_name: 'ibmmq'
+          scrape_interval: ${env:IBMMQ_SCRAPE_INTERVAL:-60s}
+          scrape_timeout: 15s
+          static_configs:
+            - targets:
+                - "${env:IBMMQ_EXPORTER_ENDPOINT:-localhost:9157}"
+          # For TLS/basic-auth, add scheme/tls_config/basic_auth under this job.
+
+processors:
+  # Detect host/cloud identity.
+  resourcedetection:
+    detectors: [env, ec2, gcp, azure, system]
+    system:
+      resource_attributes:
+        host.id:
+          enabled: true
+        host.name:
+          enabled: true
+
+  # Drop exporter self-metrics.
+  filter/ibmmq-overhead:
+    metrics:
+      exclude:
+        match_type: regexp
+        metric_names:
+          - "^go_.*"
+          - "^process_.*"
+          - "^promhttp_.*"
+          - "^scrape_.*"
+
+  # Drop high-cardinality SYSTEM.*/AMQ.* queues.
+  filter/ibmmq-queues:
+    metrics:
+      datapoint:
+        - 'attributes["queue"] != nil and IsMatch(attributes["queue"], "^SYSTEM[.](ADMIN[.]|MQSC[.]|DEFAULT[.]|AUTH[.]|CHANNEL[.]|CHLAUTH[.]|CICS[.]|SYNCPOINT[.]|INTERNAL[.]|PENDING[.]|PROTECTION[.]|BROKER[.]|AMQP[.]|DOTNET[.]|REST[.]|RETAINED[.]|SELECTION[.]|DURABLE[.]|HIERARCHY[.]|DDELAY[.])")'
+        - 'attributes["queue"] != nil and IsMatch(attributes["queue"], "^SYSTEM[.]CLUSTER[.](COMMAND|HISTORY)[.]QUEUE$")'
+        - 'attributes["queue"] != nil and IsMatch(attributes["queue"], "^AMQ[.]")'
+
+  # Tag host + cluster identity; drop collector-self attributes.
+  transform/ibmmq-cleanup:
+    metric_statements:
+      - context: resource
+        statements:
+          - set(attributes["target.name"], attributes["host.id"]) where attributes["host.id"] != nil
+          - set(attributes["cluster.name"], "${env:IBMMQ_CLUSTER_NAME:-}") where "${env:IBMMQ_CLUSTER_NAME:-}" != ""
+          - delete_key(attributes, "service.name")
+          - delete_key(attributes, "url.scheme")
+      - context: datapoint
+        statements:
+          - delete_key(attributes, "instance")
+          - delete_key(attributes, "job")
+
+  memory_limiter/ibmmq:
+    check_interval: 1s
+    limit_mib: 512
+    spike_limit_mib: 256
+
+  # Prometheus counters are cumulative; New Relic ingest expects delta.
+  cumulativetodelta/ibmmq: {}
+
+  batch/ibmmq:
+    send_batch_size: 1000
+    timeout: 200ms
+
+exporters:
+  otlp/ibmmq:
+    endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT:-https://otlp.nr-data.net:4317}
+    compression: gzip
+    headers:
+      api-key: ${env:NEW_RELIC_LICENSE_KEY}
+
+service:
+  extensions: [health_check]
+  pipelines:
+    metrics/ibmmq:
+      receivers: [prometheus/ibmmq]
+      processors: [memory_limiter/ibmmq, resourcedetection, filter/ibmmq-overhead, filter/ibmmq-queues, transform/ibmmq-cleanup, cumulativetodelta/ibmmq, batch/ibmmq]
+      exporters: [otlp/ibmmq]
