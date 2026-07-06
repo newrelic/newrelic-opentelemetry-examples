@@ -1,0 +1,113 @@
+---
+# Service for RabbitMQ - Exposes AMQP and Management API
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-service
+  namespace: nr-rabbitmq
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    app.kubernetes.io/component: message-broker
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5672
+      targetPort: 5672
+      name: amqp
+      protocol: TCP
+    - port: 15672
+      targetPort: 15672
+      name: management
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: rabbitmq
+---
+# StatefulSet for RabbitMQ - Provides stable network identity and persistent storage
+# Note: For production clusters, consider using RabbitMQ Cluster Operator instead
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rabbitmq
+  namespace: nr-rabbitmq
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    app.kubernetes.io/component: message-broker
+spec:
+  serviceName: rabbitmq-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: rabbitmq
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: rabbitmq
+        app.kubernetes.io/component: message-broker
+    spec:
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:3.12-management-alpine
+          # Production-grade resource limits
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          env:
+            # RabbitMQ credentials - sourced from secrets for security
+            - name: RABBITMQ_DEFAULT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: nr-rabbitmq-secret
+                  key: RABBITMQ_USERNAME
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: nr-rabbitmq-secret
+                  key: RABBITMQ_PASSWORD
+            # Enable management plugin (already included in management-alpine image)
+            - name: RABBITMQ_PLUGINS
+              value: "rabbitmq_management"
+          ports:
+            - containerPort: 5672
+              name: amqp
+              protocol: TCP
+            - containerPort: 15672
+              name: management
+              protocol: TCP
+          # Liveness probe - Check if RabbitMQ is responsive
+          livenessProbe:
+            exec:
+              command:
+                - rabbitmq-diagnostics
+                - -q
+                - ping
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          # Readiness probe - Check if RabbitMQ is ready to accept connections
+          readinessProbe:
+            exec:
+              command:
+                - rabbitmq-diagnostics
+                - -q
+                - check_running
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 3
+          volumeMounts:
+            - name: rabbitmq-data
+              mountPath: /var/lib/rabbitmq
+  # Persistent volume claim for data persistence
+  volumeClaimTemplates:
+    - metadata:
+        name: rabbitmq-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi

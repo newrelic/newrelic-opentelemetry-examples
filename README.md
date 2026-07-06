@@ -35,10 +35,13 @@ OpenTelemetry and New Relic.
 
 * [Monitor Confluent Cloud Kafka with Collector](./other-examples/collector/confluentcloud)
 * [Monitor Docker with Collector](./other-examples/collector/docker)
+* [Monitor Elasticsearch with Collector](./other-examples/collector/elasticsearch)
 * [Monitor HCP Consul with Collector](./other-examples/collector/hcp-consul)
 * [Monitor HiveMQ with Collector](./other-examples/collector/hivemq)
 * [Monitor Hosts with Collector](./other-examples/collector/host-monitoring)
+* [Monitor NGINX with Collector](./other-examples/collector/nginx)
 * [Monitor Prometheus target with Collector](./other-examples/collector/prometheus)
+* [Monitor RabbitMQ with Collector](./other-examples/collector/rabbitmq)
 * [Monitor Redis with Collector](./other-examples/collector/redis)
 * [Monitor Singlestore with Collector](./other-examples/collector/singlestore)
 * [Monitor Squid cache manager with Collector](./other-examples/collector/squid)
