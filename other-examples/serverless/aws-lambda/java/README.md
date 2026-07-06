@@ -12,7 +12,7 @@ This example assumes you have the following:
 
 It also assumes you have the following installed:
 
-* [Java 11](https://www.codejava.net/java-se/download-and-install-java-11-openjdk-and-oracle-jdk)
+* Java JDK
 * [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 
 ## Run
