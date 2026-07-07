@@ -1,0 +1,68 @@
+extensions:
+  health_check:
+
+receivers:
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'node-exporter'
+          static_configs:
+            - targets: ['localhost:9100']
+          scrape_interval: 10s
+          metrics_path: /metrics
+
+processors:
+  resourcedetection:
+    detectors: ["system"] # Add your cloud provider below and include it here (e.g. ["ec2", "system"])
+    system:
+      hostname_sources: ["os"]
+      resource_attributes:
+        host.id:
+          enabled: true
+        host.name:
+          enabled: true
+    # --- AWS EC2 ---
+    # Add "ec2" to detectors list above to enable
+    # ec2:
+    #   resource_attributes:
+    #     host.id:
+    #       enabled: true
+    # --- GCP ---
+    # Add "gcp" to detectors list above to enable
+    # gcp:
+    #   resource_attributes:
+    #     host.id:
+    #       enabled: true
+    # --- Azure ---
+    # Add "azure" to detectors list above to enable
+    # azure:
+    #   resource_attributes:
+    #     host.id:
+    #       enabled: true
+
+  transform:
+    metric_statements:
+      - context: datapoint
+        statements:
+          - set(attributes["instrumentation.provider"], "prometheus")
+          - set(attributes["instance"], resource.attributes["host.name"])
+          - set(attributes["instanceid"], resource.attributes["host.id"])
+
+  batch:
+
+exporters:
+  debug:
+    verbosity: detailed
+
+  otlphttp:
+    endpoint: https://otlp.nr-data.net:4318
+    headers:
+      api-key: YOUR_NEW_RELIC_LICENSE_KEY # Replace with your New Relic license key
+
+service:
+  pipelines:
+    metrics:
+      receivers: [prometheus]
+      processors: [resourcedetection, transform, batch]
+      exporters: [debug, otlphttp]
+  extensions: [health_check]
