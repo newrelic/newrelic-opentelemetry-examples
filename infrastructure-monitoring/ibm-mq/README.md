@@ -124,8 +124,7 @@ The [config](./otel-collector-config.yaml) intentionally does **not** rename
 4. **Strips** a couple of collector-injected resource attributes (`service.name`,
    `url.scheme`) so metrics map to the IBM MQ entities, not the collector
    (host identity is kept).
-5. **Converts** cumulative counters to deltas (required by New Relic ingest).
-6. **Batches** and exports via OTLP.
+5. **Batches** and exports via OTLP.
 
 ## Related
 

@@ -4,12 +4,8 @@
 # Env: NEW_RELIC_LICENSE_KEY (required); IBMMQ_EXPORTER_ENDPOINT (default localhost:9157);
 #      IBMMQ_CLUSTER_NAME (optional); NEW_RELIC_OTLP_ENDPOINT (default https://otlp.nr-data.net:4317).
 
-extensions:
-  health_check:
-    endpoint: "0.0.0.0:13133"
-
 receivers:
-  prometheus/ibmmq:
+  prometheus:
     config:
       scrape_configs:
         - job_name: 'ibmmq'
@@ -32,7 +28,7 @@ processors:
           enabled: true
 
   # Drop exporter self-metrics.
-  filter/ibmmq-overhead:
+  filter/overhead:
     metrics:
       exclude:
         match_type: regexp
@@ -43,7 +39,7 @@ processors:
           - "^scrape_.*"
 
   # Drop high-cardinality SYSTEM.*/AMQ.* queues.
-  filter/ibmmq-queues:
+  filter/queues:
     metrics:
       datapoint:
         - 'attributes["queue"] != nil and IsMatch(attributes["queue"], "^SYSTEM[.](ADMIN[.]|MQSC[.]|DEFAULT[.]|AUTH[.]|CHANNEL[.]|CHLAUTH[.]|CICS[.]|SYNCPOINT[.]|INTERNAL[.]|PENDING[.]|PROTECTION[.]|BROKER[.]|AMQP[.]|DOTNET[.]|REST[.]|RETAINED[.]|SELECTION[.]|DURABLE[.]|HIERARCHY[.]|DDELAY[.])")'
@@ -51,7 +47,7 @@ processors:
         - 'attributes["queue"] != nil and IsMatch(attributes["queue"], "^AMQ[.]")'
 
   # Tag host + cluster identity; drop collector-self attributes.
-  transform/ibmmq-cleanup:
+  transform:
     metric_statements:
       - context: resource
         statements:
@@ -64,29 +60,17 @@ processors:
           - delete_key(attributes, "instance")
           - delete_key(attributes, "job")
 
-  memory_limiter/ibmmq:
-    check_interval: 1s
-    limit_mib: 512
-    spike_limit_mib: 256
-
-  # Prometheus counters are cumulative; New Relic ingest expects delta.
-  cumulativetodelta/ibmmq: {}
-
-  batch/ibmmq:
-    send_batch_size: 1000
-    timeout: 200ms
+  batch: {}
 
 exporters:
-  otlp/ibmmq:
+  otlp:
     endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT:-https://otlp.nr-data.net:4317}
-    compression: gzip
     headers:
       api-key: ${env:NEW_RELIC_LICENSE_KEY}
 
 service:
-  extensions: [health_check]
   pipelines:
-    metrics/ibmmq:
-      receivers: [prometheus/ibmmq]
-      processors: [memory_limiter/ibmmq, resourcedetection, filter/ibmmq-overhead, filter/ibmmq-queues, transform/ibmmq-cleanup, cumulativetodelta/ibmmq, batch/ibmmq]
-      exporters: [otlp/ibmmq]
+    metrics:
+      receivers: [prometheus]
+      processors: [resourcedetection, filter/overhead, filter/queues, transform, batch]
+      exporters: [otlp]
