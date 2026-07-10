@@ -46,12 +46,12 @@ processors:
         - 'attributes["queue"] != nil and IsMatch(attributes["queue"], "^SYSTEM[.]CLUSTER[.](COMMAND|HISTORY)[.]QUEUE$")'
         - 'attributes["queue"] != nil and IsMatch(attributes["queue"], "^AMQ[.]")'
 
-  # Tag host + cluster identity; drop collector-self attributes.
+  # Tag cluster identity; drop collector-self attributes.
+  # Host identity comes from resourcedetection (host.id / host.name) — no target.name needed.
   transform:
     metric_statements:
       - context: resource
         statements:
-          - set(attributes["target.name"], attributes["host.id"]) where attributes["host.id"] != nil
           - set(attributes["cluster.name"], "${env:IBMMQ_CLUSTER_NAME:-}") where "${env:IBMMQ_CLUSTER_NAME:-}" != ""
           - delete_key(attributes, "service.name")
           - delete_key(attributes, "url.scheme")
