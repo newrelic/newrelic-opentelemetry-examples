@@ -8,6 +8,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,6 +30,10 @@ public class Controller {
   private static final AttributeKey<Long> ATTR_RESULT = AttributeKey.longKey("fibonacci.result");
   private static final AttributeKey<Boolean> ATTR_VALID_N =
       AttributeKey.booleanKey("fibonacci.valid.n");
+  private static final AttributeKey<String> ATTR_ERROR_GROUP_NAME =
+      AttributeKey.stringKey("error.group.name");
+  private static final AttributeKey<String> ATTR_ERROR_GROUP_MESSAGE =
+      AttributeKey.stringKey("error.group.message");
 
   private final Tracer tracer;
   private final LongCounter fibonacciInvocations;
@@ -106,9 +111,24 @@ public class Controller {
       MissingServletRequestParameterException.class,
       HttpRequestMethodNotSupportedException.class
     })
-    public ResponseEntity<Object> handleException(Exception e) {
+    public ResponseEntity<Object> handleException(Exception e, HttpServletRequest request) {
       // Set the span status and description
       Span.current().setStatus(StatusCode.ERROR, e.getMessage());
+      String n = request.getParameter("n");
+
+      // Three independent test cases for error.group.name / error.group.message overrides:
+      if (e instanceof IllegalArgumentException) {
+        // Both name and message overridden, message embeds the raw (non-normalized) n.
+        Span.current().setAttribute(ATTR_ERROR_GROUP_NAME, "custom:IllegalArgumentException");
+        Span.current().setAttribute(ATTR_ERROR_GROUP_MESSAGE, "custom-msg:n=" + n);
+      } else if (e instanceof MissingServletRequestParameterException) {
+        // Only message overridden; name left to the default (span name).
+        Span.current().setAttribute(ATTR_ERROR_GROUP_MESSAGE, "custom-msg:missing-n");
+      } else if (e instanceof HttpRequestMethodNotSupportedException) {
+        // Only name overridden; message left to the default (otel.status_description).
+        Span.current().setAttribute(ATTR_ERROR_GROUP_NAME, "custom:WrongMethod");
+      }
+
       return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
     }
   }
