@@ -2,6 +2,9 @@
 # workflow_dispatch to work properly
 name: Repolinter Action
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
   pull_request:
