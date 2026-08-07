@@ -19,7 +19,7 @@ The internal telemetry is configured to be sent directly to New Relic's OTLP end
 
 - Collector entity definition: [EXT-SERVICE](https://github.com/newrelic/entity-definitions/blob/main/entity-types/ext-service/definition.yml#L72-L94)
   - requires `service.name` on internal telemetry
-- Collector to container relationship: [INFRA_KUBERNETES_CONTAINER-to-EXT_SERVICE](https://github.com/newrelic/entity-definitions/blob/main/relationships/synthesis/INFRA_KUBERNETES_CONTAINER-to-EXT_SERVICE.yml#L40)
+- Collector to container relationship: [INFRA-KUBERNETES_CONTAINER-to-EXT-SERVICE](https://github.com/newrelic/entity-definitions/blob/main/relationships/synthesis/INFRA-KUBERNETES_CONTAINER-to-EXT-SERVICE.yml#L40)
   - requires `k8s.cluster.name`, `k8s.namespace.name`, `k8s.pod.name`, `k8s.container.name` on internal telemetry that matches equivalent attributes on the container telemetry.
 
 
