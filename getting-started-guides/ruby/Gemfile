@@ -2,11 +2,11 @@
 
 source 'https://rubygems.org'
 
-ruby '3.2.2'
+ruby '3.4.5'
 
 gem 'sinatra', '~> 4.2.1'
-gem 'thin', '~> 2.0.1'
+gem 'puma', '~> 8.0.2'
 
-gem 'opentelemetry-sdk', '~> 1.2.1'
-gem 'opentelemetry-exporter-otlp', '~> 0.25.0'
-gem 'opentelemetry-instrumentation-all', '~> 0.39.1'
+gem 'opentelemetry-sdk', '~> 1.13.0'
+gem 'opentelemetry-exporter-otlp', '~> 0.34.1'
+gem 'opentelemetry-instrumentation-all', '~> 0.96.0'

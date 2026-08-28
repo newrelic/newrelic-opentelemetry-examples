@@ -5,7 +5,7 @@ It demonstrates how to configure OpenTelemetry Ruby to send data to New Relic.
 
 ## Requirements
 
-* [Ruby 3.2.2](https://www.ruby-lang.org/en)
+* [Ruby 3.4.5](https://www.ruby-lang.org/en)
 * [A New Relic account](https://one.newrelic.com/)
 * [A New Relic license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)
 
@@ -37,7 +37,7 @@ It demonstrates how to configure OpenTelemetry Ruby to send data to New Relic.
    in your web browser to ensure it is working.
 
     ```shell
-    bundle exec rackup
+    bundle exec puma
     ```
 
 4. Experiment with providing different values for `n` in the query string.
