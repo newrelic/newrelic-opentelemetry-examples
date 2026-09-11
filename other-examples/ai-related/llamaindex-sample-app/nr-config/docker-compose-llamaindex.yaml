@@ -1,0 +1,20 @@
+services:
+  llamaindex-otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.91.0
+    container_name: llamaindex-otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-llamaindex.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "55681:55679" # ZPages extension
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - otel-llamaindex-network
+
+networks:
+  otel-llamaindex-network:
+    driver: bridge
