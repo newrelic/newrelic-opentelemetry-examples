@@ -1,0 +1,82 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: otel-instrumentation
+  namespace: otel-platform
+spec:
+  exporter:
+    endpoint: http://otel-gateway-collector.otel-platform.svc.cluster.local:4318
+  propagators:
+    - tracecontext
+    - baggage
+  # Common defaults applied to every auto-injected language
+  env:
+    # General OTel SDK configuration recommended by New Relic
+    - name: OTEL_EXPORTER_OTLP_PROTOCOL
+      value: http/protobuf
+    - name: OTEL_EXPORTER_OTLP_COMPRESSION
+      value: gzip
+    - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+      value: DELTA
+    - name: OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION
+      value: "BASE2_EXPONENTIAL_BUCKET_HISTOGRAM"
+    - name: OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT
+      value: "4095"
+
+    # Example of overridden value in apps/python.yaml
+    - name: OTEL_METRIC_EXPORT_INTERVAL
+      value: "60000"
+
+  # Organization-specific resource attribute.
+  # See manifests/apps/python.yaml for a per-key override + extension via
+  # annotations, which is how an app team is meant to customize this.
+  # See https://opentelemetry.io/docs/platforms/kubernetes/operator/automatic/#priority-for-setting-resource-attributes
+  # for documentation about Resource attribute preference
+  resource:
+    resourceAttributes:
+      k8s.cluster.name: nr-operator-demo
+      deployment.environment.name: development
+  java:
+    env:
+      # Disable all instrumentation by default to enable specific instrumentation
+      # vetted by a platform team
+      - name: OTEL_INSTRUMENTATION_COMMON_DEFAULT_ENABLED
+        value: "false"
+      # Enable each instrumentation package individually
+      - name: OTEL_INSTRUMENTATION_SERVLET_ENABLED
+        value: "true"
+      - name: OTEL_INSTRUMENTATION_SPRING_WEBMVC_ENABLED
+        value: "true"
+      - name: OTEL_INSTRUMENTATION_LOG4J_APPENDER_ENABLED
+        value: "true"
+      # opentelemetry-api is ITSELF a gated instrumentation name -- without
+      # it, Controller.java's manual tracer.spanBuilder(...)/
+      # meter.counterBuilder(...) calls (its OpenTelemetry bean is
+      # constructor-injected, no @WithSpan) don't bridge to the injected
+      # SDK. opentelemetry-instrumentation-annotations is the docs'
+      # prescribed pairing for this same "disable-all, allowlist the rest"
+      # pattern -- unused by this app today (no @WithSpan), but future-proofs
+      # it. See "Enable manual instrumentation only" at
+      # https://opentelemetry.io/docs/zero-code/java/agent/disable/.
+      - name: OTEL_INSTRUMENTATION_OPENTELEMETRY_API_ENABLED
+        value: "true"
+      - name: OTEL_INSTRUMENTATION_OPENTELEMETRY_INSTRUMENTATION_ANNOTATIONS_ENABLED
+        value: "true"
+      # Not tied to a library this app happens to use -- baseline JVM
+      # health (process CPU/memory/GC/thread metrics) any platform team
+      # would want for every Java workload.
+      - name: OTEL_INSTRUMENTATION_RUNTIME_TELEMETRY_ENABLED
+        value: "true"
+
+      # Enable experimental options
+      - name: OTEL_EXPERIMENTAL_EXPORTER_OTLP_RETRY_ENABLED
+        value: "true"
+      - name: OTEL_EXPERIMENTAL_RESOURCE_DISABLED_KEYS
+        value: "process.command_args"
+  python:
+    env:
+      # Preserves the log-export behavior the app's own Dockerfile used to
+      # get from `opentelemetry-instrument --logs_exporter otlp`, now that
+      # the Operator injects the Python instrumentation instead.
+      - name: OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED
+        value: "true"

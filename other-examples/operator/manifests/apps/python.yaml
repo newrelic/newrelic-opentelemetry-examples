@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: getting-started-python
+  namespace: otel-apps
+spec:
+  selector:
+    app: getting-started-python
+  ports:
+    - port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: getting-started-python
+  namespace: otel-apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: getting-started-python
+  template:
+    metadata:
+      labels:
+        app: getting-started-python
+      annotations:
+        # Tells the OpenTelemetry Operator to inject instrumentation using
+        # the "otel-instrumentation" CR in the otel-platform namespace --
+        # A "true" value only resolves to a default CR in the Pod's own namespace.
+        instrumentation.opentelemetry.io/inject-python: "otel-platform/otel-instrumentation"
+
+        # Demonstrates that service owners can customize the platform's
+        # default Resource attributes on a per-key basis, via annotations
+        # (these merge into OTEL_RESOURCE_ATTRIBUTES key-by-key. They do
+        # NOT replace the whole string, unlike setting OTEL_RESOURCE_ATTRIBUTES
+        # directly would). Two different things happen here at once:
+        #   - OVERRIDE: deployment.environment.name=staging replaces the
+        #     platform default (development) from 04-instrumentation.yaml's
+        #     spec.resource.resourceAttributes, for this key only.
+        #   - EXTEND: tags.team: my-team is a brand new attribute the
+        #     platform never set. The `tags.*` prefix transfer the Resource
+        #     attribute to an Entity tag in New Relic
+        # See https://opentelemetry.io/docs/platforms/kubernetes/operator/automatic/#priority-for-setting-resource-attributes
+        resource.opentelemetry.io/deployment.environment.name: staging
+        resource.opentelemetry.io/tags.team: my-team
+    spec:
+      containers:
+        - name: getting-started-python
+          image: getting-started-python-operator:latest
+          # Locally built and loaded via `kind load docker-image`
+          imagePullPolicy: Never
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: getting-started-python
+            # Overrides the platform's OTEL_METRIC_EXPORT_INTERVAL default
+            # (30s, set in 04-instrumentation.yaml) with a shorter 30s
+            # interval. Unlike the resource-attributes case above, this
+            # needs no special merging.
+            - name: OTEL_METRIC_EXPORT_INTERVAL
+              value: "30000"
+          ports:
+            - containerPort: 8080

@@ -1,0 +1,162 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel-gateway
+  namespace: otel-platform
+spec:
+  mode: deployment
+  serviceAccount: gateway-collector
+  # NRDOT (New Relic's own OTel Collector distribution) includes
+  # all contrib components this config relies on -- confirmed via
+  # https://github.com/newrelic/nrdot-collector-releases/blob/main/distributions/nrdot-collector/manifest.yaml.
+  # Check for other components, build own distro, or use contrib distry if required.
+  image: newrelic/nrdot-collector:2.4.3
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  # Scales the Gateway Deployment on memory. This is the simplest starting
+  # point; the community advice recommends eventually
+  # scaling on Collector internal telemetry (pipeline queue depth, active
+  # connections) instead of default resource-based autoscaling, once that
+  # internal telemetry is being exported and monitored.
+  # https://opentelemetry.io/docs/guidance/blueprints/managed-telemetry-platforms-for-k8s-workloads/
+  autoscaler:
+    minReplicas: 1
+    maxReplicas: 3
+    targetMemoryUtilization: 70
+
+  env:
+    - name: NEW_RELIC_LICENSE_KEY
+      valueFrom:
+        secretKeyRef:
+          name: otel-platform-secret
+          key: NEW_RELIC_LICENSE_KEY
+    - name: NEW_RELIC_OTLP_ENDPOINT
+      valueFrom:
+        secretKeyRef:
+          name: otel-platform-secret
+          key: NEW_RELIC_OTLP_ENDPOINT
+
+  config:
+    receivers:
+      otlp:
+        protocols:
+          http:
+            endpoint: 0.0.0.0:4318
+    processors:
+      # Must run first in every pipeline to protect the Gateway from OOMing
+      # under traffic peaks
+      memory_limiter:
+        check_interval: 1s
+        limit_percentage: 80
+        spike_limit_percentage: 25
+      # Enriches every signal with k8s.* resource attributes centrally
+      k8s_attributes:
+        auth_type: serviceAccount
+        passthrough: false
+        extract:
+          metadata:
+            - k8s.namespace.name
+            - k8s.pod.name
+            - k8s.pod.uid
+            - k8s.pod.start_time
+            - k8s.deployment.name
+            - k8s.node.name
+    exporters:
+      otlp_http:
+        endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT}
+        headers:
+          api-key: ${env:NEW_RELIC_LICENSE_KEY}
+        # Enable sending queue and batching on payload size.
+        sending_queue:
+          enabled: true
+          queue_size: 10000
+          # Wait for queue space instead of dropping data outright when the
+          # backend is briefly slow or rate-limiting.
+          block_on_overflow: true
+          batch:
+            flush_timeout: 200ms
+            # Size batches by their serialized byte size, so
+            # a single batch stays under New Relic's 1 MB OTLP payload limit
+            # (https://docs.newrelic.com/docs/opentelemetry/best-practices/opentelemetry-otlp/#payload-limits).
+            # max_size caps a batch at ~900 KB -- headroom below the 1 MB
+            # limit since serialization overhead per item isn't perfectly
+            # uniform, so an exact 1 MB target could occasionally tip over.
+            # Batches that would exceed it are split rather than dropped.
+            sizer: bytes
+            min_size: 512000
+            max_size: 921600
+    service:
+      # The Gateway's own operational health, pushed via OTLP. Separate pipelines.
+      telemetry:
+        metrics:
+          readers:
+            - periodic:
+                exporter:
+                  otlp:
+                    protocol: http/protobuf
+                    endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT}
+                    headers:
+                      - name: api-key
+                        value: ${env:NEW_RELIC_LICENSE_KEY}
+                    temporality_preference: delta
+        logs:
+          level: INFO
+          # Default sampling config
+          sampling:
+            enabled: true
+            tick: 10s
+            initial: 10
+            thereafter: 100
+          processors:
+            - batch:
+                exporter:
+                  otlp:
+                    protocol: http/protobuf
+                    endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT}
+                    headers:
+                      - name: api-key
+                        value: ${env:NEW_RELIC_LICENSE_KEY}
+        traces:
+          # Disabled by default due to experimental status (not recommended for production use)
+          level: basic
+          sampler:
+            parent_based:
+              root:
+                trace_id_ratio_based:
+                  ratio: 0.1
+          processors:
+            - batch:
+                exporter:
+                  otlp:
+                    protocol: http/protobuf
+                    endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT}
+                    headers:
+                      - name: api-key
+                        value: ${env:NEW_RELIC_LICENSE_KEY}
+
+        # Resource attributes for the Collector service. This.
+        resource:
+          newrelic.collector_telemetry.version: "0.4.0"
+          newrelic.service.type: otel_collector
+          # Gives it its own name
+          service.name: otel-gateway-collector
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, k8s_attributes]
+          exporters: [otlp_http]
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, k8s_attributes]
+          exporters: [otlp_http]
+        logs:
+          receivers: [otlp]
+          processors: [memory_limiter, k8s_attributes]
+          exporters: [otlp_http]
