@@ -55,6 +55,8 @@ New Relic.
 
 * Collector
   * [Collector for data processing](./other-examples/collector/nr-config)
+* Kubernetes
+  * [OpenTelemetry Operator: auto-instrumentation + Collector Gateway](./other-examples/operator)
 * Java
   * [OpenTelemetry Agent New Relic Config](./other-examples/java/agent-nr-config)
   * [Micrometer Shim with OTLP Export](./other-examples/java/micrometer-shim)
