@@ -57,7 +57,7 @@ spec:
         limit_percentage: 80
         spike_limit_percentage: 25
       # Enriches every signal with k8s.* resource attributes centrally
-      k8sattributes:
+      k8s_attributes:
         auth_type: serviceAccount
         passthrough: false
         extract:
@@ -69,7 +69,7 @@ spec:
             - k8s.deployment.name
             - k8s.node.name
     exporters:
-      otlphttp:
+      otlp_http:
         endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT}
         headers:
           api-key: ${env:NEW_RELIC_LICENSE_KEY}
@@ -93,7 +93,7 @@ spec:
             min_size: 512000
             max_size: 921600
     service:
-      # The Gateway's own operational health, pushed via OTLP. Separate pipeline.
+      # The Gateway's own operational health, pushed via OTLP. Separate pipelines.
       telemetry:
         metrics:
           readers:
@@ -102,20 +102,61 @@ spec:
                   otlp:
                     protocol: http/protobuf
                     endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT}
-                    headers_list: api-key=${env:NEW_RELIC_LICENSE_KEY}
+                    headers:
+                      - name: api-key
+                        value: ${env:NEW_RELIC_LICENSE_KEY}
+                    temporality_preference: delta
+        logs:
+          level: INFO
+          # Default sampling config
+          sampling:
+            enabled: true
+            tick: 10s
+            initial: 10
+            thereafter: 100
+          processors:
+            - batch:
+                exporter:
+                  otlp:
+                    protocol: http/protobuf
+                    endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT}
+                    headers:
+                      - name: api-key
+                        value: ${env:NEW_RELIC_LICENSE_KEY}
+        traces:
+          # Disabled by default due to experimental status (not recommended for production use)
+          level: basic
+          sampler:
+            parent_based:
+              root:
+                trace_id_ratio_based:
+                  ratio: 0.1
+          processors:
+            - batch:
+                exporter:
+                  otlp:
+                    protocol: http/protobuf
+                    endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT}
+                    headers:
+                      - name: api-key
+                        value: ${env:NEW_RELIC_LICENSE_KEY}
+
+        # Resource attributes for the Collector service. This.
         resource:
+          newrelic.collector_telemetry.version: "0.4.0"
+          newrelic.service.type: otel_collector
           # Gives it its own name
           service.name: otel-gateway-collector
       pipelines:
         traces:
           receivers: [otlp]
-          processors: [memory_limiter, k8sattributes]
-          exporters: [otlphttp]
+          processors: [memory_limiter, k8s_attributes]
+          exporters: [otlp_http]
         metrics:
           receivers: [otlp]
-          processors: [memory_limiter, k8sattributes]
-          exporters: [otlphttp]
+          processors: [memory_limiter, k8s_attributes]
+          exporters: [otlp_http]
         logs:
           receivers: [otlp]
-          processors: [memory_limiter, k8sattributes]
-          exporters: [otlphttp]
+          processors: [memory_limiter, k8s_attributes]
+          exporters: [otlp_http]
