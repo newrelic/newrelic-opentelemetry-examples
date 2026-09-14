@@ -9,11 +9,11 @@ kind: ClusterRole
 metadata:
   name: gateway-collector
 rules:
-  # Required by the k8sattributes processor to enrich telemetry with pod and
-  # namespace metadata (k8s.pod.name, k8s.namespace.name, k8s.pod.uid, ...).
-  # Add "nodes" here too if you also want node-level attributes.
+  # Required by the k8s_attributes processor to enrich telemetry with pod,
+  # namespace and node metadata (k8s.pod.name, k8s.namespace.name,
+  # k8s.pod.uid, k8s.node.name, ...).
   - apiGroups: [""]
-    resources: ["pods", "namespaces"]
+    resources: ["pods", "namespaces", "nodes"]
     verbs: ["get", "watch", "list"]
   # Needed to resolve k8s.deployment.name from a pod's owning ReplicaSet.
   - apiGroups: ["apps"]

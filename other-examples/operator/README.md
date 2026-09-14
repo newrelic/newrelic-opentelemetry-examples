@@ -13,7 +13,7 @@ Everything lives in one of two namespaces: **`otel-platform`** (the Operator, th
 flowchart LR
     subgraph platform["otel-platform namespace"]
         webhook["OpenTelemetry Operator<br/>(mutating webhook)"]
-        gw["Gateway Deployment<br/>(OpenTelemetryCollector CR)<br/>memory_limiter -&gt; k8sattributes<br/>HPA: memory"]
+        gw["Gateway Deployment<br/>(OpenTelemetryCollector CR)<br/>memory_limiter -&gt; k8s_attributes<br/>HPA: memory"]
     end
 
     subgraph apps["otel-apps namespace"]
@@ -34,45 +34,21 @@ flowchart LR
 * [kind](https://kind.sigs.k8s.io/)
 * [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
 * [Helm](https://helm.sh/docs/intro/install/)
+* [GNU Make](https://www.gnu.org/software/make/)
 * [A New Relic account](https://one.newrelic.com/)
 * [A New Relic license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)
 
 ## Running the example
 
-1. Create a kind cluster:
+All commands run from this directory. Every target in the [`Makefile`](./Makefile) points its `kubectl`/`helm` calls at this cluster explicitly via `--context`/`--kube-context kind-nr-operator-demo`, so your default kubeconfig context is never touched and there's no ambiguity about which cluster any command targets, however many other clusters you also have configured.
+
+1. Create the kind cluster:
 
     ```shell
-    kind create cluster --name nr-operator-demo
+    make cluster
     ```
 
-2. Install a Metrics Server, needed for the Gateway's Horizontal Pod Autoscaler later on -- kind doesn't ship one by default:
-
-    ```shell
-    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-    # kind's kubelet certs aren't signed for metrics-server's default verification
-    kubectl patch deployment metrics-server -n kube-system --type=json \
-      -p '[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
-    ```
-
-3. Install the OpenTelemetry Operator via Helm into the `otel-platform` namespace -- the same namespace the `Instrumentation`/`OpenTelemetryCollector` CRs and the Gateway they produce will live in. This uses the Operator's built-in self-signed certificate generation for its admission webhook, so no [cert-manager](https://cert-manager.io/docs/) dependency is required:
-
-    ```shell
-    helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
-    helm repo update
-    helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
-      --namespace otel-platform --create-namespace \
-      --set admissionWebhooks.certManager.enabled=false \
-      --set admissionWebhooks.autoGenerateCert.enabled=true
-
-    kubectl wait --for=condition=Available deployment/opentelemetry-operator \
-      --namespace otel-platform --timeout=120s
-    ```
-
-    * The Operator's mutating webhook watches Pod creation across the *whole* cluster, not just its own namespace -- so apps in `otel-apps` still get instrumented normally even though the Operator itself runs in `otel-platform`.
-
-    * Waiting here matters: if you apply annotated pods before the webhook is ready, injection silently no-ops (the webhook's `failurePolicy` for pods is `Ignore`) rather than blocking pod creation, which is confusing to debug.
-
-4. Create your secrets file from the template and update the values:
+2. Create your secrets file from the template and fill in your New Relic license key -- `make install` (next step) checks for this file and fails fast with a reminder if it's missing:
 
     ```shell
     cp manifests/01-secrets.yaml.template manifests/01-secrets.yaml
@@ -81,45 +57,35 @@ flowchart LR
 
     * If your account is based in the EU, update `NEW_RELIC_OTLP_ENDPOINT` to `https://otlp.eu01.nr-data.net`.
 
-5. Deploy both namespaces, the secret, Gateway RBAC and the `OpenTelemetryCollector` CR (all in `otel-platform`), then wait for the Gateway to come up:
+3. Install the Metrics Server, the OpenTelemetry Operator, and the platform's namespaces/secret/RBAC/`OpenTelemetryCollector`/`Instrumentation` CRs (all in `otel-platform`):
 
     ```shell
-    kubectl apply -f manifests/00-namespace.yaml \
-      -f manifests/01-secrets.yaml \
-      -f manifests/02-collector-rbac.yaml \
-      -f manifests/03-collector.yaml
-
-    kubectl wait --for=condition=Available deployment/otel-gateway-collector \
-      --namespace otel-platform --timeout=120s
+    make install
     ```
 
-    * If `otel-gateway-collector` crash-loops instead of becoming available, check its logs first -- the most common cause is `spec.image` on the CR not pointing at an image that includes the `k8sattributes` processor, since it isn't in the operator's default core-only image.
-    * Confirm the HPA came up too: `kubectl get hpa -n otel-platform` should show an `otel-gateway-collector` entry with a non-`<unknown>` memory target once the Metrics Server has scraped at least once.
+    * The Operator is installed with its built-in self-signed certificate generation for its admission webhook, so no [cert-manager](https://cert-manager.io/docs/) dependency is required. Its mutating webhook watches Pod creation across the *whole* cluster, not just its own namespace -- so apps in `otel-apps` still get instrumented normally even though the Operator itself runs in `otel-platform`.
+    * This target waits for the Operator and then the Gateway to become available before returning, since applying annotated pods before the webhook is ready makes injection silently no-op (the webhook's `failurePolicy` for pods is `Ignore`) rather than block pod creation, which is confusing to debug.
+    * If `otel-gateway-collector` crash-loops instead of becoming available, check its logs first -- the most common cause is `spec.image` on the CR not pointing at an image that includes the `k8s_attributes` processor, since it isn't in the operator's default core-only image.
+    * Confirm the HPA came up too: `kubectl --context kind-nr-operator-demo get hpa -n otel-platform` should show an `otel-gateway-collector` entry with a non-`<unknown>` memory target once the Metrics Server has scraped at least once.
 
-6. Deploy the `Instrumentation` CR (also in `otel-platform`):
+4. Build the two app images and load them into the kind cluster:
 
     ```shell
-    kubectl apply -f manifests/04-instrumentation.yaml
+    make build
     ```
 
-7. Build the two app images and load them into the kind cluster:
+5. Deploy the apps:
 
     ```shell
-    ./scripts/build-and-load-images.sh
+    make deploy
     ```
 
-8. Deploy the apps:
+    * To confirm auto-injection actually happened, `kubectl --context kind-nr-operator-demo describe pod -n otel-apps -l app=getting-started-java` (or `-python`) should show an `opentelemetry-auto-instrumentation-java` (or `-python`) init container.
+
+6. When finished, clean up by deleting the whole cluster:
 
     ```shell
-    kubectl apply -f manifests/apps/
-    ```
-
-    * To confirm auto-injection actually happened, `kubectl describe pod -n otel-apps -l app=getting-started-java` (or `-python`) should show an `opentelemetry-auto-instrumentation-java` (or `-python`) init container.
-
-9. When finished, clean up by deleting the whole cluster:
-
-    ```shell
-    kind delete cluster --name nr-operator-demo
+    make clean
     ```
 
 ## Viewing your data
@@ -127,11 +93,17 @@ flowchart LR
 Port-forward each app's Service and hit the `/fibonacci` endpoint to generate some telemetry:
 
 ```shell
-kubectl port-forward -n otel-apps svc/getting-started-java 8081:8080 &
-kubectl port-forward -n otel-apps svc/getting-started-python 8082:8080 &
+kubectl --context kind-nr-operator-demo port-forward -n otel-apps svc/getting-started-java 8081:8080 &
+kubectl --context kind-nr-operator-demo port-forward -n otel-apps svc/getting-started-python 8082:8080 &
 
 curl 'http://localhost:8081/fibonacci?n=10'
 curl 'http://localhost:8082/fibonacci?n=10'
+```
+
+To generate a continuous stream instead of one-off requests, run [`scripts/generate-load.py`](./scripts/generate-load.py) (adapted from [getting-started-guides](../../getting-started-guides)'s own load generator) while the two port-forwards above are still running -- it hits both apps with a random `n` once a second until you `Ctrl-C` it:
+
+```shell
+./scripts/generate-load.py
 ```
 
 Then, in New Relic, use the following NRQL query to verify data is flowing from both apps:
@@ -146,7 +118,7 @@ WHERE service.name IN ('getting-started-java', 'getting-started-python')
 FACET service.name SINCE 10 minutes ago
 ```
 
-Both services' spans/logs/metrics should carry `k8s.pod.name`, `k8s.namespace.name` and `k8s.deployment.name` attributes, added centrally by the Gateway's `k8sattributes` processor.
+Both services' spans/logs/metrics should carry `k8s.pod.name`, `k8s.namespace.name` and `k8s.deployment.name` attributes, added centrally by the Gateway's `k8s_attributes` processor.
 
 You should also see `k8s.cluster.name`, `deployment.environment.name` differ between the two services (`development` for Java (the platform default) and `staging` for Python), and `tags.team=my-team` present only on Python's telemetry and as a New Relic Entity tags (an attribute the platform never set at all):
 

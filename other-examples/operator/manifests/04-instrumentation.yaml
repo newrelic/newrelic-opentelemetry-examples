@@ -1,4 +1,4 @@
-apiVersion: opentelemetry.io/v1beta1
+apiVersion: opentelemetry.io/v1alpha1
 kind: Instrumentation
 metadata:
   name: otel-instrumentation
@@ -6,13 +6,14 @@ metadata:
 spec:
   exporter:
     endpoint: http://otel-gateway-collector.otel-platform.svc.cluster.local:4318
-    protocol: http/protobuf
   propagators:
     - tracecontext
     - baggage
   # Common defaults applied to every auto-injected language
   env:
     # General OTel SDK configuration recommended by New Relic
+    - name: OTEL_EXPORTER_OTLP_PROTOCOL
+      value: http/protobuf
     - name: OTEL_EXPORTER_OTLP_COMPRESSION
       value: gzip
     - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
