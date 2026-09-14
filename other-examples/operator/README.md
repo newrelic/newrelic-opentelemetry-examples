@@ -28,6 +28,14 @@ flowchart LR
     gw -- OTLP/HTTP + api-key --> nr["New Relic"]
 ```
 
+## Out of scope
+
+This setup demonstrates how to instrument applications for a basic use case, and leaves out many aspects one would require when deploying applications on a Kubernetes cluster, including:
+
+* Regulatory/audit requirements mandating zero data loss for financial or compliance logging. The setup here optimizes for low-latency operational telemetry, not completeness guarantees.
+* Advanced trace sampling or metric aggregation techniques to reduce cost.
+* Observability of the Kubernetes clusters themselves (a separate concern from the workloads running on them).
+
 ## Requirements
 
 * [Docker](https://docs.docker.com/get-docker/)
