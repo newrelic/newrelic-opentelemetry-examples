@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gateway-collector
+  namespace: otel-platform
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gateway-collector
+rules:
+  # Required by the k8sattributes processor to enrich telemetry with pod and
+  # namespace metadata (k8s.pod.name, k8s.namespace.name, k8s.pod.uid, ...).
+  # Add "nodes" here too if you also want node-level attributes.
+  - apiGroups: [""]
+    resources: ["pods", "namespaces"]
+    verbs: ["get", "watch", "list"]
+  # Needed to resolve k8s.deployment.name from a pod's owning ReplicaSet.
+  - apiGroups: ["apps"]
+    resources: ["replicasets"]
+    verbs: ["get", "watch", "list"]
+  - apiGroups: ["extensions"]
+    resources: ["replicasets"]
+    verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gateway-collector
+subjects:
+  - kind: ServiceAccount
+    name: gateway-collector
+    namespace: otel-platform
+roleRef:
+  kind: ClusterRole
+  name: gateway-collector
+  apiGroup: rbac.authorization.k8s.io

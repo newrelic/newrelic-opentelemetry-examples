@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: getting-started-java
+  namespace: otel-apps
+spec:
+  selector:
+    app: getting-started-java
+  ports:
+    - port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: getting-started-java
+  namespace: otel-apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: getting-started-java
+  template:
+    metadata:
+      labels:
+        app: getting-started-java
+      annotations:
+        # Tells the OpenTelemetry Operator to inject instrumentation using
+        # the "otel-instrumentation" CR in the otel-platform namespace --
+        # A "true" value only resolves to a default CR in the Pod's own namespace.
+        instrumentation.opentelemetry.io/inject-java: "otel-platform/otel-instrumentation"
+        # No resource.opentelemetry.io/* annotations here -- this app takes
+        # the platform default. Compare manifests/apps/python.yaml, which
+        # overrides and extends it.
+    spec:
+      containers:
+        - name: getting-started-java
+          image: getting-started-java-operator:latest
+          # Locally built and loaded via `kind load docker-image`
+          imagePullPolicy: Never
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: getting-started-java
+          ports:
+            - containerPort: 8080
