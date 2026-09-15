@@ -30,6 +30,8 @@ data:
     receivers:
       prometheus:
         config:
+          global:
+            scrape_interval: 30s
           scrape_configs:
             - job_name: 'linkerd-controller'
               kubernetes_sd_configs:

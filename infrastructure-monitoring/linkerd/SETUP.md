@@ -188,6 +188,7 @@ kubectl rollout status deployment/nr-otel-collector -n nr-otel
 | `resourcedetection.detectors` | ConfigMap | Optional: add `eks`/`gke`/`azure` for extra cloud attributes (requires IAM on EKS) |
 | Docker volume (optional) | Deployment volumes | Uncomment `/var/lib/docker/containers` if nodes use Docker runtime |
 | `kube-state-metrics` target | ConfigMap scrape_configs | Update namespace/name if KSM is not in `kube-system` |
+| `global.scrape_interval` | ConfigMap `prometheus.config` | Default `30s`. How often the Linkerd `:4191` endpoints are scraped. |
 
 > **Note — Linkerd Proxy Traces (Linkerd 2.19+):**
 > Linkerd proxy spans (mesh routing decisions, retries, circuit breaking) are sent to
