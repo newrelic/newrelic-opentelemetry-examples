@@ -1,8 +1,17 @@
 # Getting Started Guide - Java
 
-This is a simple application instrumented
-with [OpenTelemetry Java's](https://github.com/open-telemetry/opentelemetry-java) [automatic instrumentation javaagent](https://opentelemetry.io/docs/languages/java/automatic/).
-It demonstrates how to configure OpenTelemetry Java to send data to New Relic.
+This is a simple application that adds manual instrumentation using the
+[OpenTelemetry Java API and SDK](https://github.com/open-telemetry/opentelemetry-java)
+and runs it with the [New Relic Java agent](https://github.com/newrelic/newrelic-java-agent)
+in [hybrid mode](https://docs.newrelic.com/docs/opentelemetry/get-started/opentelemetry-hybrid-agent/).
+In hybrid mode the New Relic agent instruments the OpenTelemetry SDK, so the
+spans, metrics, and logs/events produced by the OpenTelemetry API in this example
+are incorporated into the monitored New Relic APM entity alongside the agent's own
+automatic instrumentation. The agent routes this telemetry to New Relic, so you do
+not need to run an OpenTelemetry Collector — but the application must include the
+OpenTelemetry SDK autoconfigure and OTLP exporter dependencies (see `build.gradle`)
+and enable SDK autoconfiguration (set for you in `build.gradle` via
+`-Dotel.java.global-autoconfigure.enabled=true`).
 
 ## Requirements
 
@@ -12,23 +21,20 @@ It demonstrates how to configure OpenTelemetry Java to send data to New Relic.
 
 ## Running the application
 
-1. Set the following environment variables to configure OpenTelemetry to send
-   data to New Relic:
+1. Set the following environment variables to configure the New Relic Java
+   agent and enable hybrid (OpenTelemetry) mode:
 
     ```shell
-    export OTEL_SERVICE_NAME=getting-started-java
-    export OTEL_EXPERIMENTAL_EXPORTER_OTLP_RETRY_ENABLED=true
-    export OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION=BASE2_EXPONENTIAL_BUCKET_HISTOGRAM
-    export OTEL_EXPERIMENTAL_RESOURCE_DISABLED_KEYS=process.command_args
-    export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net
-    export OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>
-    export OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095
-    export OTEL_EXPORTER_OTLP_COMPRESSION=gzip
-    export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-    export OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=delta
+    export NEW_RELIC_APP_NAME=getting-started-java
+    export NEW_RELIC_LICENSE_KEY=<your_license_key>
+    # Enable hybrid mode so the agent captures the OpenTelemetry API instrumentation.
+    export NEW_RELIC_OPENTELEMETRY_ENABLED=true
+    # Forward log context data so the event attributes (e.g. fibonacci.n) are sent with the events.
+    export NEW_RELIC_APPLICATION_LOGGING_FORWARDING_CONTEXT_DATA_ENABLED=true
     ```
 
-    * If your account is based in the EU, set the endpoint to: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
+    * The agent automatically reports to the correct region (US or EU) based on
+      your license key, so no endpoint configuration is needed.
 
 2. Run the application with the following command and open
    [http://localhost:8080/fibonacci?n=1](http://localhost:8080/fibonacci?n=1)
@@ -41,3 +47,27 @@ It demonstrates how to configure OpenTelemetry Java to send data to New Relic.
 3. Experiment with providing different values for `n` in the query string.
    Valid values are between 1 and 90. Values outside this range cause an error
    which will show up in New Relic.
+
+   The app also emits events via the OpenTelemetry Java logs/events API:
+   `application.started` on startup, `fibonacci.computed` on each successful
+   computation (with the `fibonacci.n` and `fibonacci.result` attributes), and
+   `fibonacci.invalid_input` when `n` is out of range.
+
+   In hybrid mode the New Relic agent forwards these as New Relic log events: the
+   event name becomes the log `message`, and the event attributes are forwarded as
+   `context.*` attributes (which is why context-data forwarding is enabled above).
+   Query them in NRQL by message:
+
+    ```sql
+    SELECT * FROM Log WHERE message = 'fibonacci.computed'
+    ```
+
+   or by the event-type attribute each event carries
+   (`context.newrelic.event.type`, the PascalCased event name):
+
+    ```sql
+    SELECT * FROM Log WHERE `context.newrelic.event.type` = 'FibonacciComputed'
+    ```
+
+   Note: unlike OTLP ingestion, the hybrid agent does not turn these into custom
+   event types — `newrelic.event.type` is forwarded as a plain log attribute.
