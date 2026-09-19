@@ -1,0 +1,21 @@
+# FastAPI and server dependencies
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+
+# LlamaIndex with tested compatible versions
+llama-index-core==0.10.68.post1
+llama-index-llms-openai==0.1.31
+llama-index-agent-openai==0.2.9
+
+# OpenTelemetry dependencies
+opentelemetry-api==1.40.0
+opentelemetry-sdk==1.40.0
+opentelemetry-exporter-otlp-proto-http==1.40.0
+opentelemetry-instrumentation==0.61b0
+
+# OpenInference instrumentation for LlamaIndex (must be 2.x for llama-index 0.10.x)
+openinference-instrumentation-llama-index==2.2.4
+
+# Environment variables
+python-dotenv==1.0.0

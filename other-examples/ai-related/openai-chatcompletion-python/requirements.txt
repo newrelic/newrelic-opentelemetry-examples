@@ -1,0 +1,9 @@
+Flask~=3.0
+openai~=1.57
+opentelemetry-api~=1.37
+opentelemetry-sdk~=1.37
+opentelemetry-distro~=0.58b0
+opentelemetry-instrumentation~=0.58b0
+opentelemetry-exporter-otlp-proto-http~=1.37
+opentelemetry-instrumentation-openai-v2~=2.3b0
+opentelemetry-semantic-conventions~=0.58b0

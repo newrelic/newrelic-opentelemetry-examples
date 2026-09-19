@@ -1,0 +1,74 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+    send_batch_max_size: 2048
+
+  resource:
+    attributes:
+      - key: collector.name
+        value: llamaindex-otel-collector
+        action: insert
+    # Required to enable New Relic AI Monitoring for OTel-instrumented apps
+      - key: aiEnabledApp
+        value: "true"
+        action: insert
+
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+    spike_limit_mib: 128
+
+  # Remap OpenInference attributes to OTel GenAI semantic conventions
+  transform/genai:
+    trace_statements:
+      - context: span
+        statements:
+          # Model name
+          - set(attributes["gen_ai.request.model"], attributes["llm.model_name"]) where attributes["llm.model_name"] != nil
+          # Token counts
+          - set(attributes["gen_ai.usage.input_tokens"], attributes["llm.token_count.prompt"]) where attributes["llm.token_count.prompt"] != nil
+          - set(attributes["gen_ai.usage.output_tokens"], attributes["llm.token_count.completion"]) where attributes["llm.token_count.completion"] != nil
+          # Tool name
+          - set(attributes["gen_ai.tool.name"], attributes["tool.name"]) where attributes["tool.name"] != nil
+          # Provider - required by New Relic AI Monitoring to identify LLM spans
+          - set(attributes["gen_ai.system"], "openai") where attributes["llm.model_name"] != nil
+          # Agent name based on span name
+          - set(attributes["gen_ai.agent.name"], "FunctionCallingAgent") where name == "chat"
+          - set(attributes["gen_ai.agent.name"], "ReActAgent") where name == "chat_react"
+
+exporters:
+  debug:
+    verbosity: detailed
+
+  otlphttp/newrelic:
+    endpoint: https://staging-otlp.nr-data.net:4318
+    headers:
+      api-key: ${NEW_RELIC_LICENSE_KEY}
+    compression: gzip
+    timeout: 30s
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource, transform/genai]
+      exporters: [debug, otlphttp/newrelic]
+
+  telemetry:
+    logs:
+      level: info
+
