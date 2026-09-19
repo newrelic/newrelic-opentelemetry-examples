@@ -1,0 +1,107 @@
+# Helm values for nr-k8s-otel-collector with internal telemetry enabled
+# This configuration adds comprehensive internal telemetry to both the deployment and daemonset collectors
+
+# Configuration for the deployment collector (cluster-level metrics)
+deployment:
+  # Mount the internal telemetry config as a volume
+  extraVolumes:
+    - name: internal-telemetry-config
+      configMap:
+        name: otel-internal-telemetry-config
+
+  extraVolumeMounts:
+    - name: internal-telemetry-config
+      mountPath: /etc/otel-internal-telemetry
+      readOnly: true
+
+  # Add the config file path as an additional argument
+  extraArgs:
+    - --config=file:/etc/otel-internal-telemetry/config.yaml
+
+  # Environment variables for internal telemetry configuration
+  envs:
+    - name: INTERNAL_TELEMETRY_SERVICE_NAME
+      value: "kbauer-feb18-nr-k8s-otel-collector-deployment"
+    - name: INTERNAL_TELEMETRY_OTLP_ENDPOINT
+      valueFrom:
+        secretKeyRef:
+          name: nr-otel-internal-telemetry-secret
+          key: NEW_RELIC_OTLP_ENDPOINT
+    - name: INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY
+      valueFrom:
+        secretKeyRef:
+          name: nr-otel-internal-telemetry-secret
+          key: NEW_RELIC_LICENSE_KEY
+    # K8s resource attributes for internal telemetry
+    - name: CLUSTER_NAME
+      valueFrom:
+        secretKeyRef:
+          name: nr-otel-internal-telemetry-secret
+          key: CLUSTER_NAME
+    - name: NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: CONTAINER_NAME
+      value: "otel-collector-deployment"
+
+# Configuration for the daemonset collector (node-level metrics)
+daemonset:
+  # Mount the internal telemetry config as a volume
+  extraVolumes:
+    - name: internal-telemetry-config
+      configMap:
+        name: otel-internal-telemetry-config
+
+  extraVolumeMounts:
+    - name: internal-telemetry-config
+      mountPath: /etc/otel-internal-telemetry
+      readOnly: true
+
+  # Add the config file path as an additional argument
+  extraArgs:
+    - --config=file:/etc/otel-internal-telemetry/config.yaml
+
+  # Environment variables for internal telemetry configuration
+  envs:
+    - name: INTERNAL_TELEMETRY_SERVICE_NAME
+      value: "kbauer-feb18-nr-k8s-otel-collector-daemonset"
+    - name: INTERNAL_TELEMETRY_OTLP_ENDPOINT
+      valueFrom:
+        secretKeyRef:
+          name: nr-otel-internal-telemetry-secret
+          key: NEW_RELIC_OTLP_ENDPOINT
+    - name: INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY
+      valueFrom:
+        secretKeyRef:
+          name: nr-otel-internal-telemetry-secret
+          key: NEW_RELIC_LICENSE_KEY
+    # K8s resource attributes for internal telemetry
+    - name: CLUSTER_NAME
+      valueFrom:
+        secretKeyRef:
+          name: nr-otel-internal-telemetry-secret
+          key: CLUSTER_NAME
+    - name: NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    # POD_NAME is already defined by the chart for daemonset
+    - name: CONTAINER_NAME
+      value: "otel-collector-daemonset"
+
+# Optional: Customize internal telemetry levels
+# Uncomment and add these to extraEnvs in both deployment and daemonset sections above:
+#
+# - name: INTERNAL_TELEMETRY_METRICS_LEVEL
+#   value: "detailed"  # Options: detailed, normal, basic, none
+# - name: INTERNAL_TELEMETRY_LOG_LEVEL
+#   value: "INFO"  # Options: DEBUG, INFO, WARN, ERROR
+# - name: INTERNAL_TELEMETRY_TRACE_LEVEL
+#   value: "none"  # Options: none, basic (experimental)
+# - name: INTERNAL_TELEMETRY_TRACE_SAMPLE_RATIO
+#   value: "0.01"  # 1% sampling rate
