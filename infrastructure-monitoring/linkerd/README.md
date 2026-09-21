@@ -16,8 +16,8 @@ Skip Steps 1 and 3 — go directly to Step 2 then Step 4. The OTel Collector is
 fully additive: it scrapes the Linkerd proxy admin ports (`:4191`) that are already
 present on every meshed pod. No Linkerd configuration changes, no pod restarts.
 
-**Already have kube-state-metrics?** Many clusters (especially those with Prometheus,
-DataDog, or the NR Kubernetes integration) already have it. Check first:
+**Already have kube-state-metrics?** Many clusters (especially those with Prometheus
+or the NR Kubernetes integration) already have it. Check first:
 
 ```bash
 kubectl get deployment -A | grep kube-state
@@ -35,7 +35,7 @@ collector config to point at the correct namespace.
 - `kubectl` configured against the target cluster
 - `linkerd` CLI ([install](https://linkerd.io/2/getting-started/))
 - New Relic **ingest license key** (format: `...NRAL`)
-- The OTel Collector runs as **root** (`runAsUser: 0`) to read `/var/log/pods` (owned by root). Most clusters allow this; if your cluster has PodSecurityAdmission restrictions, add `hostPath` volume access to the allowed policy.
+- The OTel Collector runs as a **non-root user** (`runAsUser: 1001`) with a **read-only root filesystem**, matching the `nr-k8s-otel-collector` Helm chart's defaults. If your cluster has PodSecurityAdmission restrictions, you still need `hostPath` volume access added to the allowed policy.
 - Nodes must expose `/var/log/pods` and `/var/lib/docker/containers` (standard on all major managed K8s providers)
 
 ---
@@ -44,15 +44,27 @@ collector config to point at the correct namespace.
 
 ### Via Helm (recommended)
 
-Helm requires explicit certificates. Generate them with the [`step` CLI](https://smallstep.com/docs/step-cli/installation/):
+Unlike the `linkerd install` CLI, Helm cannot auto-generate the mTLS trust anchor and
+issuer certificates Linkerd needs — you must generate and pass them in yourself. This
+follows Linkerd's own [Helm install guide](https://linkerd.io/2/tasks/install-helm/)
+and [certificate generation guide](https://linkerd.io/2/tasks/generate-certificates/);
+see those for the `openssl` alternative to `step`, longer-lived certs (`--not-after`),
+and HA install options. For production, also see
+[automatic TLS credential rotation](https://linkerd.io/2/tasks/automatically-rotating-control-plane-tls-credentials/)
+instead of the one-off certs generated below.
 
 ```bash
 helm repo add linkerd https://helm.linkerd.io/stable
 helm repo update
 
-# Gateway API CRDs (required by Linkerd)
+# Gateway API CRDs (required by Linkerd). Check first — many clusters already have
+# these, and installing a version outside Linkerd's compatibility table can break
+# your installation: https://linkerd.io/2/features/gateway-api/
+kubectl get crds/httproutes.gateway.networking.k8s.io \
+  -o "jsonpath={.metadata.annotations.gateway\.networking\.k8s\.io/bundle-version}" \
+  2>/dev/null || \
 kubectl apply --server-side \
-  -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml
+  -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.1/standard-install.yaml
 
 # Generate trust anchor + issuer certs
 step certificate create root.linkerd.cluster.local ca.crt ca.key \
@@ -78,8 +90,9 @@ linkerd check
 ### Alternative — Linkerd CLI (auto-generates certificates)
 
 ```bash
+# See the note above on checking for an existing Gateway API install before applying.
 kubectl apply --server-side \
-  -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml
+  -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.1/standard-install.yaml
 
 linkerd install --crds | kubectl apply -f -
 linkerd install | kubectl apply -f -
@@ -152,6 +165,24 @@ linkerd check --namespace <YOUR_NAMESPACE>
 
 > **Note:** Repeat for every namespace whose services should appear in New Relic.
 
+### Don't have a meshed service yet? Deploy the demo app
+
+Linkerd's [emojivoto](https://github.com/BuoyantIO/emojivoto) demo deploys three
+meshed services (`web`, `emoji`, `voting`) plus a `vote-bot` that continuously
+generates traffic between them — useful for seeing real request-rate, latency,
+and topology metrics without meshing an application of your own first.
+
+```bash
+curl -sL https://run.linkerd.io/emojivoto.yml | kubectl apply -f -
+kubectl get -n emojivoto deploy -o yaml | linkerd inject - | kubectl apply -f -
+linkerd check --namespace emojivoto
+```
+
+Use `emojivoto` as `<YOUR_NAMESPACE>` in the steps below, and `web` / `emoji` /
+`voting` as the deployment names in the verification queries.
+
+Cleanup: `kubectl delete namespace emojivoto`.
+
 ---
 
 ## Step 4 — Deploy the OTel Collector
@@ -163,32 +194,39 @@ kubectl create namespace nr-otel
 
 kubectl -n nr-otel create secret generic nr-license \
   --from-literal=NEW_RELIC_LICENSE_KEY='<YOUR_NR_INGEST_LICENSE_KEY>' \
-  --from-literal=NEWRELIC_OTLP_ENDPOINT='https://otlp.nr-data.net:443'
-  # EU accounts:      https://otlp.eu01.nr-data.net:443
-  # Staging accounts: https://staging-otlp.nr-data.net:443
+  --from-literal=NEWRELIC_OTLP_ENDPOINT='https://otlp.nr-data.net:4318'
+  # EU accounts:      https://otlp.eu01.nr-data.net:4318
+  # Staging accounts: https://staging-otlp.nr-data.net:4318
 ```
 
 ### 4b — Apply the collector manifest
 
-Use `otel-collector.yaml` for all deployments.
+`otel-collector.yaml` defines two workloads — apply both:
+
+- **`nr-otel-collector`** (`Deployment`, 1 replica) — Prometheus metrics scrape + OTLP traces receiver.
+  A single replica is fine here; both work over the network, not the local filesystem.
+- **`nr-otel-collector-logs`** (`DaemonSet`, one pod per node) — tails `/var/log/pods` via `hostPath`.
+  This **must** be a DaemonSet: a `Deployment` only sees the local filesystem of whichever single
+  node it lands on, silently dropping every other node's pod logs.
 
 ```bash
-# 1. Set your cluster name in the OTEL_RESOURCE_ATTRIBUTES env var in the Deployment
-#    (see inline comments in the file)
+# 1. Set your cluster name in the OTEL_RESOURCE_ATTRIBUTES env var — appears on BOTH
+#    the Deployment and the DaemonSet (see inline comments in the file)
 # 2. Apply
-kubectl apply -f otel-force-runs/linkerd/otel-collector.yaml
+kubectl apply -f otel-collector.yaml
 kubectl rollout status deployment/nr-otel-collector -n nr-otel
+kubectl rollout status daemonset/nr-otel-collector-logs -n nr-otel
 ```
 
 **Customise before applying:**
 
 | Field | Location | What to set |
 |---|---|---|
-| `OTEL_RESOURCE_ATTRIBUTES` | Deployment env | `k8s.cluster.name=<your-cluster>` — read by `env` resourcedetection detector |
-| `resourcedetection.detectors` | ConfigMap | Optional: add `eks`/`gke`/`azure` for extra cloud attributes (requires IAM on EKS) |
-| Docker volume (optional) | Deployment volumes | Uncomment `/var/lib/docker/containers` if nodes use Docker runtime |
-| `kube-state-metrics` target | ConfigMap scrape_configs | Update namespace/name if KSM is not in `kube-system` |
-| `global.scrape_interval` | ConfigMap `prometheus.config` | Default `30s`. How often the Linkerd `:4191` endpoints are scraped. |
+| `OTEL_RESOURCE_ATTRIBUTES` | Deployment **and** DaemonSet env | `k8s.cluster.name=<your-cluster>` — read by `env` resourcedetection detector |
+| `resourcedetection.detectors` | Either ConfigMap | Optional: add `eks`/`gke`/`azure` for extra cloud attributes (requires IAM on EKS) |
+| Docker volume (optional) | DaemonSet volumes | Uncomment `/var/lib/docker/containers` if nodes use Docker runtime |
+| `kube-state-metrics` target | `nr-otel-config` scrape_configs | Update namespace/name if KSM is not in `kube-system` |
+| `global.scrape_interval` | `nr-otel-config` `prometheus.config` | Default `30s`. How often the Linkerd `:4191` endpoints are scraped. |
 
 > **Note — Linkerd Proxy Traces (Linkerd 2.19+):**
 > Linkerd proxy spans (mesh routing decisions, retries, circuit breaking) are sent to
@@ -207,6 +245,7 @@ kubectl rollout status deployment/nr-otel-collector -n nr-otel
 | `transform/linkerd_component_inject` | Stamps `linkerd_control_plane_component` on all Linkerd proxy spans so the span synthesis rule resolves them to `EXT:LINKERD` — **required** for APM relationships |
 | `transform/linkerd_service_name` | Renames `service.name=linkerd-proxy` → deployment name — **required** to prevent a spurious `linkerd-proxy` APM entity |
 | `metricstransform/apm_compat` | Renames `http.server.request.duration` → `apm.service.transaction.duration` for NR APM compatibility |
+| `filter/drop_unused` | Drops Linkerd proxy metrics with no dashboard/alert value (version/build info, Tokio runtime internals, frame-size histograms, scrape bookkeeping) to reduce ingest volume |
 | `filelog` receiver | Tails Linkerd proxy container logs |
 
 > **Important processors for APM correctness:**
@@ -214,6 +253,24 @@ kubectl rollout status deployment/nr-otel-collector -n nr-otel
 > - `transform/linkerd_service_name` — without this, every Linkerd sidecar creates a spurious `APM:SERVICE(linkerd-proxy)` entity
 > - `metricstransform/apm_compat` — without this, OTel SDK HTTP duration metrics don't appear in NR APM views
 > All three are included in `otel-collector.yaml`.
+
+### Optional — Reduce ingest volume
+
+`filter/drop_unused` in `otel-collector.yaml` drops these Linkerd proxy metrics by default, since
+they have no dashboard or alert value in normal operation:
+
+| Metric(s) | Why it's dropped |
+|---|---|
+| `rustls_info`, `proxy_build_info`, `scrape_series_added` | Static version/build labels — no operational value |
+| `stack_(poll\|create\|drop)_total`, `stack_poll_total_ms` | Rust connection-stack internals — useful only when debugging connection churn |
+| `tokio_rt_*` | Async runtime internals — useful only when debugging proxy CPU starvation |
+| `(inbound\|outbound)_http_*_frame_size_bytes` | HTTP frame-size histograms — large-payload debugging only |
+| `(inbound\|outbound)_tcp_detect_http_duration_seconds` | Fires once per connection — only useful when Linkerd fails to detect HTTP |
+| `outbound_tcp_balancer_queue_*` | TCP backpressure detail — only useful when investigating slow backends |
+| `scrape_duration_seconds`, `scrape_samples_scraped`, `scrape_samples_post_metric_relabeling` | Collector's own scrape bookkeeping |
+
+To re-enable any of these during an investigation, remove the matching condition from
+`filter/drop_unused` and re-apply.
 
 ---
 
@@ -232,6 +289,7 @@ SINCE 5 minutes ago
 
 ```sql
 -- Confirm per-service request rates
+-- Deployed the emojivoto demo instead? You'll see web / emoji / voting in the results.
 SELECT rate(sum(inbound_http_requests_total), 1 minute) AS 'Req/min'
 FROM Metric
 WHERE k8s.cluster.name = '<YOUR_CLUSTER>'
@@ -272,72 +330,39 @@ OTLP receiver.
 
 - OTel Collector deployed (Step 4) — the `otlp` receiver must be reachable
 - Application pods **must be Linkerd-injected** (Step 3)
+- [cert-manager](https://cert-manager.io/docs/installation/) installed — the OTel Operator's
+  admission webhook needs it to issue its own TLS certificate
 
-### Option A — Init Container (no image change)
+> **This section only produces app-level spans.** To also get the Linkerd *proxy* spans
+> (mesh routing hops) merged into the same trace waterfall, complete
+> [Optional — Enable Linkerd Proxy Traces](#optional--enable-linkerd-proxy-traces-linkerd-219) below
+> as well — either before or after this section, in either order.
 
-Add to your existing Deployment:
+> **Cluster-wide naming:** `transform/linkerd_service_name` in the collector makes each meshed
+> deployment's name its APM `service.name`. Use unique deployment names across every cluster
+> reporting to the same New Relic account — a name that also exists in another cluster resolves
+> to the same entity there, so their data gets merged rather than showing up as two separate services.
 
-```yaml
-spec:
-  template:
-    metadata:
-      annotations:
-        linkerd.io/inject: enabled    # ensure injection
-    spec:
-      initContainers:
-        - name: otel-agent-init
-          image: busybox
-          command:
-            - wget
-            - -O
-            - /otel/opentelemetry-javaagent.jar
-            - https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.4.0/opentelemetry-javaagent.jar
-          volumeMounts:
-            - { mountPath: /otel, name: otel-agent }
+### Instrument your application — OTel Operator (zero Deployment changes)
 
-      containers:
-        - name: your-app
-          # existing image, ports, etc.
-          env:
-            - name: JAVA_TOOL_OPTIONS
-              value: "-javaagent:/otel/opentelemetry-javaagent.jar"
-            - name: OTEL_SERVICE_NAME
-              value: "<your-service-name>"
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: "http://nr-otel-collector.nr-otel.svc.cluster.local:4317"
-            - name: OTEL_EXPORTER_OTLP_PROTOCOL
-              value: "grpc"
-            # Keep OTel SDK metrics enabled — http.server.request.duration and JVM metrics
-            # power golden metrics (throughput, response time) on the EXT:SERVICE entity.
-            # The metrics/otlp pipeline in the collector handles these correctly.
-            - name: OTEL_LOGS_EXPORTER
-              value: "none"
-            # Downward API — required for k8sattributes enrichment
-            - name: MY_POD_IP
-              valueFrom: { fieldRef: { fieldPath: status.podIP } }
-            - name: MY_POD_NAME
-              valueFrom: { fieldRef: { fieldPath: metadata.name } }
-            - name: MY_POD_NAMESPACE
-              valueFrom: { fieldRef: { fieldPath: metadata.namespace } }
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: "k8s.pod.ip=$(MY_POD_IP),k8s.pod.name=$(MY_POD_NAME),k8s.namespace.name=$(MY_POD_NAMESPACE),k8s.deployment.name=<your-service-name>"
-          volumeMounts:
-            - { mountPath: /otel, name: otel-agent }
-            # existing mounts ...
+The Operator's admission webhook auto-injects the OTel Java agent into annotated pods —
+no image change, no init container, no manual env vars on your Deployment.
 
-      volumes:
-        - { name: otel-agent, emptyDir: {} }
-        # existing volumes ...
-```
-
-### Option B — OTel Operator (production-recommended, zero Deployment changes)
+**1. Install cert-manager, then the OTel Operator:**
 
 ```bash
-# Install the OpenTelemetry Operator
-kubectl apply -f https://github.com/open-telemetry/opentelemetry-operator/releases/latest/download/opentelemetry-operator.yaml
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
+kubectl -n cert-manager rollout status deployment/cert-manager
+kubectl -n cert-manager rollout status deployment/cert-manager-webhook
+kubectl -n cert-manager rollout status deployment/cert-manager-cainjector
 
-# Create an Instrumentation CR
-kubectl apply -f - <<'EOF'
+kubectl apply -f https://github.com/open-telemetry/opentelemetry-operator/releases/latest/download/opentelemetry-operator.yaml
+kubectl -n opentelemetry-operator-system rollout status deployment/opentelemetry-operator-controller-manager
+```
+
+**2. Create an `Instrumentation` CR:**
+
+```yaml
 apiVersion: opentelemetry.io/v1alpha1
 kind: Instrumentation
 metadata:
@@ -349,14 +374,33 @@ spec:
   propagators:
     - tracecontext
     - baggage
+  # Without this, the SDK defaults to OTLP/HTTP and the export silently fails —
+  # port 4317 is gRPC-only. Confirmed by hitting this exact failure in testing:
+  # the agent's HTTP/1.1 client choked on the gRPC port's HTTP/2 framing.
+  env:
+    - name: OTEL_EXPORTER_OTLP_PROTOCOL
+      value: grpc
   java:
     image: ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-java:latest
-EOF
+```
 
-# Annotate each Deployment — no other changes needed
-kubectl annotate deployment <YOUR_DEPLOYMENT> \
-  instrumentation.opentelemetry.io/inject-java="true" \
-  -n <YOUR_NAMESPACE>
+```bash
+kubectl apply -f instrumentation.yaml
+```
+
+**3. Annotate your Deployment's pod template — no other changes needed:**
+
+```yaml
+spec:
+  template:
+    metadata:
+      annotations:
+        linkerd.io/inject: enabled                              # ensure injection
+        instrumentation.opentelemetry.io/inject-java: "true"     # auto-inject the OTel agent
+```
+
+```bash
+kubectl rollout restart deployment/<YOUR_DEPLOYMENT> -n <YOUR_NAMESPACE>
 ```
 
 ### APM Verification
@@ -390,10 +434,14 @@ SINCE 5 minutes ago LIMIT 1
 > **Note on golden metrics timing:** After deploying the Java agent, allow 5–10 minutes for
 > NR entity synthesis to compute `nr.endpoint` from span `server.address`/`server.port` attributes.
 > Without `nr.endpoint`, the EXT:SERVICE entity shows as client-only with no server-side
-> throughput or response time. The `transform/service_endpoint` processor in the collector
-> sets `server.address` automatically. `OTEL_METRICS_EXPORTER` should NOT be disabled —
-> OTel SDK metrics (`http.server.request.duration`, JVM metrics) are required for complete
-> golden metrics coverage.
+> throughput or response time. `server.address`/`server.port` come from the OTel Java agent's
+> own auto-instrumentation of your app's HTTP server framework — the collector doesn't set them.
+> The agent covers most common frameworks (Servlet, Spring, Vert.x, Netty, and even the JDK's
+> built-in `com.sun.net.httpserver.HttpServer`); if your app uses one it doesn't cover, no
+> server-side span is produced and the entity stays client-only regardless of collector config.
+> `OTEL_METRICS_EXPORTER` should NOT be disabled — OTel SDK metrics
+> (`http.server.request.duration`, JVM metrics) are required for complete golden metrics
+> coverage, and reach APM views via the `metricstransform/apm_compat` processor below.
 
 **What APM adds on top of Basic:**
 
@@ -488,14 +536,18 @@ kubectl exec -n <NS> deployment/<APP> -- env | grep MY_POD_IP
 
 ### No logs in NR
 
-The `filelog` receiver requires:
-1. The collector pod runs as root (`securityContext: runAsUser: 0`) — already set in the manifest
+The `filelog` receiver, running in the **`nr-otel-collector-logs` DaemonSet**, requires:
+1. **A pod on every node.** `kubectl get pods -n nr-otel -l app=nr-otel-collector-logs -o wide` should
+   show one Running pod per node. A `Deployment` here would silently drop every node's logs except
+   the one it happens to land on — this is why logs are a separate DaemonSet, not part of the main
+   `nr-otel-collector` Deployment.
 2. The node's `/var/log/pods` is mounted as a `hostPath` volume — already set in the manifest
 3. On Docker-based runtimes, `/var/log/pods` symlinks into `/var/lib/docker/containers` — uncomment the Docker volume in the manifest if needed
+4. The non-root collector (`runAsUser: 1001`) must be able to read the log files. Observed permissions vary by runtime — adjust `fsGroup`/`runAsUser` on the DaemonSet if reads fail on your cluster.
 
 If logs are missing, verify the collector can read pod log files:
 ```bash
-kubectl exec -n nr-otel deployment/nr-otel-collector -- ls /var/log/pods 2>/dev/null | head -5
+kubectl exec -n nr-otel daemonset/nr-otel-collector-logs -- ls /var/log/pods 2>/dev/null | head -5
 ```
 
 ### Linkerd proxy routing for OTLP gRPC fails
@@ -603,12 +655,15 @@ Reference: [Linkerd Distributed Tracing docs](https://linkerd.io/2.19/tasks/dist
 | File | Purpose |
 |---|---|
 | `otel-collector.yaml` | OTel Collector manifest — metrics, traces, logs |
-| `SETUP.md` | This document |
+| `README.md` | This document |
 
 ---
 
 ## References
 
+- [Linkerd Installing with Helm](https://linkerd.io/2/tasks/install-helm/)
+- [Linkerd Generating your own mTLS root certificates](https://linkerd.io/2/tasks/generate-certificates/)
+- [Linkerd Automatically Rotating Control Plane TLS Credentials](https://linkerd.io/2/tasks/automatically-rotating-control-plane-tls-credentials/)
 - [Linkerd Distributed Tracing (2.19+)](https://linkerd.io/2.19/tasks/distributed-tracing/)
 - [Linkerd External Prometheus scrape config](https://linkerd.io/2.19/tasks/external-prometheus/)
 - [Migrating from Linkerd-Jaeger extension](https://linkerd.io/2.19/tasks/jaeger-extension-migration/)
@@ -622,6 +677,7 @@ Reference: [Linkerd Distributed Tracing docs](https://linkerd.io/2.19/tasks/dist
 | Component | Tested version |
 |---|---|
 | Linkerd | edge-26.x / stable-2.x |
+| Gateway API CRDs | v1.5.1 (for Linkerd 2.20+ — see [compatibility table](https://linkerd.io/2/features/gateway-api/) if running an older Linkerd) |
 | OTel Collector Contrib | 0.119.0+ |
 | OTel Java Agent | 2.4.0+ |
 | kube-state-metrics | 2.x |

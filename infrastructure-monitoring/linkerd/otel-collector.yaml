@@ -1,4 +1,12 @@
-# OTel Collector for Linkerd -> New Relic (Production). See SETUP.md for full setup instructions.
+# OTel Collector for Linkerd -> New Relic (Production). See README.md for full setup instructions.
+#
+# Two workloads:
+#   - Deployment (nr-otel-collector): metrics (Prometheus scrape) + traces (OTLP receiver).
+#     A single replica is fine here — Prometheus scraping and the OTLP receiver both work
+#     over the network, not from the local filesystem.
+#   - DaemonSet (nr-otel-collector-logs): tails /var/log/pods via hostPath. This MUST be a
+#     DaemonSet (one pod per node) — a Deployment only sees the local filesystem of whichever
+#     single node it lands on, silently dropping every other node's pod logs.
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -69,32 +77,10 @@ data:
           grpc: { endpoint: "0.0.0.0:4317" }
           http: { endpoint: "0.0.0.0:4318" }
 
-      # Linkerd 2.19+ proxy traces arrive on port 4317 — no separate receiver needed. See SETUP.md.
-
-      filelog:
-        include: [ /var/log/pods/*/*/*.log ]
-        include_file_path: true
-        start_at: end
-        operators:
-          - type: container
-            add_metadata_from_filepath: true
+      # Linkerd 2.19+ proxy traces arrive on port 4317 — no separate receiver needed. See README.md.
 
     processors:
       memory_limiter: { check_interval: 1s, limit_percentage: 80, spike_limit_percentage: 25 }
-
-      k8sattributes:
-        auth_type: serviceAccount
-        passthrough: false
-        extract:
-          metadata: [ k8s.deployment.name, k8s.node.name ]
-          labels:
-            - { tag_name: linkerd.io/proxy-deployment, key: linkerd.io/proxy-deployment, from: pod }
-            - { tag_name: linkerd_control_plane_ns, key: linkerd.io/control-plane-ns, from: pod }
-            - { tag_name: linkerd_control_plane_component, key: linkerd.io/control-plane-component, from: pod }
-        pod_association:
-          - sources:
-              - { from: resource_attribute, name: k8s.pod.name }
-              - { from: resource_attribute, name: k8s.namespace.name }
 
       # Enrich spans with k8s metadata from pod labels.
       # linkerd_control_plane_ns + linkerd_control_plane_component required for
@@ -111,12 +97,6 @@ data:
         pod_association:
           - sources: [{ from: resource_attribute, name: k8s.pod.ip }]
           - sources: [{ from: connection }]
-
-      filter/onlyproxy:
-        error_mode: ignore
-        logs:
-          log_record:
-            - 'resource.attributes["k8s.container.name"] != "linkerd-proxy" and not IsMatch(resource.attributes["linkerd_control_plane_component"], ".+")'
 
       # Strip service.name from Prometheus metrics to prevent spurious EXT:SERVICE entities
       resource/strip_service:
@@ -155,6 +135,21 @@ data:
             statements:
               - set(description, "")
               - set(unit, "")
+
+      # Drop Linkerd proxy metrics with no dashboard/alert value to reduce ingest volume.
+      # Each condition is commented in the README's "Optional — Reduce ingest volume" section.
+      filter/drop_unused:
+        error_mode: ignore
+        metrics:
+          metric:
+            - 'name == "rustls_info" or name == "proxy_build_info"'
+            - 'name == "scrape_series_added"'
+            - 'IsMatch(name, "stack_(poll|create|drop)_total") or name == "stack_poll_total_ms"'
+            - 'IsMatch(name, "tokio_rt_.*")'
+            - 'IsMatch(name, "(inbound|outbound)_http_.*_frame_size_bytes")'
+            - 'IsMatch(name, "(inbound|outbound)_tcp_detect_http_duration_seconds")'
+            - 'IsMatch(name, "outbound_tcp_balancer_queue_.*")'
+            - 'name == "scrape_duration_seconds" or name == "scrape_samples_scraped" or name == "scrape_samples_post_metric_relabeling"'
 
       # Copy http.server.request.duration → apm.service.transaction.duration so NR APM
       # golden metrics (throughput, response time) appear for OTel-instrumented services
@@ -198,7 +193,7 @@ data:
         # Linkerd proxy + kube-state-metrics: strip service.name to avoid spurious entities
         metrics/prometheus:
           receivers: [prometheus]
-          processors: [memory_limiter, resource/strip_service, resourcedetection, transform/k8s, transform/deployment, transform/metadata_nullify, batch]
+          processors: [memory_limiter, resource/strip_service, resourcedetection, transform/k8s, transform/deployment, transform/metadata_nullify, filter/drop_unused, batch]
           exporters: [otlphttp]
 
         # App OTLP metrics (OTel SDK): preserve service.name for APM golden metrics
@@ -212,11 +207,6 @@ data:
         traces:
           receivers: [otlp]
           processors: [memory_limiter, k8sattributes/traces, resourcedetection, transform/linkerd_component_inject, transform/linkerd_service_name, batch]
-          exporters: [otlphttp]
-
-        logs:
-          receivers: [filelog]
-          processors: [memory_limiter, k8sattributes, resourcedetection, filter/onlyproxy, batch]
           exporters: [otlphttp]
 ---
 apiVersion: apps/v1
@@ -247,22 +237,24 @@ spec:
           ports:
             - { name: otlp-grpc, containerPort: 4317, protocol: TCP }
             - { name: otlp-http, containerPort: 4318, protocol: TCP }
-          # Required to read /var/log/pods (root-owned on most distributions)
-          securityContext: { runAsUser: 0 }
+          # Non-root + read-only rootfs, matching the nr-k8s-otel-collector Helm chart's default
+          # containerSecurityContext.
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
           resources:
             requests: { cpu: 200m, memory: 256Mi }
             limits:   { cpu: 1000m, memory: 1Gi }
           volumeMounts:
             - { name: cfg, mountPath: /etc/otel }
-            # CRI log path — present on ALL runtimes (containerd, Docker, CRI-O)
-            - { name: varlogpods, mountPath: /var/log/pods, readOnly: true }
-            # Docker only: symlink target for /var/log/pods entries.
-            # - { name: varlibdockercontainers, mountPath: /var/lib/docker/containers, readOnly: true }
+            # readOnlyRootFilesystem needs a writable /tmp (the collector doesn't persist state elsewhere).
+            - { name: tmp, mountPath: /tmp }
       volumes:
         - { name: cfg, configMap: { name: nr-otel-config } }
-        - { name: varlogpods, hostPath: { path: /var/log/pods } }
-        # Docker only — uncomment if needed
-        # - { name: varlibdockercontainers, hostPath: { path: /var/lib/docker/containers } }
+        - { name: tmp, emptyDir: {} }
 ---
 # Service — appProtocol: grpc is required so Linkerd routes OTLP gRPC correctly.
 # Without it, Linkerd treats port 4317 as HTTP/1.1 and gRPC export fails.
@@ -274,3 +266,98 @@ spec:
   ports:
     - { name: otlp-grpc, port: 4317, targetPort: 4317, protocol: TCP, appProtocol: grpc }
     - { name: otlp-http, port: 4318, targetPort: 4318, protocol: TCP }
+---
+# ── Logs: separate DaemonSet ────────────────────────────────────────────────
+# Tails /var/log/pods via hostPath. Must run on every node — a Deployment only
+# sees the local filesystem of whichever single node it happens to land on.
+apiVersion: v1
+kind: ConfigMap
+metadata: { name: nr-otel-logs-config, namespace: nr-otel }
+data:
+  config.yaml: |
+    receivers:
+      filelog:
+        include: [ /var/log/pods/*/*/*.log ]
+        include_file_path: true
+        start_at: end
+        operators:
+          - type: container
+            add_metadata_from_filepath: true
+
+    processors:
+      memory_limiter: { check_interval: 1s, limit_percentage: 80, spike_limit_percentage: 25 }
+
+      # Keep only the linkerd-proxy sidecar container's logs.
+      filter/onlyproxy:
+        error_mode: ignore
+        logs:
+          log_record:
+            - 'resource.attributes["k8s.container.name"] != "linkerd-proxy"'
+
+      resourcedetection:
+        detectors: [env]
+        override: false
+
+      batch: {}
+
+    exporters:
+      otlphttp:
+        endpoint: "${env:YOUR_NEWRELIC_OTLP_ENDPOINT}"
+        headers:
+          api-key: "${env:YOUR_NEW_RELIC_LICENSE_KEY}"
+
+    service:
+      pipelines:
+        logs:
+          receivers: [filelog]
+          processors: [memory_limiter, filter/onlyproxy, resourcedetection, batch]
+          exporters: [otlphttp]
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata: { name: nr-otel-collector-logs, namespace: nr-otel }
+spec:
+  selector: { matchLabels: { app: nr-otel-collector-logs } }
+  template:
+    metadata:
+      labels: { app: nr-otel-collector-logs }
+      annotations:
+        linkerd.io/inject: enabled
+    spec:
+      serviceAccountName: nr-otel-collector
+      containers:
+        - name: collector
+          image: otel/opentelemetry-collector-contrib:0.119.0
+          args: ["--config=/etc/otel/config.yaml"]
+          env:
+            - { name: OTEL_RESOURCE_ATTRIBUTES, value: "k8s.cluster.name=<YOUR_CLUSTER_NAME>" }
+            - name: YOUR_NEWRELIC_OTLP_ENDPOINT
+              valueFrom: { secretKeyRef: { name: nr-license, key: NEWRELIC_OTLP_ENDPOINT } }
+            - name: YOUR_NEW_RELIC_LICENSE_KEY
+              valueFrom: { secretKeyRef: { name: nr-license, key: NEW_RELIC_LICENSE_KEY } }
+          # Non-root + read-only rootfs, matching the nr-k8s-otel-collector Helm chart's default
+          # containerSecurityContext. /var/log/pods entries are world-readable (644) on
+          # containerd/CRI-O, so no root is needed to read them.
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits:   { cpu: 500m, memory: 512Mi }
+          volumeMounts:
+            - { name: cfg, mountPath: /etc/otel }
+            # CRI log path — present on ALL runtimes (containerd, Docker, CRI-O)
+            - { name: varlogpods, mountPath: /var/log/pods, readOnly: true }
+            # Docker only: symlink target for /var/log/pods entries.
+            # - { name: varlibdockercontainers, mountPath: /var/lib/docker/containers, readOnly: true }
+            # readOnlyRootFilesystem needs a writable /tmp (the collector doesn't persist state elsewhere).
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - { name: cfg, configMap: { name: nr-otel-logs-config } }
+        - { name: varlogpods, hostPath: { path: /var/log/pods } }
+        - { name: tmp, emptyDir: {} }
+        # Docker only — uncomment if needed
+        # - { name: varlibdockercontainers, hostPath: { path: /var/lib/docker/containers } }
