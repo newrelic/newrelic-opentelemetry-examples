@@ -124,7 +124,8 @@ spec:
                       - name: api-key
                         value: ${env:NEW_RELIC_LICENSE_KEY}
         traces:
-          # Disabled by default due to experimental status (not recommended for production use)
+          # Tracing is disabled by default, as it is experimental and NOT RECOMMENDED FOR PRODUCTION USE
+          # It only supports basic or none, basic enables it.
           level: basic
           sampler:
             parent_based:

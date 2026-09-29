@@ -128,7 +128,7 @@ FACET service.name SINCE 10 minutes ago
 
 Both services' spans/logs/metrics should carry `k8s.pod.name`, `k8s.namespace.name` and `k8s.deployment.name` attributes, added centrally by the Gateway's `k8s_attributes` processor.
 
-You should also see `k8s.cluster.name`, `deployment.environment.name` differ between the two services (`development` for Java (the platform default) and `staging` for Python), and `tags.team=my-team` present only on Python's telemetry and as a New Relic Entity tags (an attribute the platform never set at all):
+You should also see `k8s.cluster.name` being the same for both services, `deployment.environment.name` differ between the two services (`development` for Java (the platform default) and `staging` for Python), and `tags.team=my-team` present only on Python's telemetry and as a New Relic Entity tags (an attribute the platform never set at all):
 
 ```
 FROM Span
@@ -141,3 +141,16 @@ You can also navigate to "New Relic -> All Entities -> Services - OpenTelemetry"
 
 The Gateway pushes its own operational metrics via a separate OTLP path (`service.telemetry` in `03-collector.yaml`), reported under `service.name = 'otel-gateway-collector'`.
 Once you've sent a bit of traffic, check its queue depth and export failures:
+
+```
+FROM Metric
+SELECT latest(otelcol_exporter_queue_size),
+       latest(otelcol_exporter_queue_capacity),
+       latest(otelcol_exporter_in_flight_requests),
+       sum(otelcol_exporter_sent_log_records),
+       sum(otelcol_exporter_sent_metric_points),
+       sum(otelcol_exporter_sent_spans)
+WHERE service.name = 'otel-gateway-collector'
+FACET exporter SINCE 30 minutes ago
+TIMESERIES
+```

@@ -42,29 +42,20 @@ spec:
       # vetted by a platform team
       - name: OTEL_INSTRUMENTATION_COMMON_DEFAULT_ENABLED
         value: "false"
+
       # Enable each instrumentation package individually
       - name: OTEL_INSTRUMENTATION_SERVLET_ENABLED
         value: "true"
       - name: OTEL_INSTRUMENTATION_SPRING_WEBMVC_ENABLED
         value: "true"
-      - name: OTEL_INSTRUMENTATION_LOG4J_APPENDER_ENABLED
+      - name: OTEL_INSTRUMENTATION_TOMCAT_ENABLED
         value: "true"
-      # opentelemetry-api is ITSELF a gated instrumentation name -- without
-      # it, Controller.java's manual tracer.spanBuilder(...)/
-      # meter.counterBuilder(...) calls (its OpenTelemetry bean is
-      # constructor-injected, no @WithSpan) don't bridge to the injected
-      # SDK. opentelemetry-instrumentation-annotations is the docs'
-      # prescribed pairing for this same "disable-all, allowlist the rest"
-      # pattern -- unused by this app today (no @WithSpan), but future-proofs
-      # it. See "Enable manual instrumentation only" at
-      # https://opentelemetry.io/docs/zero-code/java/agent/disable/.
+      - name: OTEL_INSTRUMENTATION_LOGBACK_APPENDER_ENABLED
+        value: "true"
       - name: OTEL_INSTRUMENTATION_OPENTELEMETRY_API_ENABLED
         value: "true"
       - name: OTEL_INSTRUMENTATION_OPENTELEMETRY_INSTRUMENTATION_ANNOTATIONS_ENABLED
         value: "true"
-      # Not tied to a library this app happens to use -- baseline JVM
-      # health (process CPU/memory/GC/thread metrics) any platform team
-      # would want for every Java workload.
       - name: OTEL_INSTRUMENTATION_RUNTIME_TELEMETRY_ENABLED
         value: "true"
 
