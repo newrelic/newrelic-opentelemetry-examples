@@ -9,7 +9,7 @@ spec:
   # NRDOT (New Relic's own OTel Collector distribution) includes
   # all contrib components this config relies on -- confirmed via
   # https://github.com/newrelic/nrdot-collector-releases/blob/main/distributions/nrdot-collector/manifest.yaml.
-  # Check for other components, build own distro, or use contrib distry if required.
+  # Check for other components, build own distro, or use contrib distro if required.
   image: newrelic/nrdot-collector:2.4.3
 
   resources:
@@ -141,7 +141,7 @@ spec:
                       - name: api-key
                         value: ${env:NEW_RELIC_LICENSE_KEY}
 
-        # Resource attributes for the Collector service. This.
+        # Resource attributes for the Collector service.
         resource:
           newrelic.collector_telemetry.version: "0.4.0"
           newrelic.service.type: otel_collector

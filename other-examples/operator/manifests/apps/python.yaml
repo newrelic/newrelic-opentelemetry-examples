@@ -54,7 +54,7 @@ spec:
             - name: OTEL_SERVICE_NAME
               value: getting-started-python
             # Overrides the platform's OTEL_METRIC_EXPORT_INTERVAL default
-            # (30s, set in 04-instrumentation.yaml) with a shorter 30s
+            # (60s, set in 04-instrumentation.yaml) with a shorter 30s
             # interval. Unlike the resource-attributes case above, this
             # needs no special merging.
             - name: OTEL_METRIC_EXPORT_INTERVAL
