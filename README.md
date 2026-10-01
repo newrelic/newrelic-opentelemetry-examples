@@ -7,9 +7,9 @@ Relic. The examples aim to demonstrate the most common configurations we expect
 users to encounter, but isn't an exhaustive set of the ways you can use
 OpenTelemetry with New Relic.
 
-See [OpenTelemetry APM monitoring](#opentelemetry-apm-monitoring), [OpenTelemetry infrastructure monitoring](#opentelemetry-infrastructure-monitoring)
-and [OpenTelemetry other examples](#opentelemetry-other-examples) for an index
-of available examples.
+See [OpenTelemetry APM monitoring](#opentelemetry-apm-monitoring), [OpenTelemetry infrastructure monitoring](#opentelemetry-infrastructure-monitoring),
+[Reference Architectures](#reference-architectures) and [OpenTelemetry other examples](#opentelemetry-other-examples)
+for an index of available examples.
 
 ## OpenTelemetry APM monitoring
 
@@ -45,6 +45,13 @@ OpenTelemetry and New Relic.
 * [Monitor Squid cache manager with Collector](./other-examples/collector/squid)
 * [Monitor StatsD with Collector](./other-examples/collector/statsd)
 
+## Reference Architectures
+
+The [Reference Architectures](./reference-architectures) directory contains examples that back New Relic
+Reference Architectures, soon to be made public under [docs.newrelic.com](https://docs.newrelic.com/).
+
+* [OpenTelemetry Operator: Auto-instrumentation + Collector Gateway](./reference-architectures/operator)
+
 ## OpenTelemetry other examples
 
 OpenTelemetry is a big ecosystem and everything doesn't fit into the goals of
@@ -55,8 +62,6 @@ New Relic.
 
 * Collector
   * [Collector for data processing](./other-examples/collector/nr-config)
-* Kubernetes
-  * [OpenTelemetry Operator: auto-instrumentation + Collector Gateway](./other-examples/operator)
 * Java
   * [OpenTelemetry Agent New Relic Config](./other-examples/java/agent-nr-config)
   * [Micrometer Shim with OTLP Export](./other-examples/java/micrometer-shim)
