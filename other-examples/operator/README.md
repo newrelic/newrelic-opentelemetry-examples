@@ -140,17 +140,28 @@ FACET service.name SINCE 10 minutes ago
 You can also navigate to "New Relic -> All Entities -> Services - OpenTelemetry" to see each app as its own entity, and check the Gateway's own health under "Collector" telemetry once its internal metrics are exported.
 
 The Gateway pushes its own operational metrics via a separate OTLP path (`service.telemetry` in `03-collector.yaml`), reported under `service.name = 'otel-gateway-collector'`.
-Once you've sent a bit of traffic, check its queue depth and export failures:
+Once you've sent a bit of traffic, check some of its exporter metrics:
 
-```
+```sql
 FROM Metric
-SELECT latest(otelcol_exporter_queue_size),
-       latest(otelcol_exporter_queue_capacity),
-       latest(otelcol_exporter_in_flight_requests),
-       sum(otelcol_exporter_sent_log_records),
-       sum(otelcol_exporter_sent_metric_points),
-       sum(otelcol_exporter_sent_spans)
+SELECT latest(otelcol_exporter_queue_size) AS queue_size,
+       latest(otelcol_exporter_queue_capacity) AS queue_capacity,
+       latest(otelcol_exporter_in_flight_requests) AS in_flight_requests
 WHERE service.name = 'otel-gateway-collector'
-FACET exporter SINCE 30 minutes ago
+FACET exporter, data_type
 TIMESERIES
 ```
+
+```sql
+FROM Metric
+SELECT sum(otelcol_exporter_sent_log_records) AS sent_log_records,
+       sum(otelcol_exporter_sent_metric_points) AS sent_metric_points,
+       sum(otelcol_exporter_sent_spans) AS sent_spans
+WHERE service.name = 'otel-gateway-collector'
+FACET exporter
+TIMESERIES
+```
+
+For a full list of metrics, check the [OpenTelemetry Collector documentation](https://opentelemetry.io/docs/collector/internal-telemetry/#lists-of-internal-metrics).
+
+You can also find a curated view of these metrics by navigating to the `otel-gateway-collector` entity.
