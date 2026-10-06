@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Throwaway plain Lambda for exploring New Relic's CloudWatch Metric Streams integration (spike, not an OTel example)
+
+Resources:
+  api:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: api
+
+  function:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: function/
+      Handler: app.handler
+      Runtime: python3.12
+      MemorySize: 256
+      Timeout: 30
+      Events:
+        Example:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /
+            RestApiId: !Ref api
+
+Outputs:
+  apiEndpoint:
+    Description: API Endpoint
+    Value: !Sub "https://${api}.execute-api.${AWS::Region}.amazonaws.com/api/"
