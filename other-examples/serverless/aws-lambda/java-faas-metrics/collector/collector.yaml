@@ -1,0 +1,58 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  filter/invocation_only:
+    error_mode: ignore
+    trace_conditions:
+      - 'span.kind != SPAN_KIND_SERVER'
+
+  transform/rename_faas_metrics:
+    error_mode: ignore
+    metric_statements:
+      - set(metric.name, "faas.invoke_duration") where metric.name == "faas.duration"
+      - set(metric.name, "faas.invocations") where metric.name == "faas.calls"
+
+connectors:
+  spanmetrics:
+    namespace: faas
+    aggregation_temporality: AGGREGATION_TEMPORALITY_DELTA
+    dimensions:
+      - name: faas.trigger
+        default: http
+      - name: cloud.resource_id
+    exclude_dimensions: [span.kind, status.code]
+    histogram:
+      unit: s
+      exponential:
+        max_size: 160
+
+exporters:
+  debug:
+    verbosity: detailed
+  otlphttp/newrelic:
+    endpoint: ${NEW_RELIC_OPENTELEMETRY_ENDPOINT}
+    headers:
+      api-key: ${NEW_RELIC_LICENSE_KEY}
+
+service:
+  telemetry:
+    logs:
+      level: info
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [debug, otlphttp/newrelic]
+    traces/spanmetrics:
+      receivers: [otlp]
+      processors: [filter/invocation_only]
+      exporters: [spanmetrics]
+    metrics:
+      receivers: [spanmetrics]
+      processors: [transform/rename_faas_metrics]
+      exporters: [debug, otlphttp/newrelic]

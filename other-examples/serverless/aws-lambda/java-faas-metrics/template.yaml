@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: FaaS metrics via spanmetrics connector - example Lambda function (local use only)
+
+Parameters:
+  otelLambdaLayerArn:
+    Type: String
+    Description: >
+      ARN of the AWSOpenTelemetryDistroJava Lambda layer for your target region.
+      Look this up from https://aws-otel.github.io/docs/getting-started/lambda#adot-lambda-layer-arns
+      (Java tab) - layer version numbers change frequently.
+  otelExporterOtlpEndpoint:
+    Type: String
+    Description: OTLP endpoint the Lambda sends spans to - the standalone collector from docker-compose.yml.
+    Default: http://collector:4318
+
+Resources:
+  api:
+    Type: AWS::Serverless::Api
+    Properties:
+      OpenApiVersion: 3.0.2
+      StageName: api
+
+  function:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ExampleFunction
+      Description: FaaS metrics via spanmetrics connector - example function
+      Environment:
+        Variables:
+          AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-instrument
+          OTEL_AWS_APPLICATION_SIGNALS_ENABLED: "false"
+          OTEL_EXPORTER_OTLP_ENDPOINT: !Ref otelExporterOtlpEndpoint
+          OTEL_SERVICE_NAME: java-faas-metrics-example
+      Events:
+        Example:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /
+            RestApiId: !Ref api
+      FunctionName: newrelic-example-faas-metrics-java
+      Handler: example.App::handleRequest
+      Layers:
+        - !Ref otelLambdaLayerArn
+      MemorySize: 512
+      Runtime: java21
+      Timeout: 30
+
+Outputs:
+  apiEndpoint:
+    Description: API Endpoint
+    Value: !Sub "https://${api}.execute-api.${AWS::Region}.amazonaws.com/api/"

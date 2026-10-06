@@ -65,6 +65,7 @@ New Relic.
   * AWS Lambda
     * [OpenTelemetry Lambda .NET New Relic Config](./other-examples/serverless/aws-lambda/dotnet)
     * [OpenTelemetry Lambda Java New Relic Config](./other-examples/serverless/aws-lambda/java)
+    * [FaaS Metrics via Spanmetrics Connector (Java)](./other-examples/serverless/aws-lambda/java-faas-metrics)
   * Azure Functions
     * [OpenTelemetry Azure Functions Node New Relic Config](./other-examples/serverless/azure-functions/node/http-trigger-app)
 

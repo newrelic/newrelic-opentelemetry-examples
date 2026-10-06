@@ -1,0 +1,6 @@
+.aws-sam
+.DS_Store
+.idea
+.gradle
+build
+*.csv
