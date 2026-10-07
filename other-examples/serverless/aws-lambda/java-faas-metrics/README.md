@@ -67,6 +67,18 @@ export NEW_RELIC_API_KEY=<your license key here>
 ./deploy-aws.sh
 ```
 
+`NEW_RELIC_OTLP_ENDPOINT` defaults to production (`https://otlp.nr-data.net`)
+if unset. Override it to send to a different NR region or environment, e.g.
+staging:
+
+```bash
+AWS_PROFILE=<your AWS CLI profile> NEW_RELIC_API_KEY=<your staging license key> \
+  NEW_RELIC_OTLP_ENDPOINT=https://staging-otlp.nr-data.net:4318 ./deploy-aws.sh
+```
+
+(A production license key will not authenticate against a staging
+endpoint, or vice versa - make sure the key and endpoint match.)
+
 One command: stands up a throwaway EC2 instance running the same collector
 (a real, reachable collector is required - see **Real-deployment findings**
 below for why), deploys the function + API Gateway pointed at it, and sends
