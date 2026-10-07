@@ -86,38 +86,31 @@ call that fails in the CFN path — to staging instead. See
 
 ## Run
 
-1. Deploy the Lambda function (not managed by Terraform):
+With the environment variables from **Configuration** exported:
 
-   ```bash
-   sam build
-   sam deploy --guided
-   ```
+```bash
+./deploy.sh
+```
 
-   Guided mode prompts for stack name, region, and IAM capability
-   confirmation (needed because SAM creates the function's execution
-   role), and saves your answers to `samconfig.toml` for later deploys.
-   The region you pick here must match `terraform/variables.tf`'s
-   `aws_region` (default `us-east-1`) — see **Configuration**. After it
-   finishes, note the `apiEndpoint` value in the deploy output; `curl`-ing
-   it a few times is the easiest way to generate CloudWatch invocation
-   data once the pipeline below is live.
+One command: deploys the Lambda function + API Gateway (`sam build` +
+`sam deploy`, non-interactive), stands up the Terraform-managed metric
+stream pipeline, and sends a handful of requests so there's immediately
+something to query. Prints the API endpoint and the fingerprint NRQL
+queries from **Findings** below. Fails fast with a clear message if a
+required variable isn't set, rather than silently defaulting.
 
-2. Stand up the metric-stream pipeline:
+When you're done:
 
-   ```bash
-   cd terraform
-   terraform init
-   ```
+```bash
+./teardown.sh
+```
 
-   Then, with the environment variables from **Configuration** exported:
-
-   ```bash
-   ./run-plan.sh    # terraform plan
-   ./run-apply.sh   # terraform apply -auto-approve
-   ```
-
-   Both scripts fail immediately with a clear message if any required
-   variable isn't set, rather than silently defaulting.
+To run the individual steps yourself instead (e.g. to only touch
+Terraform), `deploy.sh` is a straight-line translation of: `sam build &&
+sam deploy --stack-name nr-cloudwatch-metrics-spike --resolve-s3
+--capabilities CAPABILITY_IAM`, then `cd terraform && terraform init &&
+./run-plan.sh && ./run-apply.sh`. The region you deploy the function to
+must match `terraform/variables.tf`'s `aws_region` (default `us-east-1`).
 
 ## Findings: does CloudWatch Metric Streams alone populate New Relic's Lambda UI?
 
