@@ -5,7 +5,7 @@ services:
     volumes:
       - ./collector/collector.yaml:/etc/otelcol-contrib/config.yaml:ro
     environment:
-      - NEW_RELIC_LICENSE_KEY=${NEW_RELIC_LICENSE_KEY}
+      - NEW_RELIC_API_KEY=${NEW_RELIC_API_KEY}
       - NEW_RELIC_OTLP_ENDPOINT=${NEW_RELIC_OTLP_ENDPOINT:-https://otlp.nr-data.net}
     ports:
       - "24317:4317"

@@ -4,11 +4,11 @@
 # validate it in New Relic, then tears everything down on exit.
 #
 # Requires: Docker, SAM CLI, a JDK Gradle can run (JDK 21 recommended; see
-# README prerequisites), and NEW_RELIC_LICENSE_KEY exported.
+# README prerequisites), and NEW_RELIC_API_KEY exported.
 set -euo pipefail
 cd "$(dirname "$0")"
 
-: "${NEW_RELIC_LICENSE_KEY:?Set NEW_RELIC_LICENSE_KEY to your license key.}"
+: "${NEW_RELIC_API_KEY:?Set NEW_RELIC_API_KEY to your license key.}"
 REGION="${AWS_REGION:-us-east-1}"
 REQUEST_COUNT="${REQUEST_COUNT:-100}"
 

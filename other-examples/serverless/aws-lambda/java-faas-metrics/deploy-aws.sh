@@ -12,13 +12,13 @@
 # "Real-deployment findings" section for why each of these is necessary.
 #
 # Requires: AWS CLI configured and authenticated, SAM CLI, and
-# NEW_RELIC_LICENSE_KEY exported. Writes ./.deploy-state (gitignored) so
+# NEW_RELIC_API_KEY exported. Writes ./.deploy-state (gitignored) so
 # teardown-aws.sh can find everything this created.
 set -euo pipefail
 cd "$(dirname "$0")"
 
 : "${AWS_PROFILE:?Set AWS_PROFILE to the AWS CLI profile to deploy into.}"
-: "${NEW_RELIC_LICENSE_KEY:?Set NEW_RELIC_LICENSE_KEY to your license key.}"
+: "${NEW_RELIC_API_KEY:?Set NEW_RELIC_API_KEY to your license key.}"
 REGION="${AWS_REGION:-us-east-1}"
 # Production OTLP endpoint by default; override for a different NR region or
 # a non-production environment (e.g. https://staging-otlp.nr-data.net:4318).
@@ -70,7 +70,7 @@ USER_DATA_FILE="$(mktemp)"
   cat collector/collector.yaml
   echo 'COLLECTOR_EOF'
   echo "docker run -d --name collector --restart always -p 4317:4317 -p 4318:4318 \\"
-  echo "  -e NEW_RELIC_LICENSE_KEY='${NEW_RELIC_LICENSE_KEY}' \\"
+  echo "  -e NEW_RELIC_API_KEY='${NEW_RELIC_API_KEY}' \\"
   echo "  -e NEW_RELIC_OTLP_ENDPOINT='${NEW_RELIC_OTLP_ENDPOINT}' \\"
   echo "  -v /etc/otelcol/config.yaml:/etc/otelcol-contrib/config.yaml:ro \\"
   echo "  otel/opentelemetry-collector-contrib:0.146.0 --config=/etc/otelcol-contrib/config.yaml"

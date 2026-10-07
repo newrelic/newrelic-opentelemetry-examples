@@ -38,7 +38,7 @@ until an actual AWS deployment was tried.
 ### Locally (no AWS deployment)
 
 ```bash
-export NEW_RELIC_LICENSE_KEY=<your license key here>
+export NEW_RELIC_API_KEY=<your license key here>
 ./run-local.sh
 ```
 
@@ -63,7 +63,7 @@ in another terminal.
 
 ```bash
 export AWS_PROFILE=<your AWS CLI profile>
-export NEW_RELIC_LICENSE_KEY=<your license key here>
+export NEW_RELIC_API_KEY=<your license key here>
 ./deploy-aws.sh
 ```
 
