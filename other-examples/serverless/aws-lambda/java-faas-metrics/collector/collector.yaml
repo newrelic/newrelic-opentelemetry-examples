@@ -41,7 +41,7 @@ exporters:
   debug:
     verbosity: detailed
   otlphttp/newrelic:
-    endpoint: ${NEW_RELIC_OPENTELEMETRY_ENDPOINT}
+    endpoint: ${NEW_RELIC_OTLP_ENDPOINT}
     headers:
       api-key: ${NEW_RELIC_LICENSE_KEY}
 
