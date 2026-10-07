@@ -35,36 +35,61 @@ until an actual AWS deployment was tried.
 
 ## Run
 
-1. Look up the current `AWSOpenTelemetryDistroJava` layer ARN for your
-   region from the **Java** tab at
-   https://aws-otel.github.io/docs/getting-started/lambda#adot-lambda-layer-arns.
+### Locally (no AWS deployment)
 
-2. Start the collector:
+```bash
+export NEW_RELIC_LICENSE_KEY=<your license key here>
+./run-local.sh
+```
 
-   ```bash
-   export NEW_RELIC_LICENSE_KEY=<your license key here>
-   docker compose up -d
-   ```
+This does everything in one command: looks up the current ADOT Java layer
+ARN itself, starts the collector, builds and starts the function under
+`sam local`, sends 100 requests, and tears everything down when it exits.
+Set `REQUEST_COUNT=N` to send a different number, or `AWS_REGION=...` for a
+region other than `us-east-1`. It fails loudly (exit code 1, with the
+relevant log tail) rather than silently if anything in the chain doesn't
+actually work — see **Troubleshooting** below for a real failure mode this
+guards against.
 
-3. Build and start the function on the collector's Docker network:
+To run the individual steps yourself instead, read `run-local.sh` — it's a
+straight-line translation of: look up the layer ARN
+(`scripts/get-otel-layer-arn.sh <region>`), `docker compose up -d`,
+`sam build`, `sam local start-api --docker-network faas-metrics-net
+--parameter-overrides "otelLambdaLayerArn=... otelExporterOtlpEndpoint=http://collector:4318"
+--port 3000`, then `./scripts/generate-traffic.sh http://127.0.0.1:3000/ 100 traffic-results.csv`
+in another terminal.
 
-   ```bash
-   JAVA_HOME=/path/to/your/jdk-21 sam build
-   sam local start-api \
-     --docker-network faas-metrics-net \
-     --parameter-overrides "otelLambdaLayerArn=<the ARN from step 1> otelExporterOtlpEndpoint=http://collector:4318" \
-     --port 3000
-   ```
+### Real AWS deployment
 
-4. In another terminal, generate traffic:
+```bash
+export AWS_PROFILE=<your AWS CLI profile>
+export NEW_RELIC_LICENSE_KEY=<your license key here>
+./deploy-aws.sh
+```
 
-   ```bash
-   ./scripts/generate-traffic.sh http://127.0.0.1:3000/ 100 traffic-results.csv
-   ```
+One command: stands up a throwaway EC2 instance running the same collector
+(a real, reachable collector is required - see **Real-deployment findings**
+below for why), deploys the function + API Gateway pointed at it, and sends
+100 requests. State is saved to `.deploy-state` (gitignored) so you don't
+have to track resource IDs yourself. **Security note:** this opens the
+collector's port to `0.0.0.0/0` for the duration - fine for a short-lived
+example, not something to leave running. When you're done:
 
-   This fires 100 requests with randomized `sleepMs` values (10-800ms) and
-   records each call's client-observed duration to `traffic-results.csv` —
-   this is the independent "ground truth" used in validation below.
+```bash
+./teardown-aws.sh
+```
+
+Both scripts fail fast with a clear message if a required variable isn't
+set.
+
+### Troubleshooting
+
+If `run-local.sh` fails with a Docker error like `Credentials store error:
+StoreError('Credentials store docker-credential-gcloud exited with "")`,
+that's a local Docker credential-helper misconfiguration (commonly from
+having Google Cloud's registry helper configured globally), not a problem
+with this example - SAM's local Lambda emulation fails to build its
+container until that's fixed on your machine.
 
 ## Validate in New Relic
 
