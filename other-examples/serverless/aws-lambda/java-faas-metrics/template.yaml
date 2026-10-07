@@ -13,6 +13,15 @@ Parameters:
     Type: String
     Description: OTLP endpoint the Lambda sends spans to - the standalone collector from docker-compose.yml.
     Default: http://collector:4318
+  otelExporterOtlpTracesEndpoint:
+    Type: String
+    Description: >
+      Traces-specific OTLP endpoint, full path including /v1/traces. The ADOT
+      Lambda layer's instrumentation only honors a custom trace destination
+      via this signal-specific variable, not the generic
+      OTEL_EXPORTER_OTLP_ENDPOINT above - without it, traces silently go to
+      the layer's built-in X-Ray UDP exporter instead.
+    Default: http://collector:4318/v1/traces
 
 Resources:
   api:
@@ -31,6 +40,7 @@ Resources:
           AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-instrument
           OTEL_AWS_APPLICATION_SIGNALS_ENABLED: "false"
           OTEL_EXPORTER_OTLP_ENDPOINT: !Ref otelExporterOtlpEndpoint
+          OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: !Ref otelExporterOtlpTracesEndpoint
           OTEL_SERVICE_NAME: java-faas-metrics-example
       Events:
         Example:
@@ -46,6 +56,7 @@ Resources:
       MemorySize: 512
       Runtime: java21
       Timeout: 30
+      Tracing: Active
 
 Outputs:
   apiEndpoint:

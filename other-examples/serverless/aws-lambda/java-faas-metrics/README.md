@@ -4,20 +4,19 @@ This example explores whether the OpenTelemetry Collector's `spanmetricsconnecto
 can generate accurate, non-sampled FaaS metrics — specifically the semantic
 convention `faas.invoke_duration` histogram — from an instrumented AWS Lambda
 function's spans, as an alternative to synthesizing APM metrics from (sampled)
-span data. See the design spec for full context:
-`docs/superpowers/specs/2026-10-02-faas-spanmetrics-lambda-example-design.md`.
+span data.
 
 Tail sampling at the collector is explicitly out of scope here — this
 example only proves out the metric-generation half of that story.
 
-**Verification status:** the collector pipeline (filter → spanmetrics →
-rename, including the `0.0.0.0` receiver binding and delta temporality
-fixes) has been verified end-to-end by sending real OTLP spans directly to
-the collector. The AWS Lambda layer and the live New Relic NRQL validation
-below have *not* been run end-to-end — both require real AWS credentials
-and a real New Relic account that weren't available while building this
-example. Run the steps below yourself before treating the full pipeline,
-Lambda included, as proven.
+**Verification status:** the full pipeline — real AWS Lambda deployment,
+real collector, live New Relic NRQL validation — has been run end-to-end
+successfully. Real traffic produced real `faas.invocations` and
+`faas.invoke_duration` data in New Relic, confirmed via NRQL. Three
+non-obvious real-deployment issues were found and fixed along the way (see
+**Real-deployment findings** below); none of them show up when only running
+locally via `sam local` + docker-compose, which is why they weren't caught
+until an actual AWS deployment was tried.
 
 ## Prerequisites
 
@@ -99,3 +98,39 @@ span data.
 Also confirm the `faas.trigger` and `cloud.resource_id` dimensions appear on
 the metric, and that `span.kind`/`status.code` do not (they're excluded in
 `collector/collector.yaml`).
+
+## Real-deployment findings
+
+Three issues only showed up once this was actually deployed to AWS — none
+of them affect the local `sam local` + docker-compose workflow above, which
+is why `template.yaml`/`collector.yaml` need the fixes described here on
+top of what local testing alone would suggest.
+
+1. **Spans get sampled out by default.** Lambda always injects an X-Ray
+   trace header (`_X_AMZN_TRACE_ID`) on every invocation, which the ADOT
+   agent treats as an incoming remote parent context. With the function's
+   default `TracingConfig` (`PassThrough`), that header's `Sampled` flag is
+   `0`, and OTel's default `ParentBased` sampler correctly honors that by
+   dropping every span — this isn't a bug in the sampler, the spans
+   genuinely aren't root spans from its point of view. Fix: set
+   `Tracing: Active` on the function (`template.yaml`), which makes Lambda
+   itself participate in X-Ray's sampling decision instead of passing
+   through an always-unsampled stub.
+2. **A custom OTLP endpoint needs the signal-specific variable.** Setting
+   `OTEL_EXPORTER_OTLP_ENDPOINT` alone has no effect on trace export for
+   this ADOT layer version — it only honors a custom destination for
+   traces via `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` (full path, including
+   `/v1/traces`). Without it, traces silently go to the layer's built-in
+   X-Ray UDP exporter instead, with no error logged anywhere.
+3. **Delta metrics can appear "back-dated" after idle gaps.** The
+   `spanmetrics` connector sets each delta data point's start time to that
+   series' *previous* flush. New Relic stores a delta point under its
+   start time, not when it was received — so after a quiet gap, a burst of
+   traffic can land under a timestamp from well before it actually
+   happened, and a `SINCE N minutes ago` query run shortly afterward will
+   miss data that's genuinely sitting in NRDB a bit further back. Fixed in
+   `collector/collector.yaml` by explicitly setting
+   `metrics_flush_interval: 60s` and rewriting each point's start time to
+   `time - 60s` via a `transform` statement, so points land close to when
+   they actually happened regardless of how long the preceding idle gap
+   was.

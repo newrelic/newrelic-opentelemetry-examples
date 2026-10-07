@@ -17,11 +17,16 @@ processors:
     metric_statements:
       - set(metric.name, "faas.invoke_duration") where metric.name == "faas.duration"
       - set(metric.name, "faas.invocations") where metric.name == "faas.calls"
+      # spanmetrics sets a delta's start to the series' previous flush, so after idle
+      # gaps New Relic (which timestamps deltas by start time) back-dates the data.
+      # Each flush only holds spans from the last metrics_flush_interval.
+      - set(datapoint.start_time_unix_nano, datapoint.time_unix_nano - 60000000000)
 
 connectors:
   spanmetrics:
     namespace: faas
     aggregation_temporality: AGGREGATION_TEMPORALITY_DELTA
+    metrics_flush_interval: 60s
     dimensions:
       - name: faas.trigger
         default: http
