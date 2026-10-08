@@ -167,21 +167,42 @@ monitored Lambda function, and checking whether New Relic's legacy
 event type) renders real data.
 
 - **It does.** New Relic has a server-side NRQL rewrite layer (internally,
-  `dirac-nrql`'s "data mapping" transforms, config at
-  `infra-aws-lambda.yaml`, owning team BEYOND) that transparently
-  rewrites `ServerlessSample`+`provider.*`-attribute queries — exactly the
-  shape the legacy nerdlet uses — onto the equivalent dimensional `Metric`
-  data (e.g. `provider.invocations.Minimum` → `aws.lambda.Invocations.byFunction`),
+  `dirac-nrql`'s "data mapping" transforms) that transparently rewrites
+  `ServerlessSample`+`provider.*`-attribute queries — exactly the shape the
+  legacy nerdlet uses — onto the equivalent dimensional `Metric` data (e.g.
+  `provider.invocations.Minimum` → `aws.lambda.Invocations.byFunction`),
   under a `dataSelectionPolicy: SelectBoth`. So the "legacy" UI doesn't
   actually need real `ServerlessSample` events to exist; it transparently
   rides on Metric Streams data for any attribute it recognizes. This was
   confirmed with real NRQL evidence (the transform appears in query
   response metadata) against both a production account and this staging
-  account.
+  account, and against the actual implementation (internal repo, not
+  publicly readable):
+  - `dirac/dirac`, `dirac-nrql/src/main/java/com/nr/analytics/nrql/transform/datamapping/DataMappings.java`
+    (commit `c230c727df007241b33d71eb0a25d2b9facaf04b`): line 89 loads
+    `infra-aws-lambda.yaml` as one of the `INFRA_MAPPING_RULES`; the
+    `isSelectBoth()` method is at line 327; the `ServerlessSample`
+    `provider = 'LambdaFunction'`/`'LambdaFunctionAlias'` rewrite mechanism
+    is documented in the Javadoc at lines 1024-1116.
+  - `dirac/dirac`, `dirac-nrql/src/main/resources/com/nr/analytics/nrql/transform/datamapping/config/infra-aws-lambda.yaml`
+    (commit `db661d34b50f9f493ade63a8d0625dcf9fdf867e`): line 1 sets
+    `dataSelectionPolicy: SelectBoth`; lines 129-138 are the exact rule
+    mapping `aws.lambda.Invocations.byFunction` to `provider.invocations.*`
+    (`min: provider.invocations.Minimum` on line 136), confirming the
+    `provider.invocations.Minimum` example above against the real rule,
+    not just the NRQL evidence.
 - **A `count(*)` query against the literal `ServerlessSample` event type is
   *not* a reliable way to tell whether Metric Streams data exists**,
   because of the above — it only tells you whether real polling-sourced
-  events exist, not whether the UI has data to show.
+  events exist, not whether the UI has data to show. `count(*)` doesn't
+  reference a specific `provider.*` attribute, so there's nothing for the
+  rewrite to map it onto, and it will always read `0` here. Querying a
+  `provider.*` attribute the rewrite actually recognizes works correctly
+  instead and confirms the same thing `deploy.sh`'s printed `Metric` query
+  does, e.g.:
+  ```sql
+  FROM ServerlessSample SELECT sum(provider.invocations.Minimum) WHERE provider = 'LambdaFunction' SINCE 30 minutes ago
+  ```
 - **Classic API Polling is a different mechanism entirely.** It actively
   discovers every Lambda function in the account/region via `ListFunctions`
   on a timer, independent of whether anything was ever invoked, and creates
