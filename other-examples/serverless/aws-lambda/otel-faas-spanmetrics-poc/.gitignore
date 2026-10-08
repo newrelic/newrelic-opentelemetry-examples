@@ -1,0 +1,11 @@
+.DS_Store
+.idea
+.gradle
+ExampleFunction/build
+
+# Terraform local state/cache -- contains real AWS account IDs, ARNs and
+# resource IDs. Never commit state.
+terraform/.terraform/
+terraform/terraform.tfstate
+terraform/terraform.tfstate.*
+terraform/*.tfvars
