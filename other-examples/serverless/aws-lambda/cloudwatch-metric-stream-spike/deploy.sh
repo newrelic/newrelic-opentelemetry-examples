@@ -10,7 +10,7 @@ cd "$(dirname "$0")"
 : "${AWS_PROFILE:?Set AWS_PROFILE to the AWS CLI profile for the account you are deploying into.}"
 : "${TF_VAR_newrelic_account_id:?Set TF_VAR_newrelic_account_id to your New Relic staging account ID.}"
 : "${NEW_RELIC_USER_API_KEY:?Set NEW_RELIC_USER_API_KEY (NerdGraph user API key).}"
-: "${NEW_RELIC_LICENSE_KEY:?Set NEW_RELIC_LICENSE_KEY (ingest license key).}"
+: "${NEW_RELIC_API_KEY:?Set NEW_RELIC_API_KEY (ingest license key).}"
 REGION="${AWS_REGION:-us-east-1}"
 STACK_NAME="${STACK_NAME:-nr-cloudwatch-metrics-spike}"
 

@@ -1,9 +1,10 @@
 # Adapted from newrelic/terraform-provider-newrelic's
 # examples/modules/cloud-integrations/aws module, trimmed to PUSH/metric-streams
 # only (no API polling, no auto-discovery/config-recorder -- matching the
-# choices made in the NR wizard before it failed on the staging key), and
-# retargeted at New Relic staging via providers.tf's nerdgraph_api_url plus
-# the staging metrics ingest URL below.
+# choices made in the NR wizard before it failed on the staging key).
+# Targets whichever New Relic environment variables.tf's newrelic_region
+# selects (default "Staging") via providers.tf's `region` argument, plus
+# the matching metrics ingest URL below.
 
 data "aws_iam_policy_document" "newrelic_assume_policy" {
   statement {
@@ -32,7 +33,7 @@ data "aws_iam_policy_document" "newrelic_assume_policy" {
 
 resource "aws_iam_role" "newrelic_aws_role" {
   name               = "NewRelicInfrastructure-Integrations-${var.name}"
-  description        = "New Relic Cloud integration role (staging spike)"
+  description        = "New Relic Cloud integration role"
   assume_role_policy = data.aws_iam_policy_document.newrelic_assume_policy.json
 }
 
@@ -73,7 +74,8 @@ resource "aws_iam_role_policy_attachment" "newrelic_aws_policy_attach" {
 # The account-link call itself -- this is the step the CloudFormation
 # template's GraphqlAPICallFunction Lambda could not do against staging
 # (hardcoded to prod/EU/JP). Same resource type as the standard prod module;
-# only the provider's nerdgraph_api_url makes this target staging.
+# only providers.tf's `region` makes this target whatever environment
+# newrelic_region selects.
 resource "newrelic_cloud_aws_link_account" "newrelic_cloud_integration_push" {
   account_id             = var.newrelic_account_id
   arn                    = aws_iam_role.newrelic_aws_role.arn
@@ -120,22 +122,37 @@ resource "aws_iam_role" "firehose_newrelic_role" {
 EOF
 }
 
-# Confirmed via an internal Slack thread showing another engineer's real,
-# working staging Firehose destination config pointed at this exact URL.
 locals {
-  newrelic_staging_metrics_url = "https://staging-aws-api.newrelic.com/cloudwatch-metrics/v1"
+  # US/EU/JP confirmed via New Relic's manual AWS-integration docs
+  # (docs.newrelic.com/docs/infrastructure/amazon-integrations/
+  # aws-integration-for-metrics/manual, "HTTP endpoint URL" step). Staging
+  # confirmed via an internal Slack thread showing another engineer's real,
+  # working staging Firehose destination config pointed at this exact URL --
+  # see ../README.md. GOV/FEDRAMP have no confirmed default here; set
+  # var.newrelic_metrics_ingest_url explicitly if using either.
+  default_metrics_ingest_urls = {
+    US      = "https://aws-api.newrelic.com/cloudwatch-metrics/v1"
+    EU      = "https://aws-api.eu01.nr-data.net/cloudwatch-metrics/v1"
+    JP      = "https://aws-api.jp.nr-data.net/cloudwatch-metrics/v1"
+    Staging = "https://staging-aws-api.newrelic.com/cloudwatch-metrics/v1"
+  }
+  metrics_ingest_url = (
+    var.newrelic_metrics_ingest_url != "" ?
+    var.newrelic_metrics_ingest_url :
+    local.default_metrics_ingest_urls[var.newrelic_region]
+  )
 }
 
 resource "aws_kinesis_firehose_delivery_stream" "newrelic_firehose_stream" {
   name        = "newrelic_firehose_stream_${var.name}"
   destination = "http_endpoint"
   http_endpoint_configuration {
-    url    = local.newrelic_staging_metrics_url
-    name   = "New Relic Staging - ${var.name}"
-    # Reuses the staging Ingest license key already in this environment
-    # (NEW_RELIC_LICENSE_KEY), rather than minting a new one via the
+    url  = local.metrics_ingest_url
+    name = "New Relic (${var.newrelic_region}) - ${var.name}"
+    # Reuses the Ingest license key already in this environment
+    # (NEW_RELIC_API_KEY), rather than minting a new one via the
     # newrelic_api_access_key resource -- one fewer NerdGraph-dependent
-    # resource to worry about getting right against staging.
+    # resource to worry about getting right.
     access_key         = var.newrelic_license_key
     buffering_size     = 1
     buffering_interval = 60

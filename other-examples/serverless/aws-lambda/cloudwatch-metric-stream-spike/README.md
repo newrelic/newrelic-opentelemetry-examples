@@ -8,20 +8,25 @@ integration. No separate spec/plan was written for this one (classified
 as a spike, not an architectural change).
 
 **Internal-only content warning:** `terraform/` embeds New Relic's internal
-staging URLs (`staging-api.newrelic.com`, `staging-aws-api.newrelic.com`)
-discovered via internal Slack/Confluence search, not public docs. Do not
-push this directory to a public remote.
+staging ingest URL (`staging-aws-api.newrelic.com`) discovered via internal
+Slack search, not public docs. (The staging NerdGraph endpoint,
+`staging-api.newrelic.com`, is also used here, but that one's sourced from
+the public, open-source `newrelic-client-go` library -- see **Why
+Terraform** below -- so it's not itself internal-only.) Do not push this
+directory to a public remote.
 
 ## Layout
 
 - `function/`, `template.yaml` — a plain (non-OTel) Python Lambda, deployed
   via SAM as a CloudFormation stack. Not deployed by Terraform; see
   **Run** below for the SAM deploy step.
-- `terraform/` — links an AWS account to a New Relic **staging** account
-  and stands up a CloudWatch Metric Stream → Kinesis Firehose → New Relic
-  pipeline for `AWS/Lambda` metrics, PUSH mode only (no API polling, no
-  auto-discovery). No account IDs, profile names, or credentials are
-  hardcoded anywhere in this directory — see **Configuration** below.
+- `terraform/` — links an AWS account to a New Relic account and stands up
+  a CloudWatch Metric Stream → Kinesis Firehose → New Relic pipeline for
+  `AWS/Lambda` metrics, PUSH mode only (no API polling, no
+  auto-discovery). Defaults to New Relic's **staging** environment (this
+  directory's original, still-primary use case) but works against any
+  environment — see **Configuration** below. No account IDs, profile
+  names, or credentials are hardcoded anywhere in this directory.
 
 ## Configuration
 
@@ -30,10 +35,25 @@ or New Relic account. Before running anything under `terraform/`, export:
 
 ```bash
 export AWS_PROFILE=<your AWS CLI profile for the account you're deploying into>
-export TF_VAR_newrelic_account_id=<your New Relic staging account ID>
+export TF_VAR_newrelic_account_id=<your New Relic account ID>
 export NEW_RELIC_USER_API_KEY=<a NerdGraph user API key for that account>
-export NEW_RELIC_LICENSE_KEY=<an ingest license key for that account>
+export NEW_RELIC_API_KEY=<an ingest license key for that account>
 ```
+
+That's enough to run against **staging** — `terraform/variables.tf`'s
+`newrelic_region` defaults to `"Staging"`, matching this directory's
+original purpose. To target a different New Relic environment instead,
+also export:
+
+```bash
+export TF_VAR_newrelic_region=US   # or EU, JP, GOV, FEDRAMP
+```
+
+(These are the exact values the `newrelic` provider's own `region`
+argument accepts — see **Why Terraform** below.) `US`/`EU`/`JP` already
+have a confirmed default metrics-ingest URL baked in; `GOV`/`FEDRAMP` don't,
+so you'd also need `export TF_VAR_newrelic_metrics_ingest_url=<url>` for
+those (see `terraform/variables.tf`).
 
 The Lambda function's AWS region must match `terraform/variables.tf`'s
 `aws_region` (default `us-east-1`) — CloudWatch Metric Streams are
@@ -51,22 +71,30 @@ template in NR staging... You can link account by using the other two
 methods - 'Manually integrate your AWS account' and 'Automate with
 Terraform'."
 
-Terraform works here because the `newrelic` provider has an explicit,
-tested `nerdgraph_api_url` override (confirmed via the provider's own
-integration tests, which use it to point at EU/JP endpoints) that
-redirects every NerdGraph-backed resource — including the account-link
-call that fails in the CFN path — to staging instead. See
+Terraform works here because the `newrelic` provider's `region` argument
+natively accepts `"Staging"` as a value (confirmed via
+`newrelic-client-go`'s `pkg/region/region_constants.go`, which maps it to
+`https://staging-api.newrelic.com/graphql` — the same, officially-validated
+field the provider's schema checks against, not a hand-rolled override)
+and that redirects every NerdGraph-backed resource — including the
+account-link call that fails in the CFN path — to staging instead. See
 `terraform/providers.tf`.
 
 ## Key facts and their sources
 
 - Staging NerdGraph endpoint `https://staging-api.newrelic.com/graphql`:
-  confirmed in an internal Confluence doc on NerdGraph auth
-  (unrelated to this task — found via internal search, not guessed).
+  confirmed in `newrelic-client-go`'s public, open-source
+  `pkg/region/region_constants.go` (the `Staging` region constant) — not
+  internal-only, despite the earlier assumption that it was (see git
+  history for this file).
 - Staging metrics ingest endpoint
   `https://staging-aws-api.newrelic.com/cloudwatch-metrics/v1`: confirmed
   via another engineer's real, working staging Firehose config pasted in
-  an internal Slack thread.
+  an internal Slack thread. (The production US/EU/JP equivalents —
+  `https://aws-api.newrelic.com/cloudwatch-metrics/v1`,
+  `https://aws-api.eu01.nr-data.net/cloudwatch-metrics/v1`,
+  `https://aws-api.jp.nr-data.net/cloudwatch-metrics/v1` — are confirmed
+  via New Relic's public manual-AWS-integration docs instead.)
 - IAM trust principal `754728514883` (New Relic's AWS account for
   assuming the integration role): confirmed for **production** via the
   public `terraform-provider-newrelic` example module. **Not**
