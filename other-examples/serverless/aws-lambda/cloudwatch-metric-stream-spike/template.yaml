@@ -11,6 +11,12 @@ Resources:
   function:
     Type: AWS::Serverless::Function
     Properties:
+      # Explicit, stack-name-derived name (rather than letting CloudFormation
+      # auto-generate one with a random suffix) so repeated teardown.sh +
+      # deploy.sh cycles reuse the same Lambda function name -- see
+      # README.md's entity-attribution finding for why a stable name across
+      # cycles matters for New Relic's entity tracking.
+      FunctionName: !Sub "${AWS::StackName}-function"
       CodeUri: function/
       Handler: app.handler
       Runtime: python3.12
