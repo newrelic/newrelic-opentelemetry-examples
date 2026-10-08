@@ -201,8 +201,15 @@ event type) renders real data.
   instead and confirms the same thing `deploy.sh`'s printed `Metric` query
   does, e.g.:
   ```sql
-  FROM ServerlessSample SELECT sum(provider.invocations.Minimum) WHERE provider = 'LambdaFunction' SINCE 30 minutes ago
+  FROM ServerlessSample SELECT sum(provider.invocations.Sum) WHERE provider = 'LambdaFunction' SINCE 30 minutes ago
   ```
+  Use `.Sum` (or `.SampleCount`), not `.Minimum`/`.Maximum` — CloudWatch
+  records each invocation as a bare `1`, so `.Minimum` and `.Maximum` are
+  always `1` for any minute with *any* invocations, regardless of how many.
+  A single-invocation test can't catch this, because `.Minimum == .Sum ==
+  1` by coincidence when there's exactly one — confirmed live by sending a
+  real batch of 80 invocations: `.Sum` correctly read `73` and `7` across
+  the two minutes they landed in, while `.Minimum` read `1` and `1`.
 - **Classic API Polling is a different mechanism entirely.** It actively
   discovers every Lambda function in the account/region via `ListFunctions`
   on a timer, independent of whether anything was ever invoked, and creates
