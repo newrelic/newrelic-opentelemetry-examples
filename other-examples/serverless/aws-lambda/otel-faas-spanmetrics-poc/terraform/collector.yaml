@@ -1,0 +1,84 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  filter/invocation_only:
+    error_mode: ignore
+    trace_conditions:
+      # span.kind alone isn't FaaS-specific - a shared collector could see
+      # SERVER spans from other, non-Lambda services. faas.name is a
+      # resource attribute (not span attribute - note the "resource."
+      # prefix, a different OTTL path) at Required level in the FaaS
+      # semantic conventions, so it's a more reliably-populated marker of
+      # "this is actually a FaaS invocation" than relying on span-level
+      # attributes like faas.trigger, which aren't yet consistently
+      # implemented across every language's Lambda instrumentation.
+      - 'span.kind != SPAN_KIND_SERVER or resource.attributes["faas.name"] == nil'
+
+  # Only applied to the `traces` pipeline below, not `traces/spanmetrics` -
+  # spanmetrics must see every span to produce accurate, non-sampled
+  # faas.invocations/faas.invoke_duration. Sampling at the SDK level (or
+  # here, before the spanmetrics connector) would make those metrics just
+  # as approximate as the sampled span data they're meant to improve on.
+  # This only reduces the volume of raw spans kept as trace data in NR,
+  # simulating what a real deployment would actually do.
+  probabilistic_sampler:
+    sampling_percentage: ${TRACE_SAMPLING_PERCENTAGE}
+
+  transform/rename_faas_metrics:
+    error_mode: ignore
+    metric_statements:
+      - set(metric.name, "faas.invoke_duration") where metric.name == "faas.duration"
+      - set(metric.name, "faas.invocations") where metric.name == "faas.calls"
+      # spanmetrics sets a delta's start to the series' previous flush, so after idle
+      # gaps New Relic (which timestamps deltas by start time) back-dates the data.
+      # Each flush only holds spans from the last metrics_flush_interval.
+      - set(datapoint.start_time_unix_nano, datapoint.time_unix_nano - 60000000000)
+
+connectors:
+  spanmetrics:
+    namespace: faas
+    aggregation_temporality: AGGREGATION_TEMPORALITY_DELTA
+    metrics_flush_interval: 60s
+    dimensions:
+      - name: faas.trigger
+        default: http
+      - name: cloud.resource_id
+    exclude_dimensions: [span.kind, status.code]
+    histogram:
+      unit: s
+      exponential:
+        max_size: 160
+
+exporters:
+  # basic, not detailed: this collector runs under constant load until
+  # teardown, and detailed output of every span fills the instance's disk.
+  debug:
+    verbosity: basic
+  otlphttp/newrelic:
+    endpoint: ${NEW_RELIC_OTLP_ENDPOINT}
+    headers:
+      api-key: ${NEW_RELIC_API_KEY}
+
+service:
+  telemetry:
+    logs:
+      level: info
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [probabilistic_sampler]
+      exporters: [debug, otlphttp/newrelic]
+    traces/spanmetrics:
+      receivers: [otlp]
+      processors: [filter/invocation_only]
+      exporters: [spanmetrics]
+    metrics:
+      receivers: [spanmetrics]
+      processors: [transform/rename_faas_metrics]
+      exporters: [debug, otlphttp/newrelic]

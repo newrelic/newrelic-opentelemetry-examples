@@ -1,0 +1,61 @@
+#!/bin/bash
+# Rendered by collector.tf. Template variables use Terraform's $${...}
+# syntax; shell variables here are written without braces to avoid clashing.
+set -euo pipefail
+
+dnf install -y docker
+systemctl enable --now docker
+
+mkdir -p /etc/otelcol
+cat > /etc/otelcol/config.yaml <<'COLLECTOR_EOF'
+${collector_config}
+COLLECTOR_EOF
+
+docker run -d --name collector --restart always \
+  -p 4317:4317 -p 4318:4318 \
+  --log-opt max-size=10m --log-opt max-file=3 \
+  -e NEW_RELIC_API_KEY='${newrelic_license_key}' \
+  -e NEW_RELIC_OTLP_ENDPOINT='${newrelic_otlp_endpoint}' \
+  -e TRACE_SAMPLING_PERCENTAGE='${trace_sampling_percentage}' \
+  -v /etc/otelcol/config.yaml:/etc/otelcol-contrib/config.yaml:ro \
+  otel/opentelemetry-collector-contrib:0.146.0 --config=/etc/otelcol-contrib/config.yaml
+
+# Constant load until the instance is destroyed. Each request asks the
+# function to sleep 10-800ms (App.MIN/MAX_SLEEP_MILLIS) so the duration
+# histograms have some spread. One line per request lands in the journal:
+#   journalctl -u loadgen -f
+#
+# The API URL comes from SSM rather than this template (see collector.tf for
+# why), and isn't published until Terraform has created the API.
+cat > /usr/local/bin/loadgen.sh <<'LOADGEN_EOF'
+#!/bin/bash
+until api_url=$(aws ssm get-parameter --region ${aws_region} --name ${api_url_parameter} --query Parameter.Value --output text 2>/dev/null); do
+  echo "waiting for ${api_url_parameter}"
+  sleep 10
+done
+echo "sending load to $api_url"
+while true; do
+  sleep_ms=$(( (RANDOM % 791) + 10 ))
+  result=$(curl -s -o /dev/null --max-time 35 -w '%%{http_code} %%{time_total}s' "$api_url?sleepMs=$sleep_ms" || echo "curl-failed")
+  echo "sleepMs=$sleep_ms $result"
+  sleep ${load_interval_seconds}
+done
+LOADGEN_EOF
+chmod +x /usr/local/bin/loadgen.sh
+
+cat > /etc/systemd/system/loadgen.service <<'UNIT_EOF'
+[Unit]
+Description=Constant load against the ${api_url_parameter} API
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/loadgen.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+UNIT_EOF
+
+systemctl daemon-reload
+systemctl enable --now loadgen
