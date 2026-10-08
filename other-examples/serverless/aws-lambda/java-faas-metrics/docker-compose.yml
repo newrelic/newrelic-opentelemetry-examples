@@ -7,6 +7,12 @@ services:
     environment:
       - NEW_RELIC_API_KEY=${NEW_RELIC_API_KEY}
       - NEW_RELIC_OTLP_ENDPOINT=${NEW_RELIC_OTLP_ENDPOINT:-https://otlp.nr-data.net}
+      # % of raw spans kept as trace data in New Relic - simulates a
+      # realistic deployment. Does not affect faas.invocations/
+      # faas.invoke_duration, which are always derived from 100% of spans
+      # (see collector.yaml's probabilistic_sampler comment for why that
+      # separation matters). Unset or 0 means no spans get through at all.
+      - TRACE_SAMPLING_PERCENTAGE=${TRACE_SAMPLING_PERCENTAGE:-10}
     ports:
       - "24317:4317"
       - "24318:4318"

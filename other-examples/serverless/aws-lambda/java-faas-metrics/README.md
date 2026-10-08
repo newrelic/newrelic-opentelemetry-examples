@@ -4,7 +4,9 @@ This example explores whether the OpenTelemetry Collector's `spanmetricsconnecto
 can generate accurate, non-sampled FaaS metrics — specifically the semantic
 convention `faas.invoke_duration` histogram — from an instrumented AWS Lambda
 function's spans, as an alternative to synthesizing APM metrics from (sampled)
-span data.
+span data. To make that comparison realistic, the collector also simulates a
+real deployment's head/probabilistic trace sampling rather than keeping 100%
+of spans as trace data — see **Design notes** below.
 
 Tail sampling at the collector is explicitly out of scope here — this
 example only proves out the metric-generation half of that story.
@@ -45,8 +47,10 @@ export NEW_RELIC_API_KEY=<your license key here>
 This does everything in one command: looks up the current ADOT Java layer
 ARN itself, starts the collector, builds and starts the function under
 `sam local`, sends 100 requests, and tears everything down when it exits.
-Set `REQUEST_COUNT=N` to send a different number, or `AWS_REGION=...` for a
-region other than `us-east-1`. It fails loudly (exit code 1, with the
+Set `REQUEST_COUNT=N` to send a different number, `AWS_REGION=...` for a
+region other than `us-east-1`, or `TRACE_SAMPLING_PERCENTAGE=N` (default
+`10`) for a different percentage of spans kept as trace data — see **Design
+notes** below. It fails loudly (exit code 1, with the
 relevant log tail) rather than silently if anything in the chain doesn't
 actually work — see **Troubleshooting** below for a real failure mode this
 guards against.
@@ -79,6 +83,9 @@ AWS_PROFILE=<your AWS CLI profile> NEW_RELIC_API_KEY=<your staging license key> 
 (A production license key will not authenticate against a staging
 endpoint, or vice versa - make sure the key and endpoint match.)
 
+`TRACE_SAMPLING_PERCENTAGE` similarly defaults to `10` and can be overridden
+the same way — see **Design notes** below for what it controls.
+
 One command: stands up a throwaway EC2 instance running the same collector
 (a real, reachable collector is required - see **Real-deployment findings**
 below for why), deploys the function + API Gateway pointed at it, and sends
@@ -103,6 +110,33 @@ having Google Cloud's registry helper configured globally), not a problem
 with this example - SAM's local Lambda emulation fails to build its
 container until that's fixed on your machine.
 
+## Design notes
+
+**Why only FaaS-invocation spans count toward the metric.** Per the FaaS
+semantic conventions, a span representing a function invocation is of kind
+`SERVER` — but `span.kind == SERVER` alone isn't FaaS-specific. A collector
+shared across multiple services (a realistic deployment shape) could see
+`SERVER` spans from non-Lambda services too, and those shouldn't count
+toward `faas.invocations`/`faas.invoke_duration`. `collector/collector.yaml`'s
+`filter/invocation_only` processor narrows this with
+`resource.attributes["faas.name"] == nil` — `faas.name` is a *resource*
+attribute (not a span attribute, hence the `resource.` OTTL path) at
+`Required` level in the FaaS semantic conventions, which makes it a more
+reliably-populated marker of "this is actually a FaaS invocation" than
+span-level attributes like `faas.trigger`, which aren't yet consistently
+implemented across every language's Lambda instrumentation.
+
+**Why trace sampling doesn't affect the metrics.** A real deployment
+wouldn't keep 100% of spans as trace data, so `collector/collector.yaml`
+applies a `probabilistic_sampler` (`TRACE_SAMPLING_PERCENTAGE`, default
+`10`) to simulate that. It's wired into the `traces` pipeline only, never
+`traces/spanmetrics` — the `spanmetrics` connector needs to see every span
+to produce accurate, non-sampled `faas.invocations`/`faas.invoke_duration`.
+Sampling before the connector (or at the SDK level, e.g.
+`OTEL_TRACES_SAMPLER=traceidratio`) would make those metrics just as
+approximate as the sampled span data they're meant to improve on, which
+would defeat the point of this example.
+
 ## Validate in New Relic
 
 Wait about a minute (the collector's default `metrics_flush_interval` is
@@ -111,11 +145,20 @@ Wait about a minute (the collector's default `metrics_flush_interval` is
 ```sql
 FROM Metric SELECT sum(faas.invocations) WHERE service.name = 'java-faas-metrics-example' SINCE 10 minutes ago
 ```
-Expected: equals the number of requests you sent (e.g. 100). Use `sum()`,
-not `count()` — `count()` on a Metric data type counts data points
+Expected: equals the number of requests you sent (e.g. 100), regardless of
+`TRACE_SAMPLING_PERCENTAGE` — the `spanmetrics` connector sits ahead of the
+sampler (see **Design notes** above) and always sees every span. Use
+`sum()`, not `count()` — `count()` on a Metric data type counts data points
 (roughly one per flush per series), not the counter's own value.
 `count(faas.invoke_duration)` (counting histogram observations) should
 agree with it as a cross-check.
+
+```sql
+FROM Span SELECT count(*) WHERE service.name = 'java-faas-metrics-example' AND span.kind = 'server' SINCE 10 minutes ago
+```
+Expected: roughly `TRACE_SAMPLING_PERCENTAGE`% of the requests you sent
+(~10% by default) — this confirms the sampler is actually dropping spans
+before they're stored as trace data, the way a real deployment would.
 
 ```sql
 FROM Metric SELECT percentile(faas.invoke_duration, 50, 95, 99) WHERE service.name = 'java-faas-metrics-example' SINCE 10 minutes ago
@@ -126,11 +169,16 @@ FROM Span SELECT percentile(duration.ms, 50, 95, 99) WHERE service.name = 'java-
 ```
 (Note: `faas.invoke_duration` is in seconds; multiply by 1000 to compare directly against `duration.ms`.)
 
-**Success criteria:** the invocation count matches exactly, and the
-`faas.invoke_duration` percentiles are within ~5% of the span-derived
-percentiles for the same window — this is the actual proof that the
-collector-generated metric faithfully reflects the underlying (unsampled)
-span data.
+**With the default 10% sampling, expect these two percentile sets to
+diverge — that's the point.** `faas.invoke_duration` is derived from every
+invocation, so it's the ground truth; the `Span`-derived percentiles are now
+a noisy estimate from a 10% sample, same as a real customer would be stuck
+with if they tried to synthesize APM-style percentiles from sampled trace
+data alone. The divergence should shrink as `REQUEST_COUNT` grows. To
+reproduce the original, apples-to-apples claim this example set out to
+prove — that the metric faithfully reflects the underlying span data when
+nothing is sampled away — rerun with `TRACE_SAMPLING_PERCENTAGE=100`; the
+two percentile sets should then land within ~5% of each other.
 
 Also confirm the `faas.trigger` and `cloud.resource_id` dimensions appear on
 the metric, and that `span.kind`/`status.code` do not (they're excluded in

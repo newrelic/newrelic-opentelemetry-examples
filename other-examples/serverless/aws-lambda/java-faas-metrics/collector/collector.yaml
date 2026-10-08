@@ -10,7 +10,25 @@ processors:
   filter/invocation_only:
     error_mode: ignore
     trace_conditions:
-      - 'span.kind != SPAN_KIND_SERVER'
+      # span.kind alone isn't FaaS-specific - a shared collector could see
+      # SERVER spans from other, non-Lambda services. faas.name is a
+      # resource attribute (not span attribute - note the "resource."
+      # prefix, a different OTTL path) at Required level in the FaaS
+      # semantic conventions, so it's a more reliably-populated marker of
+      # "this is actually a FaaS invocation" than relying on span-level
+      # attributes like faas.trigger, which aren't yet consistently
+      # implemented across every language's Lambda instrumentation.
+      - 'span.kind != SPAN_KIND_SERVER or resource.attributes["faas.name"] == nil'
+
+  # Only applied to the `traces` pipeline below, not `traces/spanmetrics` -
+  # spanmetrics must see every span to produce accurate, non-sampled
+  # faas.invocations/faas.invoke_duration. Sampling at the SDK level (or
+  # here, before the spanmetrics connector) would make those metrics just
+  # as approximate as the sampled span data they're meant to improve on.
+  # This only reduces the volume of raw spans kept as trace data in NR,
+  # simulating what a real deployment would actually do.
+  probabilistic_sampler:
+    sampling_percentage: ${TRACE_SAMPLING_PERCENTAGE}
 
   transform/rename_faas_metrics:
     error_mode: ignore
@@ -52,6 +70,7 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
+      processors: [probabilistic_sampler]
       exporters: [debug, otlphttp/newrelic]
     traces/spanmetrics:
       receivers: [otlp]

@@ -23,6 +23,10 @@ REGION="${AWS_REGION:-us-east-1}"
 # Production OTLP endpoint by default; override for a different NR region or
 # a non-production environment (e.g. https://staging-otlp.nr-data.net:4318).
 NEW_RELIC_OTLP_ENDPOINT="${NEW_RELIC_OTLP_ENDPOINT:-https://otlp.nr-data.net}"
+# % of raw spans kept as trace data in New Relic - see collector.yaml's
+# probabilistic_sampler comment. Does not affect faas.invocations/
+# faas.invoke_duration. Unset or 0 means no spans get through at all.
+TRACE_SAMPLING_PERCENTAGE="${TRACE_SAMPLING_PERCENTAGE:-10}"
 REQUEST_COUNT="${REQUEST_COUNT:-100}"
 RUN_ID="$(date +%s)-$RANDOM"
 STACK_NAME="nr-java-faas-metrics-${RUN_ID}"
@@ -72,6 +76,7 @@ USER_DATA_FILE="$(mktemp)"
   echo "docker run -d --name collector --restart always -p 4317:4317 -p 4318:4318 \\"
   echo "  -e NEW_RELIC_API_KEY='${NEW_RELIC_API_KEY}' \\"
   echo "  -e NEW_RELIC_OTLP_ENDPOINT='${NEW_RELIC_OTLP_ENDPOINT}' \\"
+  echo "  -e TRACE_SAMPLING_PERCENTAGE='${TRACE_SAMPLING_PERCENTAGE}' \\"
   echo "  -v /etc/otelcol/config.yaml:/etc/otelcol-contrib/config.yaml:ro \\"
   echo "  otel/opentelemetry-collector-contrib:0.146.0 --config=/etc/otelcol-contrib/config.yaml"
 } > "$USER_DATA_FILE"
