@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: otel-platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: otel-apps
+  # instrumentation.opentelemetry.io/inject-<lang> annotations are also
+  # valid on a Namespace, not just a Pod (see manifests/apps/*.yaml for the
+  # per-Pod form used here) -- every Pod in the namespace would then inherit
+  # that injection unless it explicitly opts out with its own annotation.
