@@ -122,10 +122,27 @@ With the environment variables from **Configuration** exported:
 
 One command: deploys the Lambda function + API Gateway (`sam build` +
 `sam deploy`, non-interactive), stands up the Terraform-managed metric
-stream pipeline, and sends a handful of requests so there's immediately
+stream pipeline, probes for it to actually start forwarding data (see
+below), then sends `REQUEST_COUNT` requests (default `20`) so there's
 something to query. Prints the API endpoint and the fingerprint NRQL
 queries from **Findings** below. Fails fast with a clear message if a
 required variable isn't set, rather than silently defaulting.
+
+**Why the probe:** a freshly-created CloudWatch Metric Stream doesn't
+start forwarding data immediately, and it never backfills what it missed
+while warming up. Sending real traffic right after `terraform apply`
+returns races that warm-up -- traffic sent too early is silently never
+seen by New Relic, with no error anywhere. This was observed directly
+during development: a first deploy's test requests landed in exactly that
+dead window and never showed up, with the Firehose stream's own
+`IncomingRecords` CloudWatch metric sitting at zero for several minutes
+afterward. Since there's no documented SLA for how long warm-up takes,
+`deploy.sh` doesn't guess a fixed delay -- it sends one throwaway request
+per minute and polls that same `IncomingRecords` metric (`AWS/Firehose`)
+until it sees a non-zero datapoint, for up to `WARMUP_TIMEOUT_SECONDS`
+(default `900`). Once that's confirmed, it sends the real
+`REQUEST_COUNT`-sized batch. If the probe times out, the script fails
+loudly rather than silently sending traffic nobody will ever see.
 
 When you're done:
 

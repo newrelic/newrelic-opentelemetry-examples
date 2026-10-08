@@ -9,3 +9,7 @@ output "metric_stream_arn" {
 output "firehose_delivery_stream_arn" {
   value = aws_kinesis_firehose_delivery_stream.newrelic_firehose_stream.arn
 }
+
+output "firehose_delivery_stream_name" {
+  value = aws_kinesis_firehose_delivery_stream.newrelic_firehose_stream.name
+}

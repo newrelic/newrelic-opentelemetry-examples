@@ -1,6 +1,7 @@
 .aws-sam
 .DS_Store
 .idea
+*.csv
 
 # Terraform local state/cache -- contains real AWS account IDs, ARNs, and
 # resource IDs from whoever last applied this. Never commit state.
