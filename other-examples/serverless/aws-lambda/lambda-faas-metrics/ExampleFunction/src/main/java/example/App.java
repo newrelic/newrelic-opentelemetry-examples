@@ -26,7 +26,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
     static final long MAX_SLEEP_MILLIS = 800;
 
     private static final Logger log = LoggerFactory.getLogger(App.class);
-    private static final Tracer tracer = GlobalOpenTelemetry.getTracer("otel-faas-spanmetrics-poc");
+    private static final Tracer tracer = GlobalOpenTelemetry.getTracer("example");
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
@@ -46,15 +46,22 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
         doWork(sleepMillis);
 
+        // Thrown rather than returned as a 500, so Lambda itself records the
+        // invocation as failed: the Telemetry API reports it, CloudWatch counts
+        // it in Errors, and the invocation span ends with an error status.
+        if (shouldFail(input.getQueryStringParameters())) {
+            throw new RuntimeException("Failing on purpose because the request asked for fail=true");
+        }
+
         return new APIGatewayProxyResponseEvent()
                 .withHeaders(headers)
                 .withStatusCode(200)
                 .withBody(String.format("{\"sleepMs\": %d}", sleepMillis));
     }
 
-    // Runs inside a manually-created child span, separate from the
-    // auto-instrumented SERVER span, so the example has a non-invocation
-    // span to prove the collector's SERVER-only filter actually filters.
+    // Runs inside a manually created child span, separate from the
+    // auto-instrumented SERVER span, so the example has a span that isn't the
+    // invocation. The collector's spanmetrics pipeline must ignore it.
     private void doWork(long sleepMillis) {
         Span childSpan = tracer.spanBuilder("do-work").startSpan();
         try (Scope scope = childSpan.makeCurrent()) {
@@ -64,6 +71,10 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
         } finally {
             childSpan.end();
         }
+    }
+
+    static boolean shouldFail(Map<String, String> queryStringParameters) {
+        return queryStringParameters != null && "true".equals(queryStringParameters.get("fail"));
     }
 
     static long resolveSleepMillis(Map<String, String> queryStringParameters, Random random) {

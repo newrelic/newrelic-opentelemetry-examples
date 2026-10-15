@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # One-command deploy: builds the function, then a single `terraform apply`
-# stands up the Lambda function + HTTP API, the collector/load-generator EC2
-# instance, and the CloudWatch Metric Stream -> Firehose -> New Relic
-# pipeline. Load runs continuously until ./teardown.sh.
+# stands up both Lambda functions (telemetry-api and spanmetrics) behind an
+# HTTP API, the collector/load-generator EC2 instance, and the CloudWatch
+# Metric Stream -> Firehose -> New Relic pipeline. Load runs continuously
+# until ./teardown.sh.
 #
 # See README.md's Configuration section for the environment variables.
 set -euo pipefail
@@ -47,6 +48,11 @@ TF_VAR_otel_layer_arn="$(./scripts/get-otel-layer-arn.sh "$AWS_REGION")"
 export TF_VAR_otel_layer_arn
 echo "    $TF_VAR_otel_layer_arn"
 
+echo "==> Looking up the current OpenTelemetry Lambda collector layer ARN for $AWS_REGION"
+TF_VAR_collector_layer_arn="$(./scripts/get-collector-layer-arn.sh "$AWS_REGION")"
+export TF_VAR_collector_layer_arn
+echo "    $TF_VAR_collector_layer_arn"
+
 echo "==> Applying Terraform"
 terraform -chdir=terraform init -input=false >/dev/null
 terraform -chdir=terraform apply -auto-approve -input=false
@@ -54,9 +60,10 @@ terraform -chdir=terraform apply -auto-approve -input=false
 API_URL="$(terraform -chdir=terraform output -raw api_url)"
 COLLECTOR_ENDPOINT="$(terraform -chdir=terraform output -raw collector_endpoint)"
 INSTANCE_ID="$(terraform -chdir=terraform output -raw collector_instance_id)"
-FUNCTION_NAME="$(terraform -chdir=terraform output -raw function_name)"
+TELEMETRY_API_FUNCTION="$(terraform -chdir=terraform output -json function_names | python3 -c 'import json,sys; print(json.load(sys.stdin)["telemetry-api"])')"
+SPANMETRICS_FUNCTION="$(terraform -chdir=terraform output -json function_names | python3 -c 'import json,sys; print(json.load(sys.stdin)["spanmetrics"])')"
 
-# Until the collector answers, the function's spans are silently dropped. It
+# Until the collector answers, the functions' spans are silently dropped. It
 # only accepts traffic from inside the VPC, so check from the instance itself
 # via SSM Run Command (which also fails until the SSM agent has registered).
 echo "==> Waiting for the collector and load generator on $INSTANCE_ID (docker install + image pull takes a minute or two)"
@@ -83,33 +90,39 @@ if [ -z "$ready" ]; then
   exit 1
 fi
 
-echo "==> Checking the function responds through the API (first call is a Java cold start)"
-status=""
-for _ in $(seq 1 5); do
-  status="$(curl -s -o /dev/null --max-time 35 -w '%{http_code}' "${API_URL}?sleepMs=10" || true)"
-  [ "$status" = "200" ] && break
-  sleep 5
+for route in telemetry-api spanmetrics; do
+  function_name="$TELEMETRY_API_FUNCTION"
+  [ "$route" = "spanmetrics" ] && function_name="$SPANMETRICS_FUNCTION"
+  echo "==> Checking $function_name responds through the API (the first call is a Java cold start)"
+  status=""
+  for _ in $(seq 1 5); do
+    status="$(curl -s -o /dev/null --max-time 35 -w '%{http_code}' "${API_URL%/}/${route}?sleepMs=10" || true)"
+    [ "$status" = "200" ] && break
+    sleep 5
+  done
+  if [ "$status" != "200" ]; then
+    echo "$function_name returned HTTP $status instead of 200. Check its logs:" >&2
+    echo "    aws logs tail /aws/lambda/$function_name --follow" >&2
+    exit 1
+  fi
 done
-if [ "$status" != "200" ]; then
-  echo "The function returned HTTP $status instead of 200. Check its logs:" >&2
-  echo "    aws logs tail /aws/lambda/$FUNCTION_NAME --follow" >&2
-  exit 1
-fi
 
 cat <<EOF
 
-==> Deployed. The load generator on $INSTANCE_ID is now calling the
-    function continuously and will keep going until ./teardown.sh.
+==> Deployed. The load generator on $INSTANCE_ID is now calling both
+    functions continuously and will keep going until ./teardown.sh.
 
-    Function:   $FUNCTION_NAME
-    API:        $API_URL
-    Collector:  $COLLECTOR_ENDPOINT (VPC-internal)
+    Telemetry API function:  $TELEMETRY_API_FUNCTION
+    spanmetrics function:    $SPANMETRICS_FUNCTION
+    API:                     $API_URL
+    Collector:               $COLLECTOR_ENDPOINT (VPC-internal)
 
-OTel data (spans and spanmetrics) should appear in New Relic within a couple
-of minutes. CloudWatch Metric Stream data takes longer -- a new stream can
-take ~10 minutes to start forwarding. See README.md's "Validate in New Relic"
-section for queries.
+Spans and faas.* metrics should appear in New Relic within a couple of
+minutes. CloudWatch data takes longer, because a new Metric Stream can take
+about 10 minutes to start forwarding. See README.md, "Compare the approaches
+in New Relic", for queries.
 
-Watch the load:      aws ssm start-session --target $INSTANCE_ID   (then: journalctl -u loadgen -f)
-Watch the function:  aws logs tail /aws/lambda/$FUNCTION_NAME --follow
+Watch the load:       aws ssm start-session --target $INSTANCE_ID   (then: journalctl -u loadgen -f)
+Watch the functions:  aws logs tail /aws/lambda/$TELEMETRY_API_FUNCTION --follow
+                      aws logs tail /aws/lambda/$SPANMETRICS_FUNCTION --follow
 EOF

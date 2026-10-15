@@ -20,5 +20,6 @@ if [ -n "${NEW_RELIC_OTLP_ENDPOINT:-}" ]; then export TF_VAR_newrelic_otlp_endpo
 if [ -n "${NEW_RELIC_METRICS_INGEST_URL:-}" ]; then export TF_VAR_newrelic_metrics_ingest_url="$NEW_RELIC_METRICS_INGEST_URL"; fi
 if [ -n "${TRACE_SAMPLING_PERCENTAGE:-}" ]; then export TF_VAR_trace_sampling_percentage="$TRACE_SAMPLING_PERCENTAGE"; fi
 if [ -n "${LOAD_INTERVAL_SECONDS:-}" ]; then export TF_VAR_load_interval_seconds="$LOAD_INTERVAL_SECONDS"; fi
+if [ -n "${FAIL_PERCENTAGE:-}" ]; then export TF_VAR_fail_percentage="$FAIL_PERCENTAGE"; fi
 
 aws() { command aws --profile "$AWS_PROFILE" --region "$AWS_REGION" "$@"; }

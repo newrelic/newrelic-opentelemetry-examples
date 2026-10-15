@@ -1,10 +1,12 @@
-# One EC2 instance runs both the OTel Collector (the ADOT Lambda layer has no
-# bundled collector, so the function needs a reachable one) and the load
-# generator that calls the function until teardown.
+# One EC2 instance runs both the OTel Collector and the load generator that
+# calls both functions until teardown. The collector receives spans from both
+# functions and faas.* metrics from the telemetry-api function's collector
+# layer. It derives faas.* metrics from the spanmetrics function's spans,
+# samples all spans for storage, and forwards everything to New Relic.
 #
-# The collector accepts OTLP only from the function's security group: the
-# function runs in the same default VPC and exports to the instance's private
-# IP, so nothing is exposed to the internet.
+# The collector accepts OTLP only from the functions' security group: they
+# run in the same default VPC and export to the instance's private IP, so
+# nothing is exposed to the internet.
 
 locals {
   default_otlp_endpoints = {
@@ -18,7 +20,7 @@ locals {
     lookup(local.default_otlp_endpoints, local.newrelic_region, "")
   )
   # A plain string, not a reference to the parameter resource, so the
-  # instance doesn't depend on the API (and through it, the function).
+  # instance doesn't depend on the API (and through it, the functions).
   api_url_parameter = "/${var.name}/api-url"
 }
 
@@ -64,19 +66,19 @@ resource "aws_vpc_security_group_ingress_rule" "collector_otlp_from_lambda" {
   ip_protocol                  = "tcp"
   from_port                    = 4318
   to_port                      = 4318
-  description                  = "OTLP/HTTP from the ${var.name} Lambda function"
+  description                  = "OTLP/HTTP from the ${var.name} Lambda functions"
 }
 
-# The function needs the collector's private IP, so the instance can't also
-# take the function's API URL in its user data without a dependency cycle.
-# Instead the load generator reads it from here at boot.
+# The functions need the collector's private IP, so the instance can't also
+# take the API URL in its user data without a dependency cycle. Instead the
+# load generator reads it from here at boot.
 resource "aws_ssm_parameter" "api_url" {
   name  = local.api_url_parameter
   type  = "String"
   value = aws_apigatewayv2_stage.default.invoke_url
 
-  # Published only once the API can actually invoke the function.
-  depends_on = [aws_lambda_permission.api_gateway, aws_apigatewayv2_route.get_root]
+  # Published only once the API can actually invoke both functions.
+  depends_on = [aws_lambda_permission.api_gateway, aws_apigatewayv2_route.this]
 }
 
 # Lets you shell in with `aws ssm start-session` to read collector/load
@@ -126,7 +128,7 @@ resource "aws_instance" "collector" {
 
   # The license key ends up in user data, readable by anyone with
   # ec2:DescribeInstanceAttribute in the account. Acceptable for a
-  # short-lived POC; use SSM Parameter Store or Secrets Manager otherwise.
+  # short-lived example; use SSM Parameter Store or Secrets Manager otherwise.
   user_data = templatefile("${path.module}/user-data.sh.tftpl", {
     collector_config          = file("${path.module}/collector.yaml")
     newrelic_license_key      = var.newrelic_license_key
@@ -135,6 +137,8 @@ resource "aws_instance" "collector" {
     api_url_parameter         = local.api_url_parameter
     aws_region                = var.aws_region
     load_interval_seconds     = var.load_interval_seconds
+    fail_percentage           = var.fail_percentage
+    spanmetrics_service_name  = "${var.name}-spanmetrics"
   })
   user_data_replace_on_change = true
 

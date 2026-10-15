@@ -10,8 +10,8 @@ output "collector_instance_id" {
   value = aws_instance.collector.id
 }
 
-output "function_name" {
-  value = aws_lambda_function.this.function_name
+output "function_names" {
+  value = { for k, f in aws_lambda_function.this : k => f.function_name }
 }
 
 output "firehose_delivery_stream_name" {

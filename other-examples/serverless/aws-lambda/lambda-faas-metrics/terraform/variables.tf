@@ -7,15 +7,15 @@ variable "aws_profile" {
 }
 
 variable "aws_region" {
-  description = "AWS region for everything. The Lambda function and the CloudWatch Metric Stream must share a region -- Metric Streams can't see metrics from other regions."
+  description = "AWS region for everything. The Lambda functions and the CloudWatch Metric Stream must share a region -- Metric Streams can't see metrics from other regions."
   type        = string
   default     = "us-east-1"
 }
 
 variable "name" {
-  description = "Lambda function name, OTel service.name, and prefix/suffix for every other resource created here."
+  description = "Prefix for every resource created here. The functions, and their OTel service.name, are <name>-telemetry-api and <name>-spanmetrics."
   type        = string
-  default     = "otel-faas-spanmetrics-poc"
+  default     = "lambda-faas-metrics"
 }
 
 variable "newrelic_region" {
@@ -62,6 +62,11 @@ variable "otel_layer_arn" {
   type        = string
 }
 
+variable "collector_layer_arn" {
+  description = "OpenTelemetry Lambda collector layer ARN (amd64) for aws_region. deploy.sh looks this up via ../scripts/get-collector-layer-arn.sh."
+  type        = string
+}
+
 variable "function_zip" {
   description = "Path to the built Lambda deployment package (gradle buildZip)."
   type        = string
@@ -69,13 +74,23 @@ variable "function_zip" {
 }
 
 variable "trace_sampling_percentage" {
-  description = "Percentage of spans the collector keeps as trace data. Does not affect faas.invocations/faas.invoke_duration -- see collector.yaml."
+  description = "Percentage of spans the collector keeps as trace data. Does not affect the faas.* metrics from either function -- see collector.yaml."
   type        = number
   default     = 10
 }
 
 variable "load_interval_seconds" {
-  description = "Pause between load generator requests. Keep the resulting rate under ~1 request/second: above that, Active Tracing's default X-Ray sampling drops spans before they ever reach the collector, and faas.invocations undercounts."
+  description = "Pause, in seconds, between rounds of load generator requests. Each round calls both functions once."
   type        = number
   default     = 1
+}
+
+variable "fail_percentage" {
+  description = "Percentage of load generator rounds that ask both functions to fail, so that error reporting can be compared."
+  type        = number
+  default     = 5
+  validation {
+    condition     = var.fail_percentage >= 0 && var.fail_percentage <= 100
+    error_message = "fail_percentage must be between 0 and 100."
+  }
 }

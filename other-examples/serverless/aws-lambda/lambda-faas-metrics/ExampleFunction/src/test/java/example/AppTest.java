@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -87,6 +88,31 @@ class AppTest {
         APIGatewayProxyResponseEvent response = new App().handleRequest(event, null);
 
         assertEquals(400, response.getStatusCode());
+    }
+
+    @Test
+    void failTrueFails() {
+        Map<String, String> params = new HashMap<>();
+        params.put("fail", "true");
+
+        assertTrue(App.shouldFail(params));
+    }
+
+    @Test
+    void missingFailDoesNotFail() {
+        assertFalse(App.shouldFail(null));
+        assertFalse(App.shouldFail(new HashMap<>()));
+    }
+
+    @Test
+    void handleRequestThrowsWhenAskedToFail() {
+        APIGatewayProxyRequestEvent event = new APIGatewayProxyRequestEvent();
+        Map<String, String> params = new HashMap<>();
+        params.put("sleepMs", "1");
+        params.put("fail", "true");
+        event.setQueryStringParameters(params);
+
+        assertThrows(RuntimeException.class, () -> new App().handleRequest(event, null));
     }
 
     @Test

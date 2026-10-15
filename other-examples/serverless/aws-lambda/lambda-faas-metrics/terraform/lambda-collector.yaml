@@ -1,0 +1,56 @@
+# Config for the OpenTelemetry Lambda collector layer, which runs inside the
+# telemetry-api function as a Lambda extension. lambda.tf passes it to the
+# layer through the OTEL_LAMBDA_COLLECTOR_CONFIG environment variable, so it
+# needs no build step.
+#
+# Its only job is the telemetryapi receiver: it subscribes to Lambda's
+# Telemetry API and turns the platform events Lambda emits for every
+# invocation into the FaaS semantic convention metrics (faas.invocations,
+# faas.invoke_duration, faas.errors, faas.timeouts, faas.coldstarts,
+# faas.init_duration, faas.mem_usage). Lambda reports these events for every
+# invocation, whatever happens to the function's spans.
+#
+# Spans don't pass through here. The ADOT Java agent exports them straight to
+# the EC2 collector.
+
+receivers:
+  telemetryapi:
+    types: [platform]
+    # New Relic prefers delta. Cumulative (the receiver's default) would also
+    # reset every time Lambda recycles the execution environment.
+    metrics_temporality: delta
+    export_interval_ms: 60000
+
+processors:
+  # The receiver's resource has service.name and faas.name but no
+  # cloud.resource_id, which is what joins OTel data to the CloudWatch
+  # metrics (they carry the same value as aws.Arn). FUNCTION_ARN is set by
+  # lambda.tf. cloud.provider and cloud.platform match what the ADOT agent
+  # puts on the spans.
+  resource:
+    attributes:
+      - key: cloud.resource_id
+        value: ${env:FUNCTION_ARN}
+        action: upsert
+      - key: cloud.provider
+        value: aws
+        action: upsert
+      - key: cloud.platform
+        value: aws_lambda
+        action: upsert
+      - key: cloud.region
+        value: ${env:AWS_REGION}
+        action: upsert
+
+exporters:
+  # otlp_http, not otlphttp: the layer's collector (v0.157.0) logs the old
+  # name as a deprecated alias.
+  otlp_http:
+    endpoint: ${env:OTEL_COLLECTOR_GATEWAY_ENDPOINT}
+
+service:
+  pipelines:
+    metrics:
+      receivers: [telemetryapi]
+      processors: [resource]
+      exporters: [otlp_http]

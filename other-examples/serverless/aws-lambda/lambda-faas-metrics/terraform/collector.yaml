@@ -1,0 +1,102 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  # Only on the traces pipeline. It reduces the volume of spans kept as trace
+  # data in New Relic, as a real deployment would. Neither way of making
+  # faas.* metrics is affected: the telemetry-api function's metrics come from
+  # Lambda's Telemetry API, and the spanmetrics pipeline below sees every span
+  # before this sampler drops any.
+  probabilistic_sampler:
+    sampling_percentage: ${TRACE_SAMPLING_PERCENTAGE}
+
+  # Keeps only the spans that represent an invocation of the spanmetrics
+  # function, so that spanmetrics counts each invocation once. A Lambda
+  # invocation span is a SERVER span whose resource carries faas.name. Its
+  # child spans, and every span from the telemetry-api function, are dropped
+  # here, from this pipeline only.
+  filter/spanmetrics_invocations:
+    error_mode: ignore
+    trace_conditions:
+      - 'span.kind != SPAN_KIND_SERVER'
+      - 'resource.attributes["faas.name"] == nil'
+      - 'resource.attributes["service.name"] != "${SPANMETRICS_SERVICE_NAME}"'
+
+  # Drops the connector's call counter. Its count includes failed calls, while
+  # the semantic conventions' faas.invocations counts only successful ones, so
+  # it can't simply be renamed. The duration histogram's count already gives
+  # the number of invocations.
+  filter/drop_calls:
+    error_mode: ignore
+    metrics:
+      metric:
+        - 'metric.name == "faas.calls"'
+
+  transform/faas_metrics:
+    error_mode: ignore
+    metric_statements:
+      # The semantic conventions' name for the duration of each invocation.
+      - set(metric.name, "faas.invoke_duration") where metric.name == "faas.duration"
+      # spanmetrics sets a delta's start to the series' previous flush, so after
+      # an idle gap New Relic, which files a delta under its start time, would
+      # back-date the data. Each flush only holds spans from the last
+      # metrics_flush_interval, so start it one interval before its end.
+      - set(datapoint.start_time_unix_nano, datapoint.time_unix_nano - 60000000000)
+
+connectors:
+  spanmetrics:
+    # Produces faas.duration (renamed above) and faas.calls (dropped above).
+    namespace: faas
+    aggregation_temporality: AGGREGATION_TEMPORALITY_DELTA
+    metrics_flush_interval: 60s
+    # status.code is kept, as a default dimension, so the histogram says which
+    # invocations failed. span.kind is always SERVER here, so it's dropped.
+    exclude_dimensions: [span.kind]
+    dimensions:
+      - name: faas.trigger
+      - name: cloud.resource_id
+    histogram:
+      unit: s
+      exponential:
+        max_size: 160
+
+exporters:
+  # basic, not detailed: this collector runs under constant load until
+  # teardown, and detailed output of every span fills the instance's disk.
+  debug:
+    verbosity: basic
+  otlp_http/newrelic:
+    endpoint: ${NEW_RELIC_OTLP_ENDPOINT}
+    headers:
+      api-key: ${NEW_RELIC_API_KEY}
+
+service:
+  telemetry:
+    logs:
+      level: info
+  pipelines:
+    # Every span from both functions, sampled for storage.
+    traces:
+      receivers: [otlp]
+      processors: [probabilistic_sampler]
+      exporters: [debug, otlp_http/newrelic]
+    # Every invocation span from the spanmetrics function, unsampled, turned
+    # into faas.* metrics.
+    traces/spanmetrics:
+      receivers: [otlp]
+      processors: [filter/spanmetrics_invocations]
+      exporters: [spanmetrics]
+    metrics/spanmetrics:
+      receivers: [spanmetrics]
+      processors: [filter/drop_calls, transform/faas_metrics]
+      exporters: [debug, otlp_http/newrelic]
+    # faas.* metrics from the telemetry-api function's collector layer,
+    # forwarded unchanged.
+    metrics:
+      receivers: [otlp]
+      exporters: [debug, otlp_http/newrelic]
