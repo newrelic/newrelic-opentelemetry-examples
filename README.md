@@ -39,6 +39,7 @@ OpenTelemetry and New Relic.
 * [Monitor HiveMQ with Collector](./other-examples/collector/hivemq)
 * [Monitor Hosts with Collector](./other-examples/collector/host-monitoring)
 * [Monitor IBM MQ with Collector](./infrastructure-monitoring/ibm-mq)
+* [Monitor Linkerd with Collector](./infrastructure-monitoring/linkerd)
 * [Monitor Prometheus target with Collector](./other-examples/collector/prometheus)
 * [Monitor Redis with Collector](./other-examples/collector/redis)
 * [Monitor Singlestore with Collector](./other-examples/collector/singlestore)
