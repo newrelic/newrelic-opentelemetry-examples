@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: getting-started-javascript
+  namespace: otel-apps
+spec:
+  selector:
+    app: getting-started-javascript
+  ports:
+    - port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: getting-started-javascript
+  namespace: otel-apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: getting-started-javascript
+  template:
+    metadata:
+      labels:
+        app: getting-started-javascript
+      # No instrumentation.opentelemetry.io/inject-* annotation: this service
+      # is instrumented by the New Relic Node.js agent baked into its image,
+      # not by the OpenTelemetry Operator.
+    spec:
+      containers:
+        - name: getting-started-javascript
+          image: getting-started-javascript-sampling-nr-head:local
+          # Locally built and loaded into the cluster
+          imagePullPolicy: Never
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          env:
+            - name: NEW_RELIC_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: newrelic-secret
+                  key: NEW_RELIC_LICENSE_KEY
+            # The image runs as a non-root user that can't write a log file
+            - name: NEW_RELIC_LOG
+              value: stdout
+            - name: NEW_RELIC_APP_NAME
+              value: getting-started-javascript
+            - name: NEW_RELIC_DISTRIBUTED_TRACING_ENABLED
+              value: "true"
+            # W3C `traceparent` only: disables the legacy `newrelic` header,
+            # so downstream OTel services can't see a conflicting sampled flag.
+            - name: NEW_RELIC_DISTRIBUTED_TRACING_EXCLUDE_NEWRELIC_HEADER
+              value: "true"
+            # Ratio equivalent of the OTel services' parentbased_traceidratio
+            # (0.1 in 04-instrumentation.yaml). The root sampler applies only to
+            # traces that start in this service.
+            - name: NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT
+              value: trace_id_ratio_based
+            - name: NEW_RELIC_DISTRIBUTED_TRACING_SAMPLER_ROOT_TRACE_ID_RATIO_BASED_RATIO
+              value: "0.1"
+            # Service A calls Service B (Python) on every request
+            - name: UPSTREAM_URL
+              value: http://getting-started-python.otel-apps.svc.cluster.local:8080/fibonacci
+          ports:
+            - containerPort: 8080

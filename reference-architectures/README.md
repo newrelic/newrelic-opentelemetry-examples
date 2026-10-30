@@ -8,3 +8,6 @@ made public under [docs.newrelic.com](https://docs.newrelic.com/).
 * [`operator`](./operator) - OpenTelemetry Operator on Kubernetes auto-injecting
   per-language instrumentation into application pods, paired with a Collector
   Gateway that aggregates, enriches and exports every signal to New Relic.
+* [`trace-sampling`](./trace-sampling) - Trace sampling strategies built on the
+  `operator` example: SDK head sampling with `parentbased_traceidratio`, and
+  two-tier Collector tail sampling with trace-ID affinity.

@@ -1,0 +1,68 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel-agent
+  namespace: otel-platform
+spec:
+  mode: deployment
+  replicas: 3
+  serviceAccount: gateway-collector
+  # "Optional: Local collector tier" in the reference architecture: enriches
+  # spans and forwards them. It MUST NOT sample individual spans.
+  image: newrelic/nrdot-collector:2.4.3
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  config:
+    receivers:
+      otlp:
+        protocols:
+          http:
+            endpoint: 0.0.0.0:4318
+    processors:
+      memory_limiter:
+        check_interval: 1s
+        limit_percentage: 80
+        spike_limit_percentage: 25
+      # Enrich at the agent tier. The agent MUST NOT drop or sample spans:
+      # splitting a trace here would defeat tail sampling downstream.
+      k8s_attributes:
+        auth_type: serviceAccount
+        passthrough: false
+        extract:
+          metadata:
+            - k8s.namespace.name
+            - k8s.pod.name
+            - k8s.pod.uid
+            - k8s.pod.start_time
+            - k8s.deployment.name
+            - k8s.node.name
+    exporters:
+      # Traces go to the load balancer tier, which routes them by traceID
+      otlp/lb:
+        endpoint: otel-lb-collector.otel-platform.svc.cluster.local:4317
+        tls:
+          insecure: true
+      # Metrics and logs need no trace-ID affinity: plain load-balanced Service
+      otlp_http/gateway:
+        endpoint: http://otel-gateway-collector.otel-platform.svc.cluster.local:4318
+        tls:
+          insecure: true
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, k8s_attributes]
+          exporters: [otlp/lb]
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, k8s_attributes]
+          exporters: [otlp_http/gateway]
+        logs:
+          receivers: [otlp]
+          processors: [memory_limiter, k8s_attributes]
+          exporters: [otlp_http/gateway]
