@@ -29,6 +29,9 @@ public class Controller {
   // trace-sampling examples: when UPSTREAM_URL is set, /fibonacci first calls
   // that URL with the same `n`, so Service A -> Service B hops exist and the
   // head sampling decision is visibly propagated in `traceparent`.
+  // It also accepts an optional `delay_ms` request parameter that sleeps before
+  // computing, so the load generator can produce slow requests (latency
+  // outliers) for a tail sampling policy to keep.
   // Everything else is unchanged.
   private static final String UPSTREAM_URL = System.getenv("UPSTREAM_URL");
   private static final HttpClient HTTP = HttpClient.newHttpClient();
@@ -59,7 +62,13 @@ public class Controller {
   }
 
   @GetMapping(value = "/fibonacci")
-  public Map<String, Object> getFibonacci(@RequestParam(required = true, name = "n") long n) {
+  public Map<String, Object> getFibonacci(
+      @RequestParam(required = true, name = "n") long n,
+      @RequestParam(required = false, name = "delay_ms", defaultValue = "0") long delayMs)
+      throws InterruptedException {
+    if (delayMs > 0) {
+      Thread.sleep(delayMs);
+    }
     callUpstream(n);
     return Map.of("n", n, "result", fibonacci(n));
   }

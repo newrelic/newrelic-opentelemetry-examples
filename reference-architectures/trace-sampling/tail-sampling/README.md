@@ -69,7 +69,7 @@ kubectl --context kind-nr-sampling-tail port-forward -n otel-apps svc/getting-st
 ./scripts/generate-load.py
 ```
 
-About 10% of requests use an out-of-range `n`, so the apps record error spans. Java also calls Python on every request. These apps have no slow endpoint, so the `latency-outliers` policy is configured but not exercised.
+About 10% of requests use an out-of-range `n`, so the apps record error spans, and about 5% of the requests to Java pass `delay_ms=1500` (an optional parameter added by the Java overlay in [`apps/java/Controller.java`](./apps/java/Controller.java)), so those traces are slower than the 1000 ms `latency-outliers` threshold. Java also calls Python on every request.
 
 Every error trace should be retained, while healthy traces are kept at about 10%. Compare the error share here with the head-sampling example:
 
@@ -100,4 +100,4 @@ FROM (
 SINCE 10 minutes ago
 ```
 
-Tested on minikube against New Relic: 400 requests to Java (40 errors) and 200 to Python B (20 errors) retained all 60 error traces and about 10% of healthy ones (35 of 360 and 17 of 180). All 75 Java traces held both services' spans, with 0 fragmented. The gateway metric query returned `errors`/`true` = 60.
+Tested on kind against New Relic: 600 requests to Java (60 errors, 30 slow healthy requests with `delay_ms=1500`) kept 129 traces, including all 60 error traces and all 30 slow traces, with the rest kept at the 10% baseline.
