@@ -100,4 +100,4 @@ FROM (
 SINCE 10 minutes ago
 ```
 
-Tested on kind against New Relic: 600 requests to Java (60 errors, 30 slow healthy requests with `delay_ms=1500`) kept 129 traces, including all 60 error traces and all 30 slow traces, with the rest kept at the 10% baseline.
+Tested on kind against New Relic: 600 requests to Java (60 errors, 30 slow healthy requests with `delay_ms=1500`) kept 129 traces, including all 60 error traces and all 30 slow traces, plus 39 of the other 510 traces (about 8%, in line with the 10% baseline).
