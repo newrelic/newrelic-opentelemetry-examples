@@ -149,8 +149,8 @@ spec:
                       - name: api-key
                         value: ${env:NEW_RELIC_LICENSE_KEY}
         traces:
-          # Tracing is disabled by default, as it is experimental and NOT RECOMMENDED FOR PRODUCTION USE
-          # It only supports basic or none, basic enables it.
+          # Collector self-tracing is experimental and NOT RECOMMENDED FOR PRODUCTION USE.
+          # It only supports basic or none: it is off by default, and basic (set here) enables it.
           level: basic
           sampler:
             parent_based:

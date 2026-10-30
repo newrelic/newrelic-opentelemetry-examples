@@ -56,7 +56,7 @@ make build
 make deploy
 ```
 
-`make install` waits for the gateway, then the local collector tier, then the load balancer tier, before applying the `Instrumentation` resource. `make install` generates the gitignored `manifests/01-secrets.yaml` from `.env` (or an exported `NEW_RELIC_LICENSE_KEY`); to write it by hand instead, copy `manifests/01-secrets.yaml.template`. Clean up with `make clean`.
+`make install` waits for the gateway, then the local collector tier, then the load balancer tier, before applying the `Instrumentation` resource. `make install` generates the gitignored `manifests/01-secrets.yaml` from `.env` (or an exported `NEW_RELIC_LICENSE_KEY`); to write it by hand instead, copy `manifests/01-secrets.yaml.template` and replace the `<INSERT_LICENSE_KEY>` placeholder, because `make install` fails while the placeholder remains. Clean up with `make clean`.
 
 The load balancer's resolver needs RBAC to list `endpoints` and `endpointslices`, which [`02-collector-rbac.yaml`](./manifests/02-collector-rbac.yaml) grants. Without it the load balancer logs `endpointslices.discovery.k8s.io is forbidden` and has no gateway backends.
 

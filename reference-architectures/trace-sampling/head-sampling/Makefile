@@ -40,6 +40,11 @@ secrets: ## Generate manifests/01-secrets.yaml from .env or the environment (ski
 	      manifests/01-secrets.yaml.template > manifests/01-secrets.yaml; \
 	  echo "Wrote manifests/01-secrets.yaml"; \
 	}
+	@! grep -q '<INSERT_LICENSE_KEY>' manifests/01-secrets.yaml || { \
+	  echo "manifests/01-secrets.yaml still contains the <INSERT_LICENSE_KEY> placeholder."; \
+	  echo "Fill in your New Relic license key, or delete the file and set NEW_RELIC_LICENSE_KEY in .env."; \
+	  exit 1; \
+	}
 
 install: secrets ## Install Metrics Server, the Operator, and the platform's namespaces/secret/RBAC/CRs
 	$(KUBECTL) apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
