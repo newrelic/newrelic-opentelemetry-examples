@@ -1,0 +1,58 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: otel-instrumentation
+  namespace: otel-platform
+spec:
+  exporter:
+    # No Collector in this architecture: SDKs export straight to the New
+    # Relic OTLP endpoint. Each app overrides this and sets the api-key
+    # header from the Secret (OTEL_EXPORTER_OTLP_ENDPOINT / _HEADERS, see
+    # apps/python.yaml), which also covers EU accounts.
+    endpoint: https://otlp.nr-data.net:4318
+  propagators:
+    - tracecontext
+    - baggage
+  # Head sampling: the decision is made once, at the root span, by the SDK,
+  # and propagated downstream in the W3C `traceparent` sampled flag.
+  # `parentbased_traceidratio` honours an upstream decision when there is one
+  # and samples this ratio of new traces otherwise. Use the SAME sampler and
+  # ratio for every service in a trace path to avoid downstream-initiated
+  # root decisions competing with the target ratio.
+  sampler:
+    type: parentbased_traceidratio
+    argument: "0.1"
+  # Common defaults applied to every auto-injected language
+  env:
+    # General OTel SDK configuration recommended by New Relic
+    - name: OTEL_EXPORTER_OTLP_PROTOCOL
+      value: http/protobuf
+    - name: OTEL_EXPORTER_OTLP_COMPRESSION
+      value: gzip
+    - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+      value: DELTA
+    - name: OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION
+      value: "BASE2_EXPONENTIAL_BUCKET_HISTOGRAM"
+    - name: OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT
+      value: "4095"
+
+    # Example of overridden value in apps/python.yaml
+    - name: OTEL_METRIC_EXPORT_INTERVAL
+      value: "60000"
+
+  # Organization-specific resource attribute.
+  # See manifests/apps/python.yaml for a per-key override + extension via
+  # annotations, which is how an app team is meant to customize this.
+  # See https://opentelemetry.io/docs/platforms/kubernetes/operator/automatic/#priority-for-setting-resource-attributes
+  # for documentation about Resource attribute preference
+  resource:
+    resourceAttributes:
+      k8s.cluster.name: nr-sampling-nr-head
+      deployment.environment.name: development
+  python:
+    env:
+      # Preserves the log-export behavior the app's own Dockerfile used to
+      # get from `opentelemetry-instrument --logs_exporter otlp`, now that
+      # the Operator injects the Python instrumentation instead.
+      - name: OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED
+        value: "true"

@@ -1,0 +1,52 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel-lb
+  namespace: otel-platform
+spec:
+  mode: deployment
+  replicas: 2
+  serviceAccount: gateway-collector
+  image: newrelic/nrdot-collector:2.4.3
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+    processors:
+      memory_limiter:
+        check_interval: 1s
+        limit_percentage: 80
+        spike_limit_percentage: 25
+    exporters:
+      # Trace-ID affinity: every span of a trace is sent to the same gateway
+      # instance. Without it tail_sampling decides on fragments, silently.
+      # Any mechanism that guarantees the affinity works (e.g. consistent
+      # hashing on traceID in an external load balancer or service mesh).
+      loadbalancing:
+        routing_key: traceID
+        protocol:
+          otlp:
+            tls:
+              insecure: true
+            timeout: 10s
+        resolver:
+          k8s:
+            # Headless Service the Operator creates for the gateway
+            service: otel-gateway-collector-headless.otel-platform
+            ports:
+              - 4317
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter]
+          exporters: [loadbalancing]
