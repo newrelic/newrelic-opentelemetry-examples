@@ -138,14 +138,6 @@ processors:
             label_set: [topic]
             aggregation_type: sum
 
-      - include: kafka.partition.replicas
-        action: insert
-        new_name: kafka.partition.replicas.total
-        operations:
-          - action: aggregate_labels
-            label_set: [topic]
-            aggregation_type: sum
-
   filter/remove_partition_level_replicas:
     metrics:
       exclude:
