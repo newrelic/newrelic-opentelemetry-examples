@@ -1,6 +1,6 @@
 # OpenTelemetry Collector Internal Telemetry - Docker Compose
 
-This example demonstrates how to run the OpenTelemetry Collector with internal telemetry monitoring using Docker Compose.
+This example demonstrates how to run the OpenTelemetry Collector with [internal telemetry](https://opentelemetry.io/docs/collector/internal-telemetry/) monitoring using Docker Compose to leverage [OTel Collector monitoring](https://docs.newrelic.com/docs/opentelemetry/collector-observability/collector-observability/).
 
 ## Requirements
 
@@ -33,7 +33,7 @@ This example demonstrates how to run the OpenTelemetry Collector with internal t
 
 ## Viewing your data
 
-Navigate to "New Relic -> All Entities -> Services - OpenTelemetry" and find the service with the name corresponding to the value you set for `SERVICE_NAME` in your `.env` file.
+Navigate to "New Relic -> APM & Services -> Services - OpenTelemetry" and find the service with the name corresponding to the value you set for `INTERNAL_TELEMETRY_SERVICE_NAME` in your `.env` file. New Relic detects the collector automatically, which can take a few minutes after the first metrics arrive.
 
 ## Configuration
 
@@ -42,4 +42,4 @@ The collector configuration is in `config.yaml`. It configures the collector's i
 - **Logs**: Collector operational logs (with sampling)
 - **Traces**: Disabled by default (set `level: basic` to enable)
 
-All telemetry is exported directly to New Relic via OTLP without requiring any receivers, processors, or exporters to be defined in the configuration.
+All telemetry is exported directly to New Relic via OTLP given the definition under the `service::telemetry` yaml node. There is no need to explicitly list or refer to the components the collector uses in its pipelines. 

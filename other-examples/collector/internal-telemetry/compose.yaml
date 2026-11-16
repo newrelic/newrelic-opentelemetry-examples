@@ -1,6 +1,6 @@
 services:
   collector:
-    image: otel/opentelemetry-collector-contrib:0.142.0
+    image: otel/opentelemetry-collector-contrib:0.163.2
     container_name: collector-internal-telemetry
     command: ["--config=/etc/otelcol/config.yaml"]
     volumes:
