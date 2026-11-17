@@ -11,7 +11,7 @@ The [internal-telemetry example](https://github.com/newrelic/newrelic-openteleme
 
 ### Collector
 
-We'll use [otelcol-contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/v0.142.0/distributions/otelcol-contrib) for the example.
+We'll use [otelcol-contrib](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/v0.163.2/distributions/otelcol-contrib) for the example.
 
 The internal telemetry is configured to be sent directly to New Relic's OTLP endpoint without going through the collector's own pipeline, so it should work for any collector use case.
 
@@ -63,7 +63,7 @@ The internal telemetry is configured to be sent directly to New Relic's OTLP end
 
 ### In the UI
 
-The infrastructure relationships are used to light up our APM UI. Navigate to "New Relic -> All Entities -> Services - OpenTelemetry" and click on the service with name corresponding to value provided in `secrets.yaml` for `COLLECTOR_SERVICE_NAME`. The 'Summary' page shows metrics related to the infrastructure entities related to your collector at the bottom of the page.
+The infrastructure relationships are used to light up our APM UI. Navigate to "New Relic -> APM & Services -> Services - OpenTelemetry" and click on the service with name corresponding to value provided in `secrets.yaml` for `COLLECTOR_SERVICE_NAME`. The 'Summary' page shows metrics related to the infrastructure entities related to your collector at the bottom of the page.
 
 ### From the CLI (troubleshooting)
 You can also query the relationships through NerdGraph using the [newrelic CLI](https://github.com/newrelic/newrelic-cli/blob/main/docs/GETTING_STARTED.md#environment-setup). Note that the [API key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/) in this case is NOT an ingest key (as used above), but instead a user key.
