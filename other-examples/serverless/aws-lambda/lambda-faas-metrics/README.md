@@ -31,7 +31,7 @@ CloudWatch metrics to New Relic as an independent reference.
 | What it counts from | Lambda's own record of each invocation | The function's invocation spans |
 | Counts every invocation | Yes | Only if every invocation span reaches the Collector |
 | Lets you sample spans in the function | Yes | No, sampling has to happen after the connector |
-| Reports failures | Timeouts, in `faas.timeouts`. Not a handler that throws (see [Errors](#errors)) | `status.code` on the duration histogram |
+| Reports failures | Timeouts, in `faas.timeouts`. Not a handler that throws (see [Errors](#errors)) | `error.type` on the duration histogram |
 | Cost inside the function | The extension's start-up time, run time, and memory | None beyond exporting every span |
 | Also reports | Cold starts, init duration, memory use | Nothing else |
 
@@ -192,7 +192,7 @@ SINCE 1 hour ago UNTIL 10 minutes ago
 ```
 
 ```sql
-FROM Metric SELECT filter(count(faas.invoke_duration), WHERE status.code = 'STATUS_CODE_ERROR')
+FROM Metric SELECT filter(count(faas.invoke_duration), WHERE error.type IS NOT NULL)
 WHERE service.name = 'lambda-faas-metrics-spanmetrics'
 SINCE 1 hour ago UNTIL 10 minutes ago
 ```
@@ -350,8 +350,15 @@ spanmetrics pipeline:
 * keeps only the spanmetrics function's invocation spans, which are the
   `SERVER` spans whose resource carries `faas.name`, so that child spans like
   `do-work` don't count as invocations,
-* records them in a histogram with the `faas` namespace, keeping
-  `status.code`, `faas.trigger`, and `cloud.resource_id` as attributes,
+* sets `error.type` to `_OTHER` on invocation spans whose status is
+  `Error` and that don't already carry it, in this pipeline only, so the
+  spans exported as traces are unchanged,
+* records them in a histogram with the `faas` namespace. The data points
+  carry only `faas.trigger`, `cloud.resource_id` and, on failed invocations,
+  `error.type`. The connector's own default dimensions, such as `span.name`
+  and `status.code`, are excluded, and each span's resource, including
+  `faas.name` and `service.name`, is copied onto the metric with
+  `add_resource_attributes: true`,
 * renames the histogram from `faas.duration` to `faas.invoke_duration`, and
   drops the call counter,
 * sets each delta data point's start time to one flush interval before its
@@ -360,6 +367,41 @@ spanmetrics pipeline:
 
 The trace pipeline samples spans separately, after the connector has seen
 them.
+
+#### Why `error.type` and `cloud.resource_id`
+
+The goal is a metric shaped exactly like the semantic conventions'
+[`faas.invoke_duration`](https://github.com/open-telemetry/semantic-conventions/blob/v1.44.0/docs/faas/faas-metrics.md),
+so that New Relic treats it the same whichever component sends it. The
+conventions list only `faas.trigger` on that metric, so `error.type` and
+`cloud.resource_id` are the two attributes this configuration adds beyond
+them.
+
+`cloud.resource_id` is the function's ARN. The conventions normally put it on
+the resource, but
+[on Lambda](https://github.com/open-telemetry/semantic-conventions/blob/v1.44.0/docs/faas/aws-lambda.md)
+they note it can't be populated there, since the ARN can include the alias
+and is only known per invocation, and the
+[FaaS span conventions](https://github.com/open-telemetry/semantic-conventions/blob/v1.44.0/docs/faas/faas-spans.md)
+put it on the invocation span instead. ADOT's Java instrumentation does that,
+so the connector carries it from the span onto the metric's data points.
+
+`error.type` is a choice based on an interpretation of conventions that are
+still evolving:
+
+* [Recording Errors](https://github.com/open-telemetry/semantic-conventions/blob/v1.44.0/docs/general/recording-errors.md)
+  says an operation's duration histogram should include `error.type` on
+  failures, and that a span and its corresponding metric should carry the
+  same value. The invocation span and `faas.invoke_duration` describe the
+  same invocation.
+* The FaaS conventions are being reworked on their way to stability, and
+  [semantic-conventions#234](https://github.com/open-telemetry/semantic-conventions/issues/234)
+  and [#4240](https://github.com/open-telemetry/semantic-conventions/issues/4240)
+  point the same way. [#4316](https://github.com/open-telemetry/semantic-conventions/issues/4316)
+  proposes a different shape, so the outcome isn't settled.
+
+Without it, the histogram would count every invocation but say nothing
+about which ones failed.
 
 ### The network
 

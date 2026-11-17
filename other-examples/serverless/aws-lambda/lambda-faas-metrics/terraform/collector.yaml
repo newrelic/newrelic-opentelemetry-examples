@@ -27,6 +27,18 @@ processors:
       - 'resource.attributes["faas.name"] == nil'
       - 'resource.attributes["service.name"] != "${SPANMETRICS_SERVICE_NAME}"'
 
+  # Marks failed invocations with error.type, which the connector then keeps
+  # as a dimension. Recording Errors in the semantic conventions says a failed
+  # span and its duration histogram should both carry error.type, but ADOT's
+  # Java instrumentation only sets the span's status. _OTHER is the fallback
+  # value the conventions use when nothing more specific is known. This
+  # pipeline only feeds the connector, so the spans exported as traces are
+  # unchanged.
+  transform/error_type:
+    error_mode: ignore
+    trace_statements:
+      - set(span.attributes["error.type"], "_OTHER") where span.status.code == STATUS_CODE_ERROR and span.attributes["error.type"] == nil
+
   # Drops the connector's call counter. Its count includes failed calls, while
   # the semantic conventions' faas.invocations counts only successful ones, so
   # it can't simply be renamed. The duration histogram's count already gives
@@ -54,12 +66,22 @@ connectors:
     namespace: faas
     aggregation_temporality: AGGREGATION_TEMPORALITY_DELTA
     metrics_flush_interval: 60s
-    # status.code is kept, as a default dimension, so the histogram says which
-    # invocations failed. span.kind is always SERVER here, so it's dropped.
-    exclude_dimensions: [span.kind]
+    # Only attributes the semantic conventions describe. faas.trigger is the
+    # one they define for faas.invoke_duration. error.type marks failed
+    # invocations. cloud.resource_id is the function's ARN, which on Lambda
+    # the conventions put on the invocation span rather than the resource,
+    # because it can include the alias and is only known per invocation, so
+    # it's carried over from the span. The connector's own default dimensions
+    # aren't part of the conventions, so they're all excluded.
+    exclude_dimensions: [service.name, span.name, span.kind, status.code]
     dimensions:
       - name: faas.trigger
+      - name: error.type
       - name: cloud.resource_id
+    # Copies each span's resource, including faas.name, cloud.resource_id and
+    # service.name, onto the metric. It's the connector's default today, but
+    # a feature gate is set to turn it off, so it's set explicitly.
+    add_resource_attributes: true
     histogram:
       unit: s
       exponential:
@@ -89,7 +111,7 @@ service:
     # into faas.* metrics.
     traces/spanmetrics:
       receivers: [otlp]
-      processors: [filter/spanmetrics_invocations]
+      processors: [filter/spanmetrics_invocations, transform/error_type]
       exporters: [spanmetrics]
     metrics/spanmetrics:
       receivers: [spanmetrics]
