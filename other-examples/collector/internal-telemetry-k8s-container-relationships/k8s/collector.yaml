@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: collector-container-relationship
-          image: otel/opentelemetry-collector-contrib:0.142.0
+          image: otel/opentelemetry-collector-contrib:0.163.2
           args:
             - --config=/config/config.yaml
           env:
