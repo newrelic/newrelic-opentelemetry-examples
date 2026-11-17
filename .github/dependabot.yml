@@ -1,18 +1,76 @@
 version: 2
+# Each ecosystem gets at most one grouped PR for version updates and one for
+# security updates. Major version bumps are left ungrouped so a breaking
+# upgrade doesn't block the rest of the group.
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+    groups:
+      github-actions:
+        patterns: ["*"]
+
   - package-ecosystem: "gradle"
-    directory: "/other-examples/java"
-    rebase-strategy: "disabled"
+    directories:
+      - "/other-examples/java"
+      - "/getting-started-guides/java"
     schedule:
-      interval: "daily"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "gradle"
-    directory: "/getting-started-guides/java"
-    rebase-strategy: "disabled"
+      interval: "weekly"
+    groups:
+      gradle:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+      gradle-security:
+        applies-to: security-updates
+        patterns: ["*"]
+
+  - package-ecosystem: "npm"
+    directories:
+      - "/getting-started-guides/javascript"
+      - "/other-examples/serverless/azure-functions/node/http-trigger-app"
     schedule:
-      interval: "daily"
-    open-pull-requests-limit: 10
+      interval: "weekly"
+    groups:
+      npm:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+      npm-security:
+        applies-to: security-updates
+        patterns: ["*"]
+
+  - package-ecosystem: "pip"
+    directory: "/getting-started-guides/python"
+    schedule:
+      interval: "weekly"
+    groups:
+      pip:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+      pip-security:
+        applies-to: security-updates
+        patterns: ["*"]
+
+  - package-ecosystem: "gomod"
+    directory: "/getting-started-guides/go"
+    schedule:
+      interval: "weekly"
+    groups:
+      gomod:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+      gomod-security:
+        applies-to: security-updates
+        patterns: ["*"]
+
+  - package-ecosystem: "bundler"
+    directory: "/getting-started-guides/ruby"
+    schedule:
+      interval: "weekly"
+    groups:
+      bundler:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+      bundler-security:
+        applies-to: security-updates
+        patterns: ["*"]
