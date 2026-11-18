@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG RUST_VERSION=1.79.0
+ARG RUST_VERSION=1.99.1
 ARG APP_NAME=fibonacci
 
 FROM rust:${RUST_VERSION}-alpine AS build
