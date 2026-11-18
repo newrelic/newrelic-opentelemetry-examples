@@ -51,6 +51,7 @@ The [Reference Architectures](./reference-architectures) directory contains exam
 Reference Architectures, soon to be made public under [docs.newrelic.com](https://docs.newrelic.com/).
 
 * [OpenTelemetry Operator: Auto-instrumentation + Collector Gateway](./reference-architectures/operator)
+* [Trace Sampling: Head and Tail Sampling](./reference-architectures/trace-sampling)
 
 ## OpenTelemetry other examples
 
