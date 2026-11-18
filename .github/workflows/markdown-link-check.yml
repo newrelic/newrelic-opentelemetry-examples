@@ -1,0 +1,49 @@
+name: Markdown link check
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches: [ main ]
+  # PRs only check remote links in the Markdown files they change, so links
+  # that rot on their own are caught by a weekly full scan.
+  schedule:
+    - cron: "0 14 * * 1"
+  workflow_dispatch:
+
+jobs:
+  markdown-link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The PR checkout is a merge commit; its first parent is the base branch.
+          fetch-depth: 2
+
+      - name: List Markdown files to check
+        id: files
+        run: |
+          # Lists are passed through lychee-action's shell, so only allow plain paths.
+          plain() { { grep -E '^[A-Za-z0-9._/-]+$' || true; } | tr '\n' ' '; }
+          all=$(git ls-files '*.md' | plain)
+          if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
+            changed=$(git diff --name-only --diff-filter=d HEAD^1 HEAD -- '*.md' | plain)
+          else
+            changed=$all
+          fi
+          echo "all=$all" >> "$GITHUB_OUTPUT"
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+
+      - name: Check links in changed files
+        if: steps.files.outputs.changed != ''
+        uses: lycheeverse/lychee-action@v2.9.0
+        with:
+          args: --config .github/config/lychee.toml --no-progress ${{ steps.files.outputs.changed }}
+
+      # Catches links in unchanged files to files the PR renamed or removed.
+      - name: Check local links in all files
+        if: github.event_name == 'pull_request'
+        uses: lycheeverse/lychee-action@v2.9.0
+        with:
+          args: --config .github/config/lychee.toml --no-progress --offline ${{ steps.files.outputs.all }}

@@ -79,7 +79,7 @@ spec:
               name: nr-hcp-consul-secret
               key: HCP_ACCESS_TOKEN
         # The HCP Consul access url.
-        # docs: https://developer.hashicorp.com/hcp/docs/consul/hcp-managed/access#get-access-url
+        # docs: https://developer.hashicorp.com/consul/docs/hcp
         - name: HCP_ACCESS_URL
           value: <INSERT_HCP_ACCESS_URL>
       volumeMounts:
