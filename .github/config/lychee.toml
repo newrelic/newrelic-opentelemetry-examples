@@ -1,0 +1,21 @@
+# Settings follow opentelemetry-java and opentelemetry-java-instrumentation.
+timeout = 30
+retry_wait_time = 5
+max_retries = 6
+max_concurrency = 4
+
+include_fragments = "full"
+
+# Some sites return 403 to automated clients even though the page exists.
+accept = ["200..=299", "403"]
+
+exclude = [
+  '^https://.*\.nr-data\.net',
+  # The New Relic UI redirects unauthenticated requests to a login page.
+  '^https://one\.(eu\.)?newrelic\.com',
+  '^http://localhost(:[0-9]+)?',
+  # Slack requires auth.
+  '^https://join\.slack\.com/',
+  # Excluded for performance.
+  '^https://github\.com/newrelic/newrelic-opentelemetry-examples/(issues|pull)/\d+$',
+]

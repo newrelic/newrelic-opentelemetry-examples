@@ -8,7 +8,7 @@ This simple example demonstrates monitoring [HCP Consul](https://developer.hashi
 * [A New Relic account](https://one.newrelic.com/)
 * [A New Relic license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)
 * [An HCP Consul Account](https://developer.hashicorp.com/sign-up) with a running [cluster](https://developer.hashicorp.com/hcp/docs/consul)
-* [A HCP Consul admin access token](https://developer.hashicorp.com/hcp/docs/consul/dedicated/access#generate-admin-token)
+* [A HCP Consul admin access token](https://developer.hashicorp.com/consul/docs/hcp)
 
 ## Running the example
 
@@ -17,7 +17,7 @@ This simple example demonstrates monitoring [HCP Consul](https://developer.hashi
     cp k8s/secrets.yaml.template k8s/secrets.yaml
     # Edit k8s/secrets.yaml with your New Relic license key and HCP Consul admin access token
     ```
-    See the [New Relic docs](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key) for how to obtain a New Relic license key and the [HCP Consul docs](https://developer.hashicorp.com/hcp/docs/consul/hcp-managed/access#generate-admin-token) for how to obtain an HCP Consul admin access token.
+    See the [New Relic docs](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key) for how to obtain a New Relic license key and the [HCP Consul docs](https://developer.hashicorp.com/consul/docs/hcp) for how to obtain an HCP Consul admin access token.
 
     * If your account is based in the EU, update the `NEW_RELIC_OTLP_ENDPOINT` value in [collector.yaml](./k8s/collector.yaml) the endpoint to: [https://otlp.eu01.nr-data.net](https://otlp.eu01.nr-data.net)
 
@@ -30,12 +30,12 @@ This simple example demonstrates monitoring [HCP Consul](https://developer.hashi
        value: https://otlp.eu01.nr-data.net
     ```
    
-2. Set the `HCP_ACCESS_URL` env var value in [collector.yaml](./k8s/collector.yaml). See [HCP Consul docs](https://developer.hashicorp.com/hcp/docs/consul/hcp-managed/access#get-access-url) for details on obtaining org and workspace group ids.
+2. Set the `HCP_ACCESS_URL` env var value in [collector.yaml](./k8s/collector.yaml). See [HCP Consul docs](https://developer.hashicorp.com/consul/docs/hcp) for details on obtaining org and workspace group ids.
 
     ```yaml
    # ...omitted for brevity
    # The HCP Consul access url.
-   # docs: https://developer.hashicorp.com/hcp/docs/consul/hcp-managed/access#get-access-url
+   # docs: https://developer.hashicorp.com/consul/docs/hcp
    - name: HCP_ACCESS_URL
      value: <INSERT_HCP_ACCESS_URL>
     ```
