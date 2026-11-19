@@ -1,13 +1,12 @@
-use std::time::Duration;
-
 use actix_web::{web, App, HttpServer};
-use actix_web_opentelemetry::{RequestMetrics, RequestTracing};
+use opentelemetry_instrumentation_actix_web::{RequestMetrics, RequestTracing};
 use opentelemetry::{global, KeyValue};
 use opentelemetry::trace::{Span, Status, Tracer};
-use opentelemetry_sdk::{runtime, Resource};
+use opentelemetry_otlp::WithTonicConfig;
+use opentelemetry_sdk::Resource;
+use opentelemetry_sdk::metrics::{SdkMeterProvider, Temporality};
 use opentelemetry_sdk::propagation::TraceContextPropagator;
-use opentelemetry_sdk::resource::{EnvResourceDetector, ResourceDetector, SdkProvidedResourceDetector, TelemetryResourceDetector};
-use opentelemetry_sdk::trace::Config;
+use opentelemetry_sdk::trace::SdkTracerProvider;
 use serde::{Serialize, Deserialize};
 
 #[derive(Deserialize)]
@@ -81,41 +80,39 @@ fn compute_fibonacci(n: i64) -> Result<i64, Box<dyn std::error::Error>> {
     Ok(result)
 }
 
-fn create_resource() -> Resource {
-    let sdk_provided_resource = SdkProvidedResourceDetector.detect(Duration::from_secs(0));
-    let env_resource = EnvResourceDetector::new().detect(Duration::from_secs(0));
-    let telemetry_resource = TelemetryResourceDetector.detect(Duration::from_secs(0));
-    sdk_provided_resource
-        .merge(&env_resource)
-        .merge(&telemetry_resource)
-}
-
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     global::set_text_map_propagator(TraceContextPropagator::new());
 
-    
+    // Includes the SDK, telemetry, and OTEL_RESOURCE_ATTRIBUTES / OTEL_SERVICE_NAME detectors.
+    let resource = Resource::builder().build();
 
-    let tracer_provider = opentelemetry_otlp::new_pipeline()
-        .tracing()
-        .with_exporter(opentelemetry_otlp::new_exporter().tonic()
-            .with_tls_config(tonic::transport::ClientTlsConfig::new().with_native_roots()))
-        .with_trace_config(Config::default().with_resource(create_resource()))
-        .install_batch(runtime::TokioCurrentThread)
-        .expect("failed to initialize the trace pipeline");
-
-    global::set_tracer_provider(tracer_provider);
-
-    let meter_provider = opentelemetry_otlp::new_pipeline()
-        .metrics(runtime::TokioCurrentThread)
-        .with_exporter(opentelemetry_otlp::new_exporter().tonic()
-            .with_tls_config(tonic::transport::ClientTlsConfig::new().with_native_roots()))
-        .with_resource(create_resource())
-        .with_delta_temporality()
+    let span_exporter = opentelemetry_otlp::SpanExporter::builder()
+        .with_tonic()
+        .with_tls_config(tonic::transport::ClientTlsConfig::new().with_native_roots())
         .build()
-        .expect("failed to initialize the metrics pipeline");
+        .expect("failed to initialize the span exporter");
 
-    global::set_meter_provider(meter_provider);
+    let tracer_provider = SdkTracerProvider::builder()
+        .with_resource(resource.clone())
+        .with_batch_exporter(span_exporter)
+        .build();
+
+    global::set_tracer_provider(tracer_provider.clone());
+
+    let metric_exporter = opentelemetry_otlp::MetricExporter::builder()
+        .with_tonic()
+        .with_tls_config(tonic::transport::ClientTlsConfig::new().with_native_roots())
+        .with_temporality(Temporality::Delta)
+        .build()
+        .expect("failed to initialize the metric exporter");
+
+    let meter_provider = SdkMeterProvider::builder()
+        .with_resource(resource)
+        .with_periodic_exporter(metric_exporter)
+        .build();
+
+    global::set_meter_provider(meter_provider.clone());
 
     HttpServer::new(|| {
         App::new()
@@ -127,10 +124,13 @@ async fn main() -> std::io::Result<()> {
     .run()
     .await?;
 
-    global::shutdown_tracer_provider();
-    
-    // TODO: Figure out how to shutdown the meter provider cleanly
-    // meter_provider.shutdown()?;
+    // Flush any buffered telemetry before exiting.
+    if let Err(err) = tracer_provider.shutdown() {
+        eprintln!("failed to shut down the tracer provider: {err}");
+    }
+    if let Err(err) = meter_provider.shutdown() {
+        eprintln!("failed to shut down the meter provider: {err}");
+    }
 
     Ok({})
 }

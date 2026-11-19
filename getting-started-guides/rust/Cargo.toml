@@ -4,10 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-actix-web = "4.8.0"
-actix-web-opentelemetry = { version = "0.19.0", features = ["metrics"] }
-opentelemetry = "0.24.0"
-opentelemetry-otlp = { version =  "0.17.0", features = ["tls-roots", "gzip-tonic"] }
-opentelemetry_sdk = { version = "0.32.1", features = ["rt-tokio-current-thread"] }
+actix-web = "4.12.0"
+opentelemetry-instrumentation-actix-web = { version = "0.25.0", features = ["metrics"] }
+opentelemetry = "0.33.1"
+opentelemetry-otlp = { version = "0.33.1", default-features = false, features = ["grpc-tonic", "trace", "metrics", "tls-roots", "tls-ring", "gzip-tonic"] }
+opentelemetry_sdk = "0.33.1"
 serde = { version = "1.0.205", features = ["derive"] }
-tonic = "0.12.1"
+tonic = "0.14.1"
