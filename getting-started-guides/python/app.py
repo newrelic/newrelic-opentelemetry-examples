@@ -29,8 +29,8 @@ def fibonacci():
         logging.info("Compute fibonacci(" + str(x) + ") = " + str(array[x]))
         return jsonify(n=x, result=array[x])
 
-    except AssertionError:
-        trace.get_current_span().record_exception(exception=Exception, attributes={"exception.type": "AssertionError", "exception.message": error_message})
+    except AssertionError as e:
+        trace.get_current_span().record_exception(exception=e, attributes={"exception.message": error_message})
         trace.get_current_span().set_status(Status(StatusCode.ERROR, error_message))
         fib_counter.add(1, {"fibonacci.valid.n": "false"})
         logging.error("Failed to compute fibonacci(" + str(x) + ")")
