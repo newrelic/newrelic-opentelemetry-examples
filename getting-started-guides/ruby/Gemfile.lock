@@ -225,7 +225,7 @@ GEM
       opentelemetry-semantic_conventions
     opentelemetry-semantic_conventions (1.45.0)
       opentelemetry-api (~> 1.0)
-    puma (8.1.0)
+    puma (8.1.1)
       nio4r (~> 2.0)
     rack (3.2.8)
     rack-protection (4.2.1)
@@ -260,7 +260,7 @@ DEPENDENCIES
   opentelemetry-exporter-otlp (~> 0.37.0)
   opentelemetry-instrumentation-all (~> 0.101.0)
   opentelemetry-sdk (~> 1.13.1)
-  puma (~> 8.1.0)
+  puma (~> 8.1.1)
   sinatra (~> 4.2.1)
 
 CHECKSUMS
@@ -338,7 +338,7 @@ CHECKSUMS
   opentelemetry-registry (0.6.3) sha256=568fa8eaea94394f29f4fce3f0339ab10c3bf6d6c8beed6b3cfee6fd37fcc608
   opentelemetry-sdk (1.13.1) sha256=91c9cc315ac7ef30243549eeff8b27cd0d39bd02bdf9c9ae481ab96a1cec6754
   opentelemetry-semantic_conventions (1.45.0) sha256=f6a5b5187d3421e125576692be2a1cfd510d07a9abff81a1e71c67dc1a835cb5
-  puma (8.1.0) sha256=86337ed8a60eb3f246c287b7ffd7cbb81dee5a2408b745e2c33e77760b7c2ac7
+  puma (8.1.1) sha256=24800758cf064ecc19d056301b6946f628d77ea14653d485fa17ff6a6331555c
   rack (3.2.8) sha256=1fecc85e463ebc7a2a945fff829ffcd549babeb1556384796fad946c28dc4ec7
   rack-protection (4.2.1) sha256=cf6e2842df8c55f5e4d1a4be015e603e19e9bc3a7178bae58949ccbb58558bac
   rack-session (2.1.2) sha256=595434f8c0c3473ae7d7ac56ecda6cc6dfd9d37c0b2b5255330aa1576967ffe8
