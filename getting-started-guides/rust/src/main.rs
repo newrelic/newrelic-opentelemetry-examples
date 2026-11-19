@@ -67,14 +67,13 @@ fn compute_fibonacci(n: i64) -> Result<i64, Box<dyn std::error::Error>> {
 
         if n < 1 || n > 90 {
             let err_msg = "n must be between 1 and 90";
+            let err: Box<dyn std::error::Error> = Box::from(err_msg);
             span.set_status(Status::error(err_msg));
-
-            // TODO: Figure out how to record the error
-            // span.record_error(err);
+            span.record_error(err.as_ref());
 
             FIBONACCI_INVOCATIONS.add(1, &[KeyValue::new("fibonacci.valid.n", false)]);
             tracing::error!("Failed to compute fibonacci({n})");
-            return Err(Box::from(err_msg));
+            return Err(err);
         }
 
         let mut result: i64 = 1;
