@@ -88,3 +88,18 @@ updates:
       bundler-security:
         applies-to: security-updates
         patterns: ["*"]
+
+  - package-ecosystem: "cargo"
+    directory: "/getting-started-guides/rust"
+    schedule:
+      interval: "weekly"
+    groups:
+      opentelemetry:
+        # tonic must match the version opentelemetry-otlp uses.
+        patterns: ["opentelemetry*", "tonic"]
+      cargo:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+      cargo-security:
+        applies-to: security-updates
+        patterns: ["*"]
