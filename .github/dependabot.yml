@@ -2,6 +2,10 @@ version: 2
 # Each ecosystem gets at most one grouped PR for version updates and one for
 # security updates. Major version bumps are left ungrouped so a breaking
 # upgrade doesn't block the rest of the group.
+#
+# OpenTelemetry packages are the exception: their API and SDK releases must
+# move together, majors included, so they get their own group. It is listed
+# first because a dependency goes into the first group it matches.
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -18,6 +22,8 @@ updates:
     schedule:
       interval: "weekly"
     groups:
+      opentelemetry:
+        patterns: ["io.opentelemetry*"]
       gradle:
         patterns: ["*"]
         update-types: ["minor", "patch"]
@@ -32,6 +38,8 @@ updates:
     schedule:
       interval: "weekly"
     groups:
+      opentelemetry:
+        patterns: ["@opentelemetry/*"]
       npm:
         patterns: ["*"]
         update-types: ["minor", "patch"]
@@ -44,6 +52,8 @@ updates:
     schedule:
       interval: "weekly"
     groups:
+      opentelemetry:
+        patterns: ["opentelemetry-*"]
       pip:
         patterns: ["*"]
         update-types: ["minor", "patch"]
@@ -56,6 +66,8 @@ updates:
     schedule:
       interval: "weekly"
     groups:
+      opentelemetry:
+        patterns: ["go.opentelemetry.io/*"]
       gomod:
         patterns: ["*"]
         update-types: ["minor", "patch"]
@@ -68,6 +80,8 @@ updates:
     schedule:
       interval: "weekly"
     groups:
+      opentelemetry:
+        patterns: ["opentelemetry-*"]
       bundler:
         patterns: ["*"]
         update-types: ["minor", "patch"]
