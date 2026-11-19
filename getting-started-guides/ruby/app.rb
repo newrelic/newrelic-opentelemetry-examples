@@ -6,6 +6,8 @@ require_relative 'fibonacci'
 
 class App < Sinatra::Base
   set :show_exceptions, :after_handler
+  # Sinatra only allows localhost in development; allow the compose service names too.
+  set :host_authorization, { permitted_hosts: [] }
 
   get '/' do
     redirect '/fibonacci'
