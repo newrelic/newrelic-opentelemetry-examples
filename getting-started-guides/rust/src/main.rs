@@ -4,10 +4,9 @@ use opentelemetry::{global, KeyValue};
 use opentelemetry::metrics::Counter;
 use opentelemetry::trace::{Status, TraceContextExt, Tracer};
 use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
-use opentelemetry_otlp::WithTonicConfig;
 use opentelemetry_sdk::Resource;
 use opentelemetry_sdk::logs::SdkLoggerProvider;
-use opentelemetry_sdk::metrics::{SdkMeterProvider, Temporality};
+use opentelemetry_sdk::metrics::SdkMeterProvider;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::trace::SdkTracerProvider;
 use serde::{Serialize, Deserialize};
@@ -104,8 +103,6 @@ async fn main() -> std::io::Result<()> {
     let resource = Resource::builder().build();
 
     let span_exporter = opentelemetry_otlp::SpanExporter::builder()
-        .with_tonic()
-        .with_tls_config(tonic::transport::ClientTlsConfig::new().with_native_roots())
         .build()
         .expect("failed to initialize the span exporter");
 
@@ -117,9 +114,6 @@ async fn main() -> std::io::Result<()> {
     global::set_tracer_provider(tracer_provider.clone());
 
     let metric_exporter = opentelemetry_otlp::MetricExporter::builder()
-        .with_tonic()
-        .with_tls_config(tonic::transport::ClientTlsConfig::new().with_native_roots())
-        .with_temporality(Temporality::Delta)
         .build()
         .expect("failed to initialize the metric exporter");
 
@@ -131,8 +125,6 @@ async fn main() -> std::io::Result<()> {
     global::set_meter_provider(meter_provider.clone());
 
     let log_exporter = opentelemetry_otlp::LogExporter::builder()
-        .with_tonic()
-        .with_tls_config(tonic::transport::ClientTlsConfig::new().with_native_roots())
         .build()
         .expect("failed to initialize the log exporter");
 
