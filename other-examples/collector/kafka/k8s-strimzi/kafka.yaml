@@ -237,7 +237,7 @@ data:
 ---
 # ── KafkaNodePool (KRaft mode — single node acts as controller + broker) ──────
 # Strimzi 0.46+ requires KRaft; ZooKeeper is no longer supported.
-apiVersion: kafka.strimzi.io/v1beta2
+apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
   name: dual-role
@@ -261,7 +261,7 @@ spec:
 # ── Strimzi Kafka Cluster (KRaft mode) ────────────────────────────────────────
 # Edit KAFKA_CLUSTER_NAME: must match collector.yaml (kafka.cluster.name value)
 # KAFKA_CLUSTER_NAME = "kafka-strimzi-cluster"
-apiVersion: kafka.strimzi.io/v1beta2
+apiVersion: kafka.strimzi.io/v1
 kind: Kafka
 metadata:
   name: kafka-strimzi-cluster
@@ -271,8 +271,7 @@ metadata:
     strimzi.io/kraft: enabled
 spec:
   kafka:
-    version: 4.1.1
-    metadataVersion: 4.1-IV1
+    version: 4.3.2
     metricsConfig:
       type: jmxPrometheusExporter
       valueFrom:
@@ -295,7 +294,7 @@ spec:
 
 ---
 # ── Topics ────────────────────────────────────────────────────────────────
-apiVersion: kafka.strimzi.io/v1beta2
+apiVersion: kafka.strimzi.io/v1
 kind: KafkaTopic
 metadata:
   name: orders

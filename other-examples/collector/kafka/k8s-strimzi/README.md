@@ -82,7 +82,7 @@ The Strimzi cluster name (`kafka-strimzi-cluster`) appears in multiple places â€
 - `collector.yaml`: the `kafka_metrics` bootstrap URL, Prometheus `relabel_configs` regexes, and the `resource` processor
 - `sample-apps.yaml`: the `--bootstrap-server` argument in both producer and consumer
 
-This example uses Strimzi 0.46+ with KRaft mode via `KafkaNodePool`. The `Kafka` CR requires the annotations `strimzi.io/node-pools: enabled` and `strimzi.io/kraft: enabled`.
+This example uses Strimzi 1.x (the `kafka.strimzi.io/v1` API) with KRaft mode via `KafkaNodePool`. The `Kafka` CR requires the annotations `strimzi.io/node-pools: enabled` and `strimzi.io/kraft: enabled`.
 
 ## Troubleshooting
 
