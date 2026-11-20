@@ -17,7 +17,6 @@ It demonstrates how to configure OpenTelemetry Python to send data to New Relic.
     ```shell
     export OTEL_SERVICE_NAME=getting-started-python
     export OTEL_RESOURCE_ATTRIBUTES=service.instance.id=123
-    export OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED=true
     export OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp.nr-data.net
     export OTEL_EXPORTER_OTLP_HEADERS=api-key=<your_license_key>
     export OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=4095

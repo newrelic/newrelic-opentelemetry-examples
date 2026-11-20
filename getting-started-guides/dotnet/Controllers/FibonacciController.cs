@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Mvc;
-using OpenTelemetry.Trace;
 
 namespace dotnet.Controllers;
 
@@ -36,7 +35,7 @@ public class FibonacciController : ControllerBase
         }
         catch (ArgumentOutOfRangeException ex)
         {
-            Activity.Current?.SetStatus(Status.Error.WithDescription(ex.Message));
+            Activity.Current?.SetStatus(ActivityStatusCode.Error, ex.Message);
             return BadRequest(new { message = ex.Message });
         }
     }
@@ -74,8 +73,8 @@ public class FibonacciController : ControllerBase
         }
         catch (ArgumentOutOfRangeException ex)
         {
-            activity?.SetStatus(Status.Error.WithDescription(ex.Message));
-            activity?.RecordException(ex);
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
             fibonacciInvocations.Add(1, new KeyValuePair<string, object?>(AttributeNameValid, false));
             logger.LogInformation("Failed to compute fib({n}).", n);
             throw;
