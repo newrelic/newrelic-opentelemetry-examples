@@ -35,7 +35,6 @@ OpenTelemetry and New Relic.
 
 * [Monitor Confluent Cloud Kafka with Collector](./other-examples/collector/confluentcloud)
 * [Monitor Docker with Collector](./other-examples/collector/docker)
-* [Monitor HCP Consul with Collector](./other-examples/collector/hcp-consul)
 * [Monitor HiveMQ with Collector](./other-examples/collector/hivemq)
 * [Monitor Hosts with Collector](./other-examples/collector/host-monitoring)
 * [Monitor IBM MQ with Collector](./infrastructure-monitoring/ibm-mq)
