@@ -95,8 +95,7 @@ updates:
       interval: "weekly"
     groups:
       opentelemetry:
-        # tonic must match the version opentelemetry-otlp uses.
-        patterns: ["opentelemetry*", "tonic"]
+        patterns: ["opentelemetry*"]
       cargo:
         patterns: ["*"]
         update-types: ["minor", "patch"]
