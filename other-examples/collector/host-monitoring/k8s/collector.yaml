@@ -18,7 +18,7 @@ data:
             # By default, the otlp receiver is configured to listen on localhost at port 4318, we need to change this to listen on the pod IP.
             endpoint: ${env:MY_POD_IP}:4318
       
-      hostmetrics:
+      host_metrics:
         root_path: /hostfs
         # Default collection interval is 60s. Lower if you need finer granularity.
         collection_interval: 60s
@@ -75,7 +75,7 @@ data:
           #   mute_process_user_error: true
           #   mute_process_io_error: true
     
-      filelog:
+      file_log:
         include:
           - /var/log/alternatives.log
           - /var/log/cloud-init.log
@@ -88,7 +88,7 @@ data:
 
     processors:    
       # group system.cpu metrics by cpu
-      metricstransform:
+      metrics_transform:
         transforms:
           - include: system.cpu.utilization
             action: update
@@ -163,7 +163,7 @@ data:
           - key: type
             action: delete
     
-      cumulativetodelta:
+      cumulative_to_delta:
     
       transform/host:
         metric_statements:
@@ -189,9 +189,7 @@ data:
         check_interval: 1s
         limit_mib: ${env:NEW_RELIC_MEMORY_LIMIT_MIB:-100}
     
-      batch:
-    
-      resourcedetection:
+      resource_detection:
         detectors: ["system"]
         system:
           hostname_sources: ["os"]
@@ -199,14 +197,14 @@ data:
             host.id:
               enabled: true
     
-      resourcedetection/cloud:
+      resource_detection/cloud:
         detectors: ["gcp", "ec2", "azure"]
         timeout: 2s
         override: true
     
       # Gives OTEL_RESOURCE_ATTRIBUTES precedence over other sources.
       # host.id is set from env whenever the collector is orchestrated by NR Agents.
-      resourcedetection/env:
+      resource_detection/env:
         detectors: ["env"]
         timeout: 2s
         override: true
@@ -214,18 +212,21 @@ data:
     exporters:
       debug:
         verbosity: detailed
-      otlphttp:
+      otlp_http:
         endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT:-https://otlp.nr-data.net}
         headers:
           api-key: ${env:NEW_RELIC_LICENSE_KEY}
+        sending_queue:
+          batch:
+            enabled: true
     
     service:
       pipelines:
         metrics/host:
-          receivers: [hostmetrics]
+          receivers: [host_metrics]
           processors:
             - memory_limiter
-            - metricstransform
+            - metrics_transform
             - filter/exclude_cpu_utilization
             - filter/exclude_memory_utilization
             - filter/exclude_memory_usage
@@ -236,28 +237,27 @@ data:
             - filter/exclude_network
             - attributes/exclude_system_paging
             - transform/host
-            - resourcedetection
-            - resourcedetection/cloud
-            - resourcedetection/env
-            - cumulativetodelta
-            - batch
-          exporters: [otlphttp]
+            - resource_detection
+            - resource_detection/cloud
+            - resource_detection/env
+            - cumulative_to_delta
+          exporters: [otlp_http]
         logs/host:
-          receivers: [filelog]
-          processors: [memory_limiter, transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
-          exporters: [otlphttp]
+          receivers: [file_log]
+          processors: [memory_limiter, transform, resource_detection, resource_detection/cloud, resource_detection/env]
+          exporters: [otlp_http]
         traces:
           receivers: [otlp]
-          processors: [memory_limiter, transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
-          exporters: [otlphttp]
+          processors: [memory_limiter, transform, resource_detection, resource_detection/cloud, resource_detection/env]
+          exporters: [otlp_http]
         metrics:
           receivers: [otlp]
-          processors: [memory_limiter, transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
-          exporters: [otlphttp]
+          processors: [memory_limiter, transform, resource_detection, resource_detection/cloud, resource_detection/env]
+          exporters: [otlp_http]
         logs:
           receivers: [otlp]
-          processors: [memory_limiter, transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
-          exporters: [otlphttp]
+          processors: [memory_limiter, transform, resource_detection, resource_detection/cloud, resource_detection/env]
+          exporters: [otlp_http]
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -277,7 +277,7 @@ spec:
     spec:
       containers:
         - name: collector
-          image: otel/opentelemetry-collector-contrib:0.148.0
+          image: otel/opentelemetry-collector-contrib:0.165.0
           env:
             # The default US endpoint is set here. You can change the endpoint and port based on your requirements if needed.
             # docs: https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/best-practices/opentelemetry-otlp/#configure-endpoint-port-protocol
@@ -294,7 +294,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-            # host.id is required for NewRelic host entity synthesis and relationships, but is not included by any resourcedetection detector when running with docker on macOS.
+            # host.id is required for NewRelic host entity synthesis and relationships, but is not included by any resource_detection detector when running with docker on macOS.
             # We enabled the "env" resource detector and set host.id to the name of the node via env var.
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: host.id=$(NODE_NAME)

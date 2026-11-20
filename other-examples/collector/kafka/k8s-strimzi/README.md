@@ -60,7 +60,7 @@ AND metricName LIKE 'kafka.%'
 SINCE 5 minutes ago LIMIT MAX
 ```
 
-To view consumer group lag collected by the `kafkametrics` receiver:
+To view consumer group lag collected by the `kafka_metrics` receiver:
 
 ```sql
 FROM Metric SELECT latest(kafka.consumer_group.lag_sum)
@@ -73,16 +73,16 @@ See [get started with querying](https://docs.newrelic.com/docs/query-your-data/e
 
 ## Additional notes
 
-The Strimzi Kafka cluster is configured in [kafka.yaml](./kafka.yaml) to expose JMX metrics via the Prometheus JMX Exporter on port `9404` of each broker pod. The collector's Prometheus receiver scrapes those endpoints and feeds them into the `metrics/broker` pipeline, while the `kafkametrics` receiver connects to the Kafka API for consumer lag and cluster-wide metrics.
+The Strimzi Kafka cluster is configured in [kafka.yaml](./kafka.yaml) to expose JMX metrics via the Prometheus JMX Exporter on port `9404` of each broker pod. The collector's Prometheus receiver scrapes those endpoints and feeds them into the `metrics/broker` pipeline, while the `kafka_metrics` receiver connects to the Kafka API for consumer lag and cluster-wide metrics.
 
 The collector runs as a plain Kubernetes `Deployment` (not a DaemonSet) defined in [collector.yaml](./collector.yaml). It uses three pipelines: `metrics/broker` for per-broker metrics, `metrics/cluster/prometheus` and `metrics/cluster/kafkametrics` for cluster-wide aggregation.
 
 The Strimzi cluster name (`kafka-strimzi-cluster`) appears in multiple places — update all of them if you rename the cluster:
 - `kafka.yaml`: `metadata.name` on the `Kafka` CR
-- `collector.yaml`: the `kafkametrics` bootstrap URL, Prometheus `relabel_configs` regexes, and the `resource` processor
+- `collector.yaml`: the `kafka_metrics` bootstrap URL, Prometheus `relabel_configs` regexes, and the `resource` processor
 - `sample-apps.yaml`: the `--bootstrap-server` argument in both producer and consumer
 
-This example uses Strimzi 0.46+ with KRaft mode via `KafkaNodePool`. The `Kafka` CR requires the annotations `strimzi.io/node-pools: enabled` and `strimzi.io/kraft: enabled`.
+This example uses Strimzi 1.x (the `kafka.strimzi.io/v1` API) with KRaft mode via `KafkaNodePool`. The `Kafka` CR requires the annotations `strimzi.io/node-pools: enabled` and `strimzi.io/kraft: enabled`.
 
 ## Troubleshooting
 

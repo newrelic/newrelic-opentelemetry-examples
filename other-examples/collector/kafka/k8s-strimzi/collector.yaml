@@ -3,7 +3,7 @@
 # ============================================================
 # Prometheus receiver auto-discovers Kafka broker pods via
 # Strimzi pod labels and scrapes JMX Exporter on port 9404.
-# kafkametrics receiver collects consumer lag.
+# kafka_metrics receiver collects consumer lag.
 #
 # To customize:
 #   - Edit KAFKA_CLUSTER_NAME (must match kafka.yaml)
@@ -62,7 +62,7 @@ data:
   otel-collector-config.yaml: |
     receivers:
       # Consumer lag + partition/topic metrics from Kafka API
-      kafkametrics/cluster:
+      kafka_metrics/cluster:
         brokers:
           - "${env:KAFKA_CLUSTER_NAME}-kafka-bootstrap.kafka.svc.cluster.local:9092"
         collection_interval: 30s
@@ -119,10 +119,6 @@ data:
         limit_percentage: 80
         spike_limit_percentage: 30
         check_interval: 1s
-
-      batch/export:
-        send_batch_size: 1024
-        timeout: 30s
 
       # Add kafka.cluster.name to all metrics — edit to match kafka.yaml
       resource/cluster-name:
@@ -219,7 +215,7 @@ data:
               - delete_key(attributes, "url.scheme")
 
       # Aggregate per-partition replica metrics to topic level
-      metricstransform/topic-aggregation:
+      metrics_transform/topic-aggregation:
         transforms:
           - include: kafka.partition.replicas_in_sync
             action: insert
@@ -242,12 +238,12 @@ data:
           datapoint:
             - 'attributes["topic"] != nil and IsMatch(attributes["topic"], "^__.*")'
 
-      cumulativetodelta: {}
+      cumulative_to_delta: {}
 
       groupbyattrs/cluster:
         keys: [kafka.cluster.name]
 
-      metricstransform/cluster_max:
+      metrics_transform/cluster_max:
         transforms:
           - include: "kafka\\.partition\\.offline|kafka\\.leader\\.election\\.rate|kafka\\.unclean\\.election\\.rate|kafka\\.partition\\.non_preferred_leader|kafka\\.broker\\.fenced\\.count|kafka\\.cluster\\.partition\\.count|kafka\\.cluster\\.topic\\.count"
             match_type: regexp
@@ -258,13 +254,17 @@ data:
                 label_set: []
 
     exporters:
-      otlp/newrelic:
+      otlp_grpc/newrelic:
         endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT}
         headers:
           api-key: ${env:NEW_RELIC_LICENSE_KEY}
         sending_queue:
           num_consumers: 12
           queue_size: 5000
+          batch:
+            enabled: true
+            min_size: 1024
+            flush_timeout: 5s
         retry_on_failure:
           enabled: true
 
@@ -280,9 +280,8 @@ data:
             - transform/remove_attributes
             - filter/exclude_cluster_metrics
             - memory_limiter
-            - cumulativetodelta
-            - batch/export
-          exporters: [otlp/newrelic]
+            - cumulative_to_delta
+          exporters: [otlp_grpc/newrelic]
 
         # Cluster-level metrics from Prometheus JMX scraping
         metrics/cluster/prometheus:
@@ -295,25 +294,23 @@ data:
             - filter/include_cluster_metrics
             - transform/remove_broker_id
             - memory_limiter
-            - cumulativetodelta
+            - cumulative_to_delta
             - groupbyattrs/cluster
-            - metricstransform/cluster_max
-            - batch/export
-          exporters: [otlp/newrelic]
+            - metrics_transform/cluster_max
+          exporters: [otlp_grpc/newrelic]
 
         # Cluster-level metrics from Kafka metrics API (consumer lag)
-        metrics/cluster/kafkametrics:
-          receivers: [kafkametrics/cluster]
+        metrics/cluster/kafka_metrics:
+          receivers: [kafka_metrics/cluster]
           processors:
             - resource/cluster-name
             - filter/internal_topics
             - transform/remove_attributes
-            - metricstransform/topic-aggregation
+            - metrics_transform/topic-aggregation
             - filter/exclude_partition_replicas_metric
             - memory_limiter
-            - cumulativetodelta
-            - batch/export
-          exporters: [otlp/newrelic]
+            - cumulative_to_delta
+          exporters: [otlp_grpc/newrelic]
 
 ---
 # ── Collector Deployment ──────────────────────────────────────────────────

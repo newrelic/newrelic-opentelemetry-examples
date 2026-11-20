@@ -7,12 +7,11 @@ receivers:
         endpoint: otel-collector:4317
       http:
         endpoint: otel-collector:4318
-  fluentforward:
+  fluent_forward:
     endpoint: 0.0.0.0:8006
 processors:
-  batch:
   # Will convert all monotonic, cumulative sums to monotonic, delta sums
-  cumulativetodelta:
+  cumulative_to_delta:
   transform:
     trace_statements:
       - truncate_all(span.attributes, 4095)
@@ -26,22 +25,25 @@ processors:
 exporters:
   debug:
     verbosity: ${LOG_EXPORTER_LOG_VERBOSITY}
-  otlphttp:
+  otlp_http:
     endpoint: https://otlp.nr-data.net
     headers:
       api-key: ${NEW_RELIC_API_KEY}
+    sending_queue:
+      batch:
+        enabled: true
 service:
   extensions: [health_check]
   pipelines:
     metrics:
       receivers: [otlp]
-      processors: [cumulativetodelta, transform, batch]
-      exporters: [debug, otlphttp]
+      processors: [cumulative_to_delta, transform]
+      exporters: [debug, otlp_http]
     traces:
       receivers: [otlp]
-      processors: [transform, batch]
-      exporters: [debug, otlphttp]
+      processors: [transform]
+      exporters: [debug, otlp_http]
     logs:
-      receivers: [otlp, fluentforward]
-      processors: [transform, batch]
-      exporters: [debug, otlphttp]
+      receivers: [otlp, fluent_forward]
+      processors: [transform]
+      exporters: [debug, otlp_http]

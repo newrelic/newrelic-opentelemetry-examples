@@ -51,7 +51,7 @@ AND metricName LIKE 'kafka.%'
 SINCE 5 minutes ago LIMIT MAX
 ```
 
-To view consumer group lag collected by the `kafkametrics` receiver:
+To view consumer group lag collected by the `kafka_metrics` receiver:
 
 ```sql
 FROM Metric SELECT latest(kafka.consumer_group.lag_sum)
