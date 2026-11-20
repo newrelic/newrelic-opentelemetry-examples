@@ -16,7 +16,8 @@ COPY Log4j2EventLayout.json src/main/resources/Log4j2EventLayout.json
 # Modify build.gradle to include dependencies for JSON structured logging
 RUN sed -e '/dependencies {/a\  implementation "org.springframework.boot:spring-boot-starter-log4j2"' build.gradle > tmp; mv tmp build.gradle
 RUN sed -e '/dependencies {/a\  implementation "org.apache.logging.log4j:log4j-layout-template-json:2.20.0"' build.gradle > tmp; mv tmp build.gradle
-RUN echo "configurations.all {\n  exclude module: 'spring-boot-starter-logging'\n}" >> build.gradle
+# The leading newline guards against build.gradle not ending in one.
+RUN printf "\nconfigurations.all {\n  exclude module: 'spring-boot-starter-logging'\n}\n" >> build.gradle
 
 # Build the app
 RUN ./gradlew bootJar

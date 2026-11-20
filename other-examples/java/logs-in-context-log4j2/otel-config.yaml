@@ -4,7 +4,9 @@ receivers:
   otlp:
     protocols:
       grpc:
+        endpoint: 0.0.0.0:4317
       http:
+        endpoint: 0.0.0.0:4318
   fluent_forward:
     endpoint: 0.0.0.0:8006
 processors:
