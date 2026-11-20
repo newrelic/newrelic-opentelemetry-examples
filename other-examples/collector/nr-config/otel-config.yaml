@@ -10,7 +10,6 @@ receivers:
   fluentforward:
     endpoint: 0.0.0.0:8006
 processors:
-  batch:
   # Will convert all monotonic, cumulative sums to monotonic, delta sums
   cumulativetodelta:
   transform:
@@ -26,22 +25,25 @@ processors:
 exporters:
   debug:
     verbosity: ${LOG_EXPORTER_LOG_VERBOSITY}
-  otlphttp:
+  otlp_http:
     endpoint: https://otlp.nr-data.net
     headers:
       api-key: ${NEW_RELIC_API_KEY}
+    sending_queue:
+      batch:
+        enabled: true
 service:
   extensions: [health_check]
   pipelines:
     metrics:
       receivers: [otlp]
-      processors: [cumulativetodelta, transform, batch]
-      exporters: [debug, otlphttp]
+      processors: [cumulativetodelta, transform]
+      exporters: [debug, otlp_http]
     traces:
       receivers: [otlp]
-      processors: [transform, batch]
-      exporters: [debug, otlphttp]
+      processors: [transform]
+      exporters: [debug, otlp_http]
     logs:
       receivers: [otlp, fluentforward]
-      processors: [transform, batch]
-      exporters: [debug, otlphttp]
+      processors: [transform]
+      exporters: [debug, otlp_http]

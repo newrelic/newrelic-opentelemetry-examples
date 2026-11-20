@@ -37,21 +37,22 @@ receivers:
         enabled: true
 
 processors:
-  batch:
-
   resourcedetection:
     detectors: [env, system, gcp, ec2, azure]
 
 exporters:
-  otlphttp:
+  otlp_http:
     endpoint: ${NEW_RELIC_OTLP_ENDPOINT}
     headers:
       api-key: ${NEW_RELIC_API_KEY}
+    sending_queue:
+      batch:
+        enabled: true
 
 service:
   pipelines:
     metrics:
       receivers: [docker_stats]
-      processors: [resourcedetection, batch]
-      exporters: [otlphttp]
+      processors: [resourcedetection]
+      exporters: [otlp_http]
 

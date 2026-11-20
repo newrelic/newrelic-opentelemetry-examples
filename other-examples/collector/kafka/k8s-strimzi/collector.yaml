@@ -120,10 +120,6 @@ data:
         spike_limit_percentage: 30
         check_interval: 1s
 
-      batch/export:
-        send_batch_size: 1024
-        timeout: 30s
-
       # Add kafka.cluster.name to all metrics — edit to match kafka.yaml
       resource/cluster-name:
         attributes:
@@ -265,6 +261,10 @@ data:
         sending_queue:
           num_consumers: 12
           queue_size: 5000
+          batch:
+            enabled: true
+            min_size: 1024
+            flush_timeout: 5s
         retry_on_failure:
           enabled: true
 
@@ -281,7 +281,6 @@ data:
             - filter/exclude_cluster_metrics
             - memory_limiter
             - cumulativetodelta
-            - batch/export
           exporters: [otlp/newrelic]
 
         # Cluster-level metrics from Prometheus JMX scraping
@@ -298,7 +297,6 @@ data:
             - cumulativetodelta
             - groupbyattrs/cluster
             - metricstransform/cluster_max
-            - batch/export
           exporters: [otlp/newrelic]
 
         # Cluster-level metrics from Kafka metrics API (consumer lag)
@@ -312,7 +310,6 @@ data:
             - filter/exclude_partition_replicas_metric
             - memory_limiter
             - cumulativetodelta
-            - batch/export
           exporters: [otlp/newrelic]
 
 ---

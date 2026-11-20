@@ -8,7 +8,6 @@ receivers:
   fluentforward:
     endpoint: 0.0.0.0:8006
 processors:
-  batch:
   transform:
     log_statements:
       - context: log
@@ -21,23 +20,24 @@ processors:
           - replace_pattern(body, "\"span_id\":", "\"span.id\":")
 exporters:
   debug:
-    verbosity: $LOG_EXPORTER_LOG_VERBOSITY
-  otlphttp:
-    endpoint: $NEW_RELIC_OTLP_ENDPOINT
+    verbosity: ${env:LOG_EXPORTER_LOG_VERBOSITY}
+  otlp_http:
+    endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT}
     headers:
-      api-key: $NEW_RELIC_API_KEY
+      api-key: ${env:NEW_RELIC_API_KEY}
+    sending_queue:
+      batch:
+        enabled: true
 service:
   extensions: [health_check]
   pipelines:
     metrics:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [ otlphttp]
+      exporters: [ otlp_http]
     traces:
       receivers: [otlp]
-      processors: [ batch ]
-      exporters: [ debug, otlphttp]
+      exporters: [ debug, otlp_http]
     logs:
       receivers: [fluentforward]
-      processors: [ transform, batch ]
-      exporters: [debug, otlphttp]
+      processors: [transform]
+      exporters: [debug, otlp_http]

@@ -54,14 +54,6 @@ data:
             enabled: false
 
     processors:
-      batch/aggregation:
-        send_batch_size: 1024
-        timeout: 30s
-
-      batch/apps:
-        send_batch_size: 1024
-        timeout: 5s
-
       resource:
         attributes:
           - action: insert
@@ -164,27 +156,32 @@ data:
           api-key: ${env:NEW_RELIC_LICENSE_KEY}
         compression: gzip
         timeout: 30s
+        sending_queue:
+          batch:
+            enabled: true
+            min_size: 1024
+            flush_timeout: 5s
 
     service:
       pipelines:
         metrics/broker:
           receivers: [otlp, kafkametrics]
-          processors: [resource, filter/exclude_cluster_metrics, filter/internal_topics, transform/remove_extra_attributes, transform/des_units, cumulativetodelta, metricstransform/kafka_topic_sum_aggregation, filter/remove_partition_level_replicas, batch/aggregation]
+          processors: [resource, filter/exclude_cluster_metrics, filter/internal_topics, transform/remove_extra_attributes, transform/des_units, cumulativetodelta, metricstransform/kafka_topic_sum_aggregation, filter/remove_partition_level_replicas]
           exporters: [otlp/newrelic]
 
         metrics/cluster:
           receivers: [otlp]
-          processors: [resource, filter/include_cluster_metrics, transform/remove_broker_id, transform/remove_extra_attributes, transform/des_units, cumulativetodelta, groupbyattrs/cluster, metricstransform/cluster_max, batch/aggregation]
+          processors: [resource, filter/include_cluster_metrics, transform/remove_broker_id, transform/remove_extra_attributes, transform/des_units, cumulativetodelta, groupbyattrs/cluster, metricstransform/cluster_max]
           exporters: [otlp/newrelic]
 
         traces/apps:
           receivers: [otlp]
-          processors: [resource, batch/apps]
+          processors: [resource]
           exporters: [otlp/newrelic]
 
         logs/apps:
           receivers: [otlp]
-          processors: [resource, batch/apps]
+          processors: [resource]
           exporters: [otlp/newrelic]
 
 ---

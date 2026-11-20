@@ -22,21 +22,20 @@ data:
                 - targets: [ "${HIVEMQ_SERVICE_HOST}:${HIVEMQ_SERVICE_PORT_METRICS}" ]
               metrics_path: /metrics
     
-    processors:
-      batch:
-    
     exporters:
-      otlphttp:
+      otlp_http:
         endpoint: ${NEW_RELIC_OTLP_ENDPOINT}
         headers:
           api-key: ${NEW_RELIC_API_KEY}
+        sending_queue:
+          batch:
+            enabled: true
     
     service:
       pipelines:
         metrics:
           receivers: [prometheus]
-          processors: [batch]
-          exporters: [otlphttp]
+          exporters: [otlp_http]
 ---
 apiVersion: v1
 kind: Pod
@@ -48,7 +47,7 @@ metadata:
 spec:
   containers:
     - name: collector
-      image: otel/opentelemetry-collector-contrib:0.98.0
+      image: otel/opentelemetry-collector-contrib:0.165.0
       env:
         # The default US endpoint is set here. You can change the endpoint and port based on your requirements if needed.
         # docs: https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/best-practices/opentelemetry-otlp/#configure-endpoint-port-protocol

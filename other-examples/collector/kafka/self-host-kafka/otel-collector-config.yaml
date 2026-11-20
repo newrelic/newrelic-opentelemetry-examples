@@ -29,14 +29,6 @@ receivers:
         enabled: false
 
 processors:
-  batch/aggregation:
-    send_batch_size: 1024
-    timeout: 30s
-
-  batch/apps:
-    send_batch_size: 1024
-    timeout: 5s
-
   resourcedetection:
     detectors: [env, ec2, system]
     system:
@@ -152,6 +144,11 @@ exporters:
       api-key: ${env:NEW_RELIC_LICENSE_KEY}
     compression: gzip
     timeout: 30s
+    sending_queue:
+      batch:
+        enabled: true
+        min_size: 1024
+        flush_timeout: 5s
 
 service:
   pipelines:
@@ -168,7 +165,6 @@ service:
         - cumulativetodelta
         - metricstransform/kafka_topic_sum_aggregation
         - filter/remove_partition_level_replicas
-        - batch/aggregation
       exporters: [otlp/newrelic]
 
     # Cluster metrics pipeline (only cluster-level metrics, no broker.id)
@@ -184,17 +180,16 @@ service:
         - cumulativetodelta
         - groupbyattrs/cluster
         - metricstransform/cluster_max
-        - batch/aggregation
       exporters: [otlp/newrelic]
 
     # APM traces pipeline (producer + consumer spans via OTel Java Agent)
     traces/apps:
       receivers: [otlp]
-      processors: [resourcedetection, resource, batch/apps]
+      processors: [resourcedetection, resource]
       exporters: [otlp/newrelic]
 
     # APM logs pipeline (producer + consumer logs via OTel Java Agent)
     logs/apps:
       receivers: [otlp]
-      processors: [resourcedetection, resource, batch/apps]
+      processors: [resourcedetection, resource]
       exporters: [otlp/newrelic]

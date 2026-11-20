@@ -5,8 +5,6 @@ receivers:
         endpoint: 0.0.0.0:4318
 
 processors:
-  batch:
-
   # ============================================================
   # METRIC TRANSFORMATION
   # Transform error metrics so expected errors don't inflate error counts
@@ -41,13 +39,16 @@ processors:
 
 exporters:
   # Export to New Relic via OTLP
-  otlphttp:
+  otlp_http:
     endpoint: ${NEW_RELIC_OTLP_ENDPOINT}
     headers:
       api-key: ${NEW_RELIC_API_KEY}
+    sending_queue:
+      batch:
+        enabled: true
 
   # Debug exporter for local testing. To enable, add `debug` to the
-  # exporters array in any pipeline below (e.g., exporters: [otlphttp, debug])
+  # exporters array in any pipeline below (e.g., exporters: [otlp_http, debug])
   debug:
     verbosity: detailed
     sampling_initial: 5
@@ -57,9 +58,9 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [transform/traces, batch]
-      exporters: [otlphttp]
+      processors: [transform/traces]
+      exporters: [otlp_http]
     metrics:
       receivers: [otlp]
-      processors: [transform/metrics, batch]
-      exporters: [otlphttp]
+      processors: [transform/metrics]
+      exporters: [otlp_http]

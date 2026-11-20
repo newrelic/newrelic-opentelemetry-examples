@@ -60,17 +60,18 @@ processors:
           - delete_key(attributes, "instance")
           - delete_key(attributes, "job")
 
-  batch: {}
-
 exporters:
   otlp:
     endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT:-https://otlp.nr-data.net:4317}
     headers:
       api-key: ${env:NEW_RELIC_LICENSE_KEY}
+    sending_queue:
+      batch:
+        enabled: true
 
 service:
   pipelines:
     metrics:
       receivers: [prometheus]
-      processors: [resourcedetection, filter/overhead, filter/queues, transform, batch]
+      processors: [resourcedetection, filter/overhead, filter/queues, transform]
       exporters: [otlp]
