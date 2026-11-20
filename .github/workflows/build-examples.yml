@@ -103,3 +103,22 @@ jobs:
           else
             python .github/scripts/check-collector-configs.py
           fi
+
+  # The required status check. The jobs above are named after the examples
+  # they build, so they come and go; this job's name doesn't.
+  all-builds-passed:
+    if: always()
+    needs: [plan, build, collector-configs]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check job results
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Job results: $RESULTS"
+          for r in $RESULTS; do
+            case $r in
+              success|skipped) ;;
+              *) exit 1 ;;
+            esac
+          done

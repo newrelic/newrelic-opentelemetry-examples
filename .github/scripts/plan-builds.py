@@ -21,6 +21,20 @@ CONTEXT = {
 # Examples without a Dockerfile, built in the image their toolchain needs.
 NATIVE = [
     {
+        "name": "other-examples/java",
+        "dir": "other-examples/java",
+        "image": "eclipse-temurin:17",
+        "command": "./gradlew --no-daemon build",
+    },
+    {
+        # The Dockerfile only builds the jar; this also runs the tests.
+        "name": "getting-started-guides/java (gradle)",
+        "dir": "getting-started-guides/java",
+        # build.gradle requires a Java 21 toolchain.
+        "image": "eclipse-temurin:21",
+        "command": "./gradlew --no-daemon build",
+    },
+    {
         "name": "other-examples/serverless/aws-lambda/java",
         "dir": "other-examples/serverless/aws-lambda/java/ExampleFunction",
         # The Gradle 5 wrapper doesn't run on JDK 17+.
