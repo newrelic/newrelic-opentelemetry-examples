@@ -18,7 +18,7 @@ receivers:
 
 processors:
   # Detect host/cloud identity.
-  resourcedetection:
+  resource_detection:
     detectors: [env, ec2, gcp, azure, system]
     system:
       resource_attributes:
@@ -47,7 +47,7 @@ processors:
         - 'attributes["queue"] != nil and IsMatch(attributes["queue"], "^AMQ[.]")'
 
   # Tag cluster identity; drop collector-self attributes.
-  # Host identity comes from resourcedetection (host.id / host.name) — no target.name needed.
+  # Host identity comes from resource_detection (host.id / host.name) — no target.name needed.
   transform:
     metric_statements:
       - context: resource
@@ -61,7 +61,7 @@ processors:
           - delete_key(attributes, "job")
 
 exporters:
-  otlp:
+  otlp_grpc:
     endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT:-https://otlp.nr-data.net:4317}
     headers:
       api-key: ${env:NEW_RELIC_LICENSE_KEY}
@@ -73,5 +73,5 @@ service:
   pipelines:
     metrics:
       receivers: [prometheus]
-      processors: [resourcedetection, filter/overhead, filter/queues, transform]
-      exporters: [otlp]
+      processors: [resource_detection, filter/overhead, filter/queues, transform]
+      exporters: [otlp_grpc]

@@ -6,7 +6,7 @@ receivers:
         endpoint: "0.0.0.0:4317"
 
   # Kafka metrics receiver for cluster-level metrics
-  kafkametrics:
+  kafka_metrics:
     brokers: ${env:KAFKA_BOOTSTRAP_BROKER_ADDRESSES}
     protocol_version: 2.0.0
     scrapers:
@@ -29,7 +29,7 @@ receivers:
         enabled: false
 
 processors:
-  resourcedetection:
+  resource_detection:
     detectors: [env, ec2, system]
     system:
       resource_attributes:
@@ -105,12 +105,12 @@ processors:
           - set(description, "") where description != ""
           - set(unit, "") where unit != ""
 
-  cumulativetodelta:
+  cumulative_to_delta:
 
   groupbyattrs/cluster:
     keys: [kafka.cluster.name]
 
-  metricstransform/cluster_max:
+  metrics_transform/cluster_max:
     transforms:
       - include: "kafka\\.partition\\.offline|kafka\\.leader\\.election\\.rate|kafka\\.unclean\\.election\\.rate|kafka\\.partition\\.non_preferred_leader|kafka\\.broker\\.fenced\\.count|kafka\\.cluster\\.partition\\.count|kafka\\.cluster\\.topic\\.count"
         match_type: regexp
@@ -120,7 +120,7 @@ processors:
             aggregation_type: max
             label_set: []
 
-  metricstransform/kafka_topic_sum_aggregation:
+  metrics_transform/kafka_topic_sum_aggregation:
     transforms:
       - include: kafka.partition.replicas_in_sync
         action: insert
@@ -138,7 +138,7 @@ processors:
           - kafka.partition.replicas_in_sync
 
 exporters:
-  otlp/newrelic:
+  otlp_grpc/newrelic:
     endpoint: ${env:NEW_RELIC_OTLP_ENDPOINT}
     headers:
       api-key: ${env:NEW_RELIC_LICENSE_KEY}
@@ -154,42 +154,42 @@ service:
   pipelines:
     # Broker metrics pipeline (excludes cluster-level metrics)
     metrics/broker:
-      receivers: [otlp, kafkametrics]
+      receivers: [otlp, kafka_metrics]
       processors:
-        - resourcedetection
+        - resource_detection
         - resource
         - filter/exclude_cluster_metrics
         - filter/internal_topics
         - transform/remove_extra_attributes
         - transform/des_units
-        - cumulativetodelta
-        - metricstransform/kafka_topic_sum_aggregation
+        - cumulative_to_delta
+        - metrics_transform/kafka_topic_sum_aggregation
         - filter/remove_partition_level_replicas
-      exporters: [otlp/newrelic]
+      exporters: [otlp_grpc/newrelic]
 
     # Cluster metrics pipeline (only cluster-level metrics, no broker.id)
     metrics/cluster:
       receivers: [otlp]
       processors:
-        - resourcedetection
+        - resource_detection
         - resource
         - filter/include_cluster_metrics
         - transform/remove_broker_id
         - transform/remove_extra_attributes
         - transform/des_units
-        - cumulativetodelta
+        - cumulative_to_delta
         - groupbyattrs/cluster
-        - metricstransform/cluster_max
-      exporters: [otlp/newrelic]
+        - metrics_transform/cluster_max
+      exporters: [otlp_grpc/newrelic]
 
     # APM traces pipeline (producer + consumer spans via OTel Java Agent)
     traces/apps:
       receivers: [otlp]
-      processors: [resourcedetection, resource]
-      exporters: [otlp/newrelic]
+      processors: [resource_detection, resource]
+      exporters: [otlp_grpc/newrelic]
 
     # APM logs pipeline (producer + consumer logs via OTel Java Agent)
     logs/apps:
       receivers: [otlp]
-      processors: [resourcedetection, resource]
-      exporters: [otlp/newrelic]
+      processors: [resource_detection, resource]
+      exporters: [otlp_grpc/newrelic]

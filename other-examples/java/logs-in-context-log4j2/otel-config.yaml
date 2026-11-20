@@ -5,7 +5,7 @@ receivers:
     protocols:
       grpc:
       http:
-  fluentforward:
+  fluent_forward:
     endpoint: 0.0.0.0:8006
 processors:
   transform:
@@ -38,6 +38,6 @@ service:
       receivers: [otlp]
       exporters: [ debug, otlp_http]
     logs:
-      receivers: [fluentforward]
+      receivers: [fluent_forward]
       processors: [transform]
       exporters: [debug, otlp_http]

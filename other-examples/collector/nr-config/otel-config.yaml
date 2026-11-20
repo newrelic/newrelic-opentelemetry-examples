@@ -7,11 +7,11 @@ receivers:
         endpoint: otel-collector:4317
       http:
         endpoint: otel-collector:4318
-  fluentforward:
+  fluent_forward:
     endpoint: 0.0.0.0:8006
 processors:
   # Will convert all monotonic, cumulative sums to monotonic, delta sums
-  cumulativetodelta:
+  cumulative_to_delta:
   transform:
     trace_statements:
       - truncate_all(span.attributes, 4095)
@@ -37,13 +37,13 @@ service:
   pipelines:
     metrics:
       receivers: [otlp]
-      processors: [cumulativetodelta, transform]
+      processors: [cumulative_to_delta, transform]
       exporters: [debug, otlp_http]
     traces:
       receivers: [otlp]
       processors: [transform]
       exporters: [debug, otlp_http]
     logs:
-      receivers: [otlp, fluentforward]
+      receivers: [otlp, fluent_forward]
       processors: [transform]
       exporters: [debug, otlp_http]
