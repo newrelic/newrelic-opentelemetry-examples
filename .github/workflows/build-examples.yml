@@ -1,0 +1,105 @@
+name: Build examples
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches: [ main ]
+  # PRs only check the examples they change. A weekly run checks everything,
+  # to catch breakage from unpinned images and dependencies.
+  schedule:
+    - cron: "0 15 * * 1"
+  workflow_dispatch:
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      builds: ${{ steps.plan.outputs.builds }}
+      changed: ${{ steps.plan.outputs.changed }}
+      collector: ${{ steps.plan.outputs.collector }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The PR checkout is a merge commit; its first parent is the base branch.
+          fetch-depth: 2
+
+      - name: Plan builds and checks
+        id: plan
+        run: |
+          # The changed-file list is word-split later, so only allow plain paths.
+          plain() { { grep -E '^[A-Za-z0-9._/-]+$' || true; } | tr '\n' ' '; }
+          if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
+            changed=$(git diff --name-only HEAD^1 HEAD | plain)
+            builds=$(python3 .github/scripts/plan-builds.py --changed $changed)
+            collector=$(echo "$changed" | tr ' ' '\n' | grep -qE '\.ya?ml$|\.env|^\.github/' && echo true || echo false)
+          else
+            changed=
+            builds=$(python3 .github/scripts/plan-builds.py)
+            collector=true
+          fi
+          echo "builds=$builds" >> "$GITHUB_OUTPUT"
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+          echo "collector=$collector" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: plan
+    if: needs.plan.outputs.builds != '[]'
+    name: build (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.builds) }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build
+        working-directory: ${{ matrix.dir }}
+        env:
+          IMAGE: ${{ matrix.image }}
+          COMMAND: ${{ matrix.command }}
+          BROKEN: ${{ matrix.broken }}
+        run: |
+          build() {
+            if [ -n "$IMAGE" ]; then
+              docker run --rm -v "$PWD:/src" -w /src "$IMAGE" sh -c "$COMMAND"
+            else
+              sh -c "$COMMAND"
+            fi
+          }
+          # Known-broken builds report a warning instead of failing.
+          if [ "$BROKEN" = true ]; then
+            if build; then
+              echo "::warning::This build now succeeds; remove it from BROKEN in .github/scripts/plan-builds.py."
+            else
+              echo "::warning::Known-broken build failed, as expected. See BROKEN in .github/scripts/plan-builds.py."
+            fi
+          else
+            build
+          fi
+
+  collector-configs:
+    needs: plan
+    if: needs.plan.outputs.collector == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.x"
+
+      - name: Install PyYAML
+        run: python -m pip install pyyaml
+
+      - name: Validate Collector configs
+        env:
+          CHANGED: ${{ needs.plan.outputs.changed }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
+            python .github/scripts/check-collector-configs.py --changed $CHANGED
+          else
+            python .github/scripts/check-collector-configs.py
+          fi
