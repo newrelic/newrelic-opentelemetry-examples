@@ -6,7 +6,7 @@ from opentelemetry.trace.status import Status, StatusCode
 
 fib_counter = metrics.get_meter("opentelemetry.instrumentation.custom").create_counter("fibonacci.invocations", unit="1", description="Measures the number of times the fibonacci method is invoked.")
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 
