@@ -1,0 +1,78 @@
+# Internal Telemetry for nr-k8s-otel-collector Helm Chart
+
+This example demonstrates how to enable comprehensive internal telemetry for the OpenTelemetry collectors deployed via the [newrelic/nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) helm chart using our erecommended configuration](https://github.com/newrelic/nrdot-collector-releases/blob/ed3bd71116742391c40209039e999ebea6ba80f9/examples/internal-telemetry-config.yaml). This configuration enables detailed monitoring of the collectors themselves, including metrics, logs, and optionally traces. It also decorates the telemetry with necessary attributes to drive container-to-service relationships.
+
+Please note that this example overrides [some of the existing internal telemetry configuration](https://github.com/newrelic/helm-charts/blob/96436bef4e6311bf4e1a71031ff536cc7d42625f/charts/nr-k8s-otel-collector/templates/deployment-configmap.yaml#L791-L814). We are working towards embedding the configuration from this example directly in the helm chart to make enabling collector observability easier.
+
+## Requirements
+
+* A Kubernetes cluster with kubectl configured
+* Helm 3.x installed
+* [A New Relic account](https://one.newrelic.com/)
+* [A New Relic license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key)
+
+## Running the example
+
+1. Copy the template file and update with your values:
+
+    ```shell
+    cp k8s/secrets.yaml.template k8s/secrets.yaml
+    ```
+
+2. Edit `k8s/secrets.yaml` and update the following values:
+    * `NEW_RELIC_LICENSE_KEY`: Your New Relic license key
+    * `NEW_RELIC_OTLP_ENDPOINT`: If your account is based in the EU, change to `https://otlp.eu01.nr-data.net`
+    * `CLUSTER_NAME`: Your cluster name (should match the value passed to `--set cluster=` in the helm install command)
+
+3. Add the New Relic helm repository:
+
+    ```shell
+    helm repo add newrelic https://helm-charts.newrelic.com
+    helm repo update
+    ```
+
+4. Create the namespace and apply the secrets and ConfigMap:
+
+    ```shell
+    kubectl create namespace internal-telemetry-nr-k8s-otel-collector
+    kubectl apply -f k8s/
+    ```
+
+5. Install the helm chart with the custom values (replace `<YOUR_LICENSE_KEY>` and `<YOUR_CLUSTER_NAME>` with your actual values):
+
+    ```shell
+    helm install nr-k8s-otel-collector newrelic/nr-k8s-otel-collector \
+      --namespace internal-telemetry-nr-k8s-otel-collector \
+      -f values.yaml \
+      --set licenseKey=<YOUR_LICENSE_KEY> \
+      --set cluster=<YOUR_CLUSTER_NAME>
+    ```
+
+    * When finished, cleanup all resources by deleting the namespace:
+
+    ```shell
+    kubectl delete namespace internal-telemetry-nr-k8s-otel-collector
+    ```
+
+## Viewing your data
+
+To review your collector internal telemetry in New Relic, navigate to "New Relic -> All Entities" and search for entities with the service names you configured (by default: `nr-k8s-otel-collector-deployment` and `nr-k8s-otel-collector-daemonset`). Click on an entity to view the service summary, including golden metrics and performance data for the collector itself.
+
+## Additional notes
+
+### Customizing telemetry levels
+
+You can customize the telemetry levels by adding additional environment variables in [values.yaml](./values.yaml):
+
+- `INTERNAL_TELEMETRY_METRICS_LEVEL`: `detailed` (default), `normal`, `basic`, or `none`
+- `INTERNAL_TELEMETRY_LOG_LEVEL`: `INFO` (default), `DEBUG`, `WARN`, or `ERROR`
+- `INTERNAL_TELEMETRY_TRACE_LEVEL`: `none` (default) or `basic` (experimental)
+- `INTERNAL_TELEMETRY_TRACE_SAMPLE_RATIO`: `0.01` (default, 1% sampling)
+
+### Two collectors
+
+The nr-k8s-otel-collector chart deploys two collectors:
+- A **deployment** collector for cluster-level metrics
+- A **daemonset** collector that runs on each node for host-level metrics
+
+This example configures internal telemetry for both, with distinct service names to differentiate them in New Relic.
