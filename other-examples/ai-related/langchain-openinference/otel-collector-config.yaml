@@ -1,0 +1,78 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+extensions:
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+
+  resource:
+    attributes:
+      - key: service.name
+        value: langchain-genai-demo
+        action: upsert
+      - key: deployment.environment
+        value: development
+        action: upsert
+
+  gen_ai_normalizer:
+    sources:
+      - name: openinference
+        remove_originals: true
+
+  transform/backfill_missing:
+    error_mode: ignore
+    trace_statements:
+      - context: span
+        statements:
+          - 'set(attributes["gen_ai.agent.name"], ParseJSON(attributes["metadata"])["lc_agent_name"]) where attributes["metadata"] != nil and attributes["gen_ai.agent.name"] == nil and ParseJSON(attributes["metadata"])["lc_agent_name"] == name'
+          - 'set(attributes["gen_ai.response.finish_reasons"], [attributes["llm.finish_reason"]]) where attributes["llm.finish_reason"] != nil'
+          - 'set(attributes["gen_ai.response.id"], ParseJSON(attributes["output.value"])["llm_output"]["id"]) where name == "ChatOpenAI" and attributes["output.value"] != nil'
+          - 'set(attributes["gen_ai.response.model"], ParseJSON(attributes["output.value"])["llm_output"]["model_name"]) where name == "ChatOpenAI" and attributes["output.value"] != nil'
+
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+
+exporters:
+  debug:
+    verbosity: detailed
+  otlphttp/newrelic:
+    # Production: https://otlp.nr-data.net (EU: https://otlp.eu01.nr-data.net)
+    endpoint: https://staging-otlp.nr-data.net:4318
+    headers:
+      api-key: ${env:NEW_RELIC_LICENSE_KEY}
+    compression: gzip
+    timeout: 30s
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s
+
+service:
+  extensions: [zpages]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, gen_ai_normalizer, transform/backfill_missing, batch]
+      exporters: [debug, otlphttp/newrelic]
+
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, batch]
+      exporters: [otlphttp/newrelic]
+
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, batch]
+      exporters: [otlphttp/newrelic]

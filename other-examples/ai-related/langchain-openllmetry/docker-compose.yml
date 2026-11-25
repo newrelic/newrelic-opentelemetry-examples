@@ -1,0 +1,20 @@
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.159.0
+    container_name: langchain-openllmetry-otel-collector
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "55679:55679" # ZPages extension
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - langchain-openllmetry-network
+
+networks:
+  langchain-openllmetry-network:
+    driver: bridge

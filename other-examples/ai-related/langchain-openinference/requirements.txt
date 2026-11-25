@@ -1,0 +1,11 @@
+langchain>=0.3.0
+langchain-openai>=0.2.0
+langchain-core>=0.3.0
+
+python-dotenv
+
+opentelemetry-api>=1.38.0,<2.0.0
+opentelemetry-sdk>=1.38.0,<2.0.0
+opentelemetry-exporter-otlp-proto-grpc>=1.38.0,<2.0.0
+
+openinference-instrumentation-langchain

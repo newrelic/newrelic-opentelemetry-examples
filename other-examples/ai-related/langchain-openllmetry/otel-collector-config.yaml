@@ -1,0 +1,83 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+extensions:
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+
+  resource:
+    attributes:
+      - key: service.name
+        value: langchain-genai-openllm
+        action: upsert
+      - key: deployment.environment
+        value: development
+        action: upsert
+
+  gen_ai_normalizer:
+    sources:
+      - name: openllmetry
+        remove_originals: true
+
+  # gen_ai_normalizer's openllmetry source maps traceloop.entity.name ->
+  # gen_ai.agent.name unconditionally (see its README), but
+  # opentelemetry-instrumentation-langchain sets traceloop.entity.name on
+  # every LangGraph task/tool span too (using that node's own name, e.g.
+  # "model", "tools", "get_weather") -- not just on real agent spans. This
+  # strips the resulting stray gen_ai.agent.name from every span that isn't
+  # a genuine agent invocation, so it doesn't pollute New Relic's AI Agent
+  # entity list or collide with gen_ai.tool.name on tool-execution spans.
+  transform/fix_tool_agent_conflict:
+    error_mode: ignore
+    trace_statements:
+      - context: span
+        statements:
+          - 'delete_key(attributes, "gen_ai.agent.name") where attributes["gen_ai.operation.name"] != nil and attributes["gen_ai.operation.name"] != "invoke_agent" and attributes["gen_ai.operation.name"] != "create_agent" and attributes["gen_ai.agent.name"] != nil'
+
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+
+exporters:
+  debug:
+    verbosity: detailed
+  otlphttp/newrelic:
+    # Production: https://otlp.nr-data.net (EU: https://otlp.eu01.nr-data.net)
+    endpoint: https://staging-otlp.nr-data.net:4318
+    headers:
+      api-key: ${env:NEW_RELIC_LICENSE_KEY}
+    compression: gzip
+    timeout: 30s
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s
+
+service:
+  extensions: [zpages]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, gen_ai_normalizer, transform/fix_tool_agent_conflict, batch]
+      exporters: [debug, otlphttp/newrelic]
+
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, batch]
+      exporters: [otlphttp/newrelic]
+
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, batch]
+      exporters: [otlphttp/newrelic]
