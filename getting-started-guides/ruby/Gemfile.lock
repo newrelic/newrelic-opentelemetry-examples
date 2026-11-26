@@ -227,8 +227,8 @@ GEM
       opentelemetry-api (~> 1.0)
     puma (8.1.2)
       nio4r (~> 2.0)
-    rack (3.2.8)
-    rack-protection (4.2.1)
+    rack (3.2.9)
+    rack-protection (4.2.2)
       base64 (>= 0.1.0)
       logger (>= 1.6.0)
       rack (>= 3.0.0, < 4)
@@ -236,11 +236,11 @@ GEM
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
     rake (13.4.2)
-    sinatra (4.2.1)
+    sinatra (4.2.2)
       logger (>= 1.6.0)
       mustermann (~> 3.0)
       rack (>= 3.0.0, < 4)
-      rack-protection (= 4.2.1)
+      rack-protection (= 4.2.2)
       rack-session (>= 2.0.0, < 3)
       tilt (~> 2.0)
     tilt (2.9.0)
@@ -261,7 +261,7 @@ DEPENDENCIES
   opentelemetry-instrumentation-all (~> 0.101.0)
   opentelemetry-sdk (~> 1.13.1)
   puma (~> 8.1.2)
-  sinatra (~> 4.2.1)
+  sinatra (~> 4.2.2)
 
 CHECKSUMS
   base64 (0.3.0) sha256=27337aeabad6ffae05c265c450490628ef3ebd4b67be58257393227588f5a97b
@@ -339,11 +339,11 @@ CHECKSUMS
   opentelemetry-sdk (1.13.1) sha256=91c9cc315ac7ef30243549eeff8b27cd0d39bd02bdf9c9ae481ab96a1cec6754
   opentelemetry-semantic_conventions (1.45.0) sha256=f6a5b5187d3421e125576692be2a1cfd510d07a9abff81a1e71c67dc1a835cb5
   puma (8.1.2) sha256=3a6d9a34c9a4d0175eabd11b703939b5d43ebe08bc2534ac7dfd4df33a6ceedc
-  rack (3.2.8) sha256=1fecc85e463ebc7a2a945fff829ffcd549babeb1556384796fad946c28dc4ec7
-  rack-protection (4.2.1) sha256=cf6e2842df8c55f5e4d1a4be015e603e19e9bc3a7178bae58949ccbb58558bac
+  rack (3.2.9) sha256=8235c1d08f0c461bedcff4413bbeba888173e5b09e1332ae951c98f0ee460dcc
+  rack-protection (4.2.2) sha256=0e75764dae462c4041544452ce568bb1f1ced556b791cd32ac479d0781065a99
   rack-session (2.1.2) sha256=595434f8c0c3473ae7d7ac56ecda6cc6dfd9d37c0b2b5255330aa1576967ffe8
   rake (13.4.2) sha256=cb825b2bd5f1f8e91ca37bddb4b9aaf345551b4731da62949be002fa89283701
-  sinatra (4.2.1) sha256=b7aeb9b11d046b552972ade834f1f9be98b185fa8444480688e3627625377080
+  sinatra (4.2.2) sha256=3a0e63c600eb65d7ad6fa0d597a9533f2870d1862cc63ab7b0f7f0ad449ad42f
   tilt (2.9.0) sha256=da5735d0280bba96e9a91041bb14aee435ccad5c17b0fa519249ae543d9aa3a5
 
 RUBY VERSION
